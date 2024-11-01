@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vape_store/screen/detail_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 
 void main() {
@@ -13,12 +14,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData.dark(
+      theme: ThemeData(
         // colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         // Theme.of(context).colorScheme.inversePrimary
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const DetailScreen(),
     );
   }
 }
