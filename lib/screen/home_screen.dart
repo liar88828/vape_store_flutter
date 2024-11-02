@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:vape_store/screen/detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -29,13 +30,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.orangeAccent,
       appBar: AppBar(
-        // backgroundColor: Colors.transparent,
         toolbarHeight: 70,
-        // leadingWidth: ,
-        // leading: IconButton(
-        //   onPressed: () {},
-        //   icon: const Icon(Icons.menu),
-        // ),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1),
           child: TextField(
@@ -52,17 +47,19 @@ class HomeScreen extends StatelessWidget {
                   suffixIcon:
                       IconButton(onPressed: () {}, icon: Icon(Icons.search)))),
         ),
-        // automaticallyImplyLeading: ,
         actions: [
-          IconButton(
-            style: IconButton.styleFrom(
-                backgroundColor: Colors.orange,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10))),
-            // color: Colors.red,
-            onPressed: () {},
-            icon: const Icon(
-              Icons.trolley,
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              style: IconButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10))),
+              // color: Colors.red,
+              onPressed: () {},
+              icon: const Icon(
+                Icons.trolley,
+              ),
             ),
           ),
         ],
@@ -96,6 +93,7 @@ class HomeScreen extends StatelessWidget {
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ]),
       body: SingleChildScrollView(
+        // padding: EdgeInsets.all(30),
         child: Column(
           children: [
             Container(
@@ -145,13 +143,11 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.orange[800],
                 border: Border.all(color: Colors.transparent),
-                borderRadius: BorderRadius.circular(
-                  20,
-                ), // Uniform radius
+                borderRadius: BorderRadius.circular(20), // Uniform radius
               ),
               child: Column(
                 children: [
@@ -218,39 +214,47 @@ class ProductList extends StatelessWidget {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Stack(
-                        children: [
-                          Image.asset(
-                            product['image']!,
-                            height: 120,
-                            width: 120,
-                            // fit: BoxFit.fill
-                          ),
-                          const Positioned(
-                            top: 1,
-                            right: 1,
-                            child: Icon(
-                              Icons.favorite,
-                              color: Colors.redAccent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return DetailScreen();
+                      }));
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
+                          children: [
+                            Image.asset(
+                              product['image']!,
+                              height: 120,
+                              width: 120,
+                              // fit: BoxFit.fill
                             ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        product['title']!,
-                        style: const TextStyle(
-                            color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        product['price']!,
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                            const Positioned(
+                              top: 1,
+                              right: 1,
+                              child: Icon(
+                                Icons.favorite,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          product['title']!,
+                          style: const TextStyle(
+                              color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          product['price']!,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -304,44 +308,48 @@ class ProductFlashSale extends StatelessWidget {
             itemCount: products.length,
             itemBuilder: (context, index) {
               final product = products[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Stack(
-                        children: [
-                          Image.asset(
-                            product['image']!,
-                            height: 120,
-                            width: 120,
-                            // fit: BoxFit.fill
-                          ),
-                          const Positioned(
-                            top: 1,
-                            right: 1,
-                            child: Icon(
-                              Icons.favorite,
-                              color: Colors.redAccent,
+              return InkWell(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => DetailScreen())),
+                child: Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 15),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
+                          children: [
+                            Image.asset(
+                              product['image']!,
+                              height: 120,
+                              width: 120,
+                              // fit: BoxFit.fill
                             ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        product['title']!,
-                        style: const TextStyle(
-                            color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        product['price']!,
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                            const Positioned(
+                              top: 1,
+                              right: 1,
+                              child: Icon(
+                                Icons.favorite,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          product['title']!,
+                          style: const TextStyle(
+                              color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          product['price']!,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

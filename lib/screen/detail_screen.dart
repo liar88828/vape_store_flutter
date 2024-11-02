@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:vape_store/screen/order_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key});
@@ -10,6 +11,15 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   String? _value;
+  int _counter = 1;
+  void increment() {
+    setState(() => _counter++);
+  }
+
+  void decrement() {
+    setState(() => _counter--);
+  }
+
   @override
   Widget build(BuildContext context) {
     // final TextTheme textTheme = Theme.of(context).textTheme;
@@ -27,13 +37,16 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
                 child: Row(
                   children: [
-                    IconButton(onPressed: () {}, icon: Icon(Icons.remove)),
-                    Text('1'),
-                    IconButton(onPressed: () {}, icon: Icon(Icons.add)),
+                    IconButton(onPressed: decrement, icon: Icon(Icons.remove)),
+                    Text(
+                      _counter.toString(),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(onPressed: increment, icon: Icon(Icons.add)),
                   ],
                 ),
               ),
-              // SizedBox(width: 25),
               FilledButton(
                 style: FilledButton.styleFrom(
                   fixedSize: Size(240, 100),
@@ -42,7 +55,10 @@ class _DetailScreenState extends State<DetailScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => OrderScreen()));
+                },
                 child: Text(
                   'ADD TO CART',
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -87,6 +103,7 @@ class _DetailScreenState extends State<DetailScreen> {
           ],
         ),
         body: SingleChildScrollView(
+            // padding: EdgeInsets.all(30),
             child: Column(children: [
           Container(
               color: Colors.grey.shade50,
@@ -116,7 +133,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                     Container(
                         color: Colors.white10,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(30),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
