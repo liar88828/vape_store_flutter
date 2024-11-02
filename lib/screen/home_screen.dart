@@ -1,7 +1,8 @@
 import 'dart:developer';
-
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/screen/search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -27,6 +28,30 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var heightScreen = MediaQuery.of(context).size.height;
+
+    void navigateHandler(int index) {
+      switch (index) {
+        case 0:
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()));
+          break;
+        case 1:
+          // Navigator.push(context, MaterialPageRoute(builder: (context) => FavoritesScreen()));
+          break;
+        case 2:
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const SearchScreen()));
+          break;
+        case 3:
+          // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()))
+          break;
+        case 4:
+          // Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()))
+          break;
+        default:
+      }
+    }
+
     return Scaffold(
       backgroundColor: Colors.orangeAccent,
       appBar: AppBar(
@@ -68,12 +93,10 @@ class HomeScreen extends StatelessWidget {
           // backgroundColor: Colors.orangeAccent,
           unselectedItemColor: Colors.orangeAccent,
           fixedColor: Colors.amberAccent,
-          currentIndex: 0,
+          // currentIndex: 0,
           showSelectedLabels: true,
           showUnselectedLabels: true,
-          onTap: (value) => {
-                log(value.toString()),
-              },
+          onTap: (value) => navigateHandler(value),
           items: const [
             BottomNavigationBarItem(
                 icon: Icon(
@@ -86,61 +109,75 @@ class HomeScreen extends StatelessWidget {
                 label: 'Favorite'),
             BottomNavigationBarItem(
                 // backgroundColor: Colors.redAccent,
+
                 icon: Icon(Icons.search),
                 label: 'Search'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.settings), label: 'Settings'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ]),
       body: SingleChildScrollView(
-        // padding: EdgeInsets.all(30),
+        padding: EdgeInsets.only(top: 20),
         child: Column(
           children: [
-            Container(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(children: [
-                      const Text("SUMMER SALE",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70,
-                          )),
-                      const Text("40% OFF",
-                          style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 2)),
-                      const SizedBox(height: 20),
-                      FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.orange[800],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () {},
-                          child: const Row(children: [
-                            Text(
-                              'EXPLORE',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            Icon(
-                              Icons.chevron_right,
-                              color: Colors.white,
-                            )
-                          ])),
-                    ]),
-                    Image.asset('lib/images/banner1.png',
-                        width: 150, height: 200, fit: BoxFit.cover)
-                  ],
-                ),
-              ),
+            // const SizedBox(height: 20),
+            CarouselSlider(
+              options: CarouselOptions(height: 220),
+              items: [1, 2, 3, 4, 5].map((i) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return Container(
+                      width: MediaQuery.of(context).size.width,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 20),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                          color: Colors.orange[100],
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(children: [
+                            const Text("SUMMER SALE",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white70,
+                                )),
+                            const Text("40% OFF",
+                                style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2)),
+                            const SizedBox(height: 20),
+                            FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.orange[800],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () {},
+                                child: const Row(children: [
+                                  Text(
+                                    'EXPLORE',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.white,
+                                  )
+                                ])),
+                          ]),
+                          Image.asset('lib/images/banner1.png',
+                              width: 100, height: 120, fit: BoxFit.cover)
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
             ),
             Container(
               padding: const EdgeInsets.all(20),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vape_store/screen/detail_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/order_screen.dart';
+import 'package:vape_store/screen/search_screen.dart';
 
 void main() {
   runApp(const MyApp());
