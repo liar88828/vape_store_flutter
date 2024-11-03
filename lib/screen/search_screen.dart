@@ -49,6 +49,8 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var colorTheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(),
@@ -73,8 +75,9 @@ class SearchScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
+                color: colorTheme.primary,
                 style: IconButton.styleFrom(
-                    backgroundColor: Colors.orangeAccent,
+                    backgroundColor: colorTheme.primaryContainer,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10))),
                 // color: Colors.red,
@@ -89,27 +92,32 @@ class SearchScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
+                    color: colorTheme.primary,
                     style: IconButton.styleFrom(
-                        backgroundColor: Colors.orangeAccent,
+                        backgroundColor: colorTheme.primaryContainer,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10))),
-                    // color: Colors.red,
                     onPressed: () {},
-                    icon: const Icon(
-                      Icons.filter_list,
-                    )),
-                DropdownButtonExample(list: [
-                  'Low Price',
-                  'Medium Price',
-                  'High Price',
-                  'Premium'
+                    icon: const Icon(Icons.filter_list)),
+                SizedBox(width: 12),
+                const DropdownButtonExample(list: [
+                  'Coil',
+                  'Mod',
+                  'Liquid',
+                  'Battery',
+                  "Connector",
+                  "Tank/Cartridge",
+                  'Mouthpiece/Drip-tip',
+                  'Atomizer',
+                  'Accessories'
                 ]),
-                DropdownButtonExample(list: [
+                SizedBox(width: 12),
+                const DropdownButtonExample(list: [
                   'Low Price',
                   'Medium Price',
                   'High Price',
@@ -153,6 +161,8 @@ class ProductCard extends StatelessWidget {
       required this.price});
   @override
   Widget build(BuildContext context) {
+    var colorTheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: () {
         // Navigator.push(
@@ -162,6 +172,7 @@ class ProductCard extends StatelessWidget {
         // );
       },
       child: Card(
+        color: colorTheme.onPrimary,
         // margin: const EdgeInsets.symmetric(horizontal: 8),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -175,7 +186,6 @@ class ProductCard extends StatelessWidget {
                     children: [
                       Image.asset(
                         image,
-
                         height: 150,
                         width: 150,
                         // fit: BoxFit.fill
@@ -235,18 +245,21 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
 
   @override
   Widget build(BuildContext context) {
+    var colorTheme = Theme.of(context).colorScheme;
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: colorTheme.onPrimary,
+        border: Border.all(color: colorTheme.primaryContainer),
         borderRadius: BorderRadius.circular(8), // Optional: for rounded corners
       ),
       child: DropdownButton<String>(
         value: dropdownValue,
         icon: const Icon(Icons.arrow_downward),
+        dropdownColor: colorTheme.onPrimary,
         elevation: 10,
-
-        style: const TextStyle(color: Colors.deepPurple), // Text color
+        style: const TextStyle(), // Text color
         underline: Container(), // Optional: to remove the underline
         onChanged: (String? value) {
           setState(() {
@@ -256,7 +269,12 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
         items: widget.list.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value),
+            child: Text(value,
+                style: TextStyle(
+                  color: colorTheme.primary,
+                  fontWeight: FontWeight.bold,
+                  // fontSize: 16
+                )),
           );
         }).toList(),
       ),

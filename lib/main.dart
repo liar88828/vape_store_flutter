@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vape_store/screen/detail_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/order_screen.dart';
+import 'package:vape_store/screen/profile_screen.dart';
 import 'package:vape_store/screen/search_screen.dart';
 
 void main() {
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
+      theme: ThemeData.dark(
         // colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         // Theme.of(context).colorScheme.inversePrimary
         useMaterial3: true,

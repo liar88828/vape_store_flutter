@@ -1,8 +1,9 @@
-import 'dart:developer';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/screen/profile_screen.dart';
 import 'package:vape_store/screen/search_screen.dart';
+import 'package:vape_store/widgets/button_navigation.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -28,32 +29,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var heightScreen = MediaQuery.of(context).size.height;
-
-    void navigateHandler(int index) {
-      switch (index) {
-        case 0:
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()));
-          break;
-        case 1:
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => FavoritesScreen()));
-          break;
-        case 2:
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const SearchScreen()));
-          break;
-        case 3:
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()))
-          break;
-        case 4:
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()))
-          break;
-        default:
-      }
-    }
+    var colorTheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.orangeAccent,
+      // backgroundColor: colorTheme,
       appBar: AppBar(
         toolbarHeight: 70,
         title: Padding(
@@ -76,8 +55,9 @@ class HomeScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
+              color: colorTheme.primary,
               style: IconButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: colorTheme.primaryContainer,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10))),
               // color: Colors.red,
@@ -89,33 +69,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-          // backgroundColor: Colors.orangeAccent,
-          unselectedItemColor: Colors.orangeAccent,
-          fixedColor: Colors.amberAccent,
-          // currentIndex: 0,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          onTap: (value) => navigateHandler(value),
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.home,
-                ),
-                label: 'Home'),
-            BottomNavigationBarItem(
-                // backgroundColor: Colors.amberAccent,
-                icon: Icon(Icons.favorite),
-                label: 'Favorite'),
-            BottomNavigationBarItem(
-                // backgroundColor: Colors.redAccent,
-
-                icon: Icon(Icons.search),
-                label: 'Search'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.settings), label: 'Settings'),
-          ]),
+      bottomNavigationBar: ButtonNavigation(),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(top: 20),
         child: Column(
@@ -132,7 +86,7 @@ class HomeScreen extends StatelessWidget {
                           horizontal: 5, vertical: 20),
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                          color: Colors.orange[100],
+                          color: colorTheme.primaryContainer,
                           borderRadius: BorderRadius.circular(10)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -153,7 +107,8 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 20),
                             FilledButton(
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.orange[800],
+                                  iconColor: colorTheme.primary,
+                                  backgroundColor: colorTheme.primary,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -162,11 +117,14 @@ class HomeScreen extends StatelessWidget {
                                 child: const Row(children: [
                                   Text(
                                     'EXPLORE',
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(
+                                        // color: Colors.white
+                                        ),
                                   ),
                                   Icon(
                                     Icons.chevron_right,
-                                    color: Colors.white,
+                                    // color: colorTheme.primary,
+                                    color: Colors.deepPurple,
                                   )
                                 ])),
                           ]),
@@ -182,7 +140,7 @@ class HomeScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.orange[800],
+                color: colorTheme.primaryContainer,
                 border: Border.all(color: Colors.transparent),
                 borderRadius: BorderRadius.circular(20), // Uniform radius
               ),
@@ -247,7 +205,7 @@ class ProductList extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
@@ -349,7 +307,7 @@ class ProductFlashSale extends StatelessWidget {
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (context) => DetailScreen())),
                 child: Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 15),
