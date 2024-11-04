@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/screen/favorites_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/order_screen.dart';
 import 'package:vape_store/screen/profile_screen.dart';

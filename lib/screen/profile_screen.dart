@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:vape_store/assets/product_example.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/screen/detail_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/search_screen.dart';
+import 'package:vape_store/utils/date.dart';
+import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
 import 'package:intl/intl.dart';
 
@@ -12,56 +15,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
-    final List<ProductModel> products = [
-      ProductModel(
-        title: 'Product 1',
-        date: DateTime.now(),
-        price: 100000,
-        id: 1,
-      ),
-      ProductModel(
-        title: 'Product 2',
-        date: DateTime.now(),
-        price: 200000,
-        id: 2,
-      ),
-      ProductModel(
-        title: 'Product 3',
-        date: DateTime.now(),
-        price: 150000,
-        id: 3,
-      ),
-      ProductModel(
-        title: 'Product 4',
-        date: DateTime.now(),
-        price: 250000,
-        id: 4,
-      ),
-      ProductModel(
-        title: 'Product 234',
-        date: DateTime.now(),
-        price: 250000,
-        id: 5,
-      ),
-      ProductModel(
-        title: 'Product 234',
-        date: DateTime.now(),
-        price: 250000,
-        id: 6,
-      ),
-      ProductModel(
-        title: 'Product 234',
-        date: DateTime.now(),
-        price: 250000,
-        id: 36,
-      ),
-      ProductModel(
-        title: 'Product 234',
-        date: DateTime.now(),
-        price: 250000,
-        id: 635,
-      ),
-    ];
+    final List<ProductModel> products = productExample;
 
     return Scaffold(
       // backgroundColor: colorTheme.primaryContainer,
@@ -217,12 +171,8 @@ class ProductList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String formattedDate = DateFormat('dd-MM-yyyy').format(date);
-    final formattedPrice = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp',
-      decimalDigits: 0,
-    ).format(price);
+    final String formattedDate = formatDate(date);
+    final formattedPrice = formatPrice(price);
 
     return Card(
       child: Padding(
@@ -264,8 +214,12 @@ class ProductList extends StatelessWidget {
             IconButton(
                 onPressed: () {
                   // id
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => DetailScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DetailScreen(
+                                id: 1,
+                              )));
                 },
                 icon: Icon(Icons.arrow_forward))
           ],

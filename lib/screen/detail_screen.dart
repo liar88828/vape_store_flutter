@@ -3,7 +3,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:vape_store/screen/order_screen.dart';
 
 class DetailScreen extends StatefulWidget {
-  const DetailScreen({super.key});
+  const DetailScreen({super.key, required this.id});
+
+  final int id;
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();

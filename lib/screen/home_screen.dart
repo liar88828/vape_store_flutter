@@ -1,30 +1,15 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:vape_store/assets/product_example.dart';
+import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/screen/detail_screen.dart';
-import 'package:vape_store/screen/profile_screen.dart';
-import 'package:vape_store/screen/search_screen.dart';
+import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  static final List<Map<String, String>> products = [
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Melon',
-      'price': 'Rp 200.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Stroberi',
-      'price': 'Rp 220.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Anggur',
-      'price': 'Rp 210.000'
-    },
-  ];
+  static final List<ProductModel> products = productExample;
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +155,7 @@ class ProductList extends StatelessWidget {
   });
 
   final double heightScreen;
-  final List<Map<String, String>> products;
+  final List<ProductModel> products;
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +198,9 @@ class ProductList extends StatelessWidget {
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return DetailScreen();
+                        return DetailScreen(
+                          id: product.id,
+                        );
                       }));
                     },
                     child: Column(
@@ -223,7 +210,7 @@ class ProductList extends StatelessWidget {
                         Stack(
                           children: [
                             Image.asset(
-                              product['image']!,
+                              product.img,
                               height: 120,
                               width: 120,
                               // fit: BoxFit.fill
@@ -239,12 +226,12 @@ class ProductList extends StatelessWidget {
                           ],
                         ),
                         Text(
-                          product['title']!,
+                          product.title,
                           style: const TextStyle(
                               color: Colors.grey, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          product['price']!,
+                          formatPrice(product.price),
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
@@ -269,7 +256,7 @@ class ProductFlashSale extends StatelessWidget {
   });
 
   final double heightScreen;
-  final List<Map<String, String>> products;
+  final List<ProductModel> products;
 
   @override
   Widget build(BuildContext context) {
@@ -304,8 +291,12 @@ class ProductFlashSale extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               return InkWell(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => DetailScreen())),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DetailScreen(
+                              id: product.id,
+                            ))),
                 child: Card(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   child: Padding(
@@ -318,7 +309,7 @@ class ProductFlashSale extends StatelessWidget {
                         Stack(
                           children: [
                             Image.asset(
-                              product['image']!,
+                              product.img,
                               height: 120,
                               width: 120,
                               // fit: BoxFit.fill
@@ -334,12 +325,12 @@ class ProductFlashSale extends StatelessWidget {
                           ],
                         ),
                         Text(
-                          product['title']!,
+                          product.title,
                           style: const TextStyle(
                               color: Colors.grey, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          product['price']!,
+                          formatPrice(product.price),
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
