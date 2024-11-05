@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: ButtonNavigation(),
+      bottomNavigationBar: const ButtonNavigation(),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(top: 20),
         child: Column(
@@ -123,7 +123,7 @@ class HomeScreen extends StatelessWidget {
               }).toList(),
             ),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: colorTheme.primaryContainer,
                 border: Border.all(color: Colors.transparent),

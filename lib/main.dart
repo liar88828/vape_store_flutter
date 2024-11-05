@@ -5,6 +5,7 @@ import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/order_screen.dart';
 import 'package:vape_store/screen/profile_screen.dart';
 import 'package:vape_store/screen/search_screen.dart';
+import 'package:vape_store/screen/setting_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,8 +20,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData.dark(
-        // colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         // Theme.of(context).colorScheme.inversePrimary
         useMaterial3: true,
       ),

@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:vape_store/assets/product_example.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/screen/detail_screen.dart';
-import 'package:vape_store/screen/home_screen.dart';
-import 'package:vape_store/screen/search_screen.dart';
 import 'package:vape_store/utils/date.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
-import 'package:intl/intl.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -20,23 +17,8 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       // backgroundColor: colorTheme.primaryContainer,
       appBar: AppBar(
-        toolbarHeight: 70,
-        title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 1),
-          child: TextField(
-              decoration: InputDecoration(
-                  // fillColor: Colors.white,
-                  // focusColor: Colors.white,
-                  isDense: true,
-                  // contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                  hintText: "Search...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    // borderSide: BorderSide(color: Colors.white),
-                  ),
-                  suffixIcon:
-                      IconButton(onPressed: () {}, icon: Icon(Icons.search)))),
-        ),
+        centerTitle: true,
+        title: Text('Profile'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),

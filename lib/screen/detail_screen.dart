@@ -109,152 +109,145 @@ class _DetailScreenState extends State<DetailScreen> {
         body: SingleChildScrollView(
             // padding: EdgeInsets.all(30),
             child: Column(children: [
-          Container(
-              // color: colorTheme.onPrimary,
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                CarouselSlider(
-                  options: CarouselOptions(height: 400.0),
-                  items: [1, 2, 3, 4, 5].map((i) {
-                    return Builder(
-                      builder: (BuildContext context) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width,
-                          margin: EdgeInsets.symmetric(horizontal: 1),
-                          decoration:
-                              BoxDecoration(color: colorTheme.surfaceBright),
-                          child: Image.asset(
-                            'lib/images/banner1.png',
-                            height: 400,
-                            width: 300,
-                            // fit: BoxFit.contain,
-                          ),
-                        );
-                      },
+          Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            CarouselSlider(
+              options: CarouselOptions(height: 400.0),
+              items: [1, 2, 3, 4, 5].map((i) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return Container(
+                      width: MediaQuery.of(context).size.width,
+                      margin: EdgeInsets.symmetric(horizontal: 1),
+                      decoration:
+                          BoxDecoration(color: colorTheme.surfaceBright),
+                      child: Image.asset(
+                        'lib/images/banner1.png',
+                        height: 400,
+                        width: 300,
+                        // fit: BoxFit.contain,
+                      ),
                     );
-                  }).toList(),
-                ),
-                Container(
-                    color: Colors.white10,
-                    padding: const EdgeInsets.all(30),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  },
+                );
+              }).toList(),
+            ),
+            Container(
+                color: Colors.white10,
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Text('Fruit Punch Series',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.purple,
+                                  fontWeight: FontWeight.bold)),
+                          Row(
                             children: [
-                              Text('Fruit Punch Series',
+                              Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                              ),
+                              Text('4.7',
                                   style: TextStyle(
                                       fontSize: 16,
-                                      color: Colors.purple,
-                                      fontWeight: FontWeight.bold)),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    color: Colors.yellow,
-                                  ),
-                                  Text('4.7',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold))
-                                ],
-                              )
+                                      fontWeight: FontWeight.bold))
                             ],
+                          )
+                        ],
+                      ),
+                      const Text('Fruit Punch Series',
+                          style: TextStyle(
+                              fontSize: 25, fontWeight: FontWeight.bold)),
+                      const Row(
+                        // mainAxisAlignment:
+                        //     MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries',
+                              softWrap: true,
+                              textAlign: TextAlign.justify,
+                              maxLines: 5,
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 14),
+                            ),
                           ),
-                          const Text('Fruit Punch Series',
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.bold)),
-                          const Row(
-                            // mainAxisAlignment:
-                            //     MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries',
-                                  softWrap: true,
-                                  textAlign: TextAlign.justify,
-                                  maxLines: 5,
-                                  style: TextStyle(
-                                      color: Colors.grey, fontSize: 14),
-                                ),
-                              ),
-                              SizedBox(width: 20),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    'Rp123.45',
-                                    style: TextStyle(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'Stock: 10 pcs',
-                                    style: TextStyle(color: Colors.grey),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
+                          SizedBox(width: 20),
                           Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Option',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16)),
-                                SizedBox(height: 10),
-                                Wrap(
-                                  spacing: 5.0,
-                                  children: ['30 ML', '60 ML', '90 ML']
-                                      .map((label) => ChoiceChip(
-                                            label: Text(label),
-                                            selected: _value == label,
-                                            backgroundColor:
-                                                colorTheme.surfaceBright,
-                                            selectedColor: colorTheme.surface,
-                                            onSelected: (selected) {
-                                              setState(() {
-                                                _value = label;
-                                                debugPrint(_value);
-                                                var data = _value == label;
-                                                debugPrint(data.toString());
-                                              });
-                                            },
-                                          ))
-                                      .toList(),
-                                ),
-                                SizedBox(height: 20),
-                                Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Rp123.45',
+                                style: TextStyle(
+                                    fontSize: 30, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Stock: 10 pcs',
+                                style: TextStyle(color: Colors.grey),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Option',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16)),
+                            SizedBox(height: 10),
+                            Wrap(
+                              spacing: 5.0,
+                              children: ['30 ML', '60 ML', '90 ML']
+                                  .map((label) => ChoiceChip(
+                                        label: Text(label),
+                                        selected: _value == label,
+                                        backgroundColor:
+                                            colorTheme.surfaceBright,
+                                        selectedColor: colorTheme.surface,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            _value = label;
+                                            debugPrint(_value);
+                                            var data = _value == label;
+                                            debugPrint(data.toString());
+                                          });
+                                        },
+                                      ))
+                                  .toList(),
+                            ),
+                            SizedBox(height: 20),
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text('Description',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16)),
-                                          IconButton(
-                                              onPressed: () {},
-                                              icon: Icon(Icons.arrow_drop_down))
-                                        ],
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                          'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries'),
-                                      SizedBox(height: 100),
-                                    ])
-                              ])
-                        ]))
-              ]))
+                                      const Text('Description',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16)),
+                                      IconButton(
+                                          onPressed: () {},
+                                          icon: Icon(Icons.arrow_drop_down))
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text(
+                                      'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries'),
+                                  SizedBox(height: 100),
+                                ])
+                          ])
+                    ]))
+          ])
         ])));
   }
 }

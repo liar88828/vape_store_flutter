@@ -52,8 +52,8 @@ class ButtonNavigation extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => FavoritesScreen(),
-                    settings: RouteSettings(name: '/favorite'),
+                    builder: (context) => const FavoritesScreen(),
+                    settings: const RouteSettings(name: '/favorite'),
                   ));
               break;
             case 2:
@@ -61,22 +61,22 @@ class ButtonNavigation extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => const SearchScreen(),
-                      settings: RouteSettings(name: '/search')));
+                      settings: const RouteSettings(name: '/search')));
               break;
             case 3:
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ProfileScreen(),
-                    settings: RouteSettings(name: '/profile'),
+                    builder: (context) => const ProfileScreen(),
+                    settings: const RouteSettings(name: '/profile'),
                   ));
               break;
             case 4:
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SettingScreen(),
-                    settings: RouteSettings(name: '/setting'),
+                    builder: (context) => const SettingScreen(),
+                    settings: const RouteSettings(name: '/setting'),
                   ));
               break;
             default:

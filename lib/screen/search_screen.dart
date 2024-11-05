@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -94,7 +96,7 @@ class SearchScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Row(
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
                     color: colorTheme.primary,
@@ -104,7 +106,7 @@ class SearchScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10))),
                     onPressed: () {},
                     icon: const Icon(Icons.filter_list)),
-                SizedBox(width: 12),
+                // SizedBox(width: 12),
                 const DropdownButtonExample(list: [
                   'Coil',
                   'Mod',
@@ -116,13 +118,14 @@ class SearchScreen extends StatelessWidget {
                   'Atomizer',
                   'Accessories'
                 ]),
-                SizedBox(width: 12),
+                // SizedBox(width: 10),
                 const DropdownButtonExample(list: [
                   'Low Price',
                   'Medium Price',
                   'High Price',
                   'Premium'
                 ]),
+                // Spacer(flex: 3)
               ],
             ),
           ),

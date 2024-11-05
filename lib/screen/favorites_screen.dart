@@ -85,7 +85,7 @@ class FavoritesScreen extends StatelessWidget {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               crossAxisCount: 2,
-              childAspectRatio: 3 / 3.5,
+              childAspectRatio: 3 / 4,
               children: favorites.map((favorite) {
                 return InkWell(
                   onTap: () {
@@ -110,8 +110,11 @@ class FavoritesScreen extends StatelessWidget {
                           SizedBox(height: 10),
                           Text(
                             favorite.title,
+                            maxLines: 1,
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 22),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                           Text("Item : ${favorite.item.toString()}")
                         ],
