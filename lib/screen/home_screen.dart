@@ -17,25 +17,8 @@ class HomeScreen extends StatelessWidget {
     var colorTheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      // backgroundColor: colorTheme,
       appBar: AppBar(
         toolbarHeight: 70,
-        title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 1),
-          child: TextField(
-              decoration: InputDecoration(
-                  fillColor: Colors.white,
-                  focusColor: Colors.white,
-                  isDense: true,
-                  // contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                  hintText: "Search...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  suffixIcon:
-                      IconButton(onPressed: () {}, icon: Icon(Icons.search)))),
-        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
