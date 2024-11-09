@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vape_store/network/user_network.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -6,15 +7,28 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _apiService = UserNetwork();
 
-  DateTime? dateOfBirth;
+  Future<void> _register() async {
+    final success = await _apiService.register(
+      _nameController.text,
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    if (success) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Registration successful')));
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Registration failed')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 32.0),
             TextField(
-              controller: nameController,
+              controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'Name',
                 border: OutlineInputBorder(),
@@ -44,7 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 16.0),
             TextField(
-              controller: emailController,
+              controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: 'Email',
@@ -53,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 16.0),
             TextField(
-              controller: phoneController,
+              // controller: phoneController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 labelText: 'Phone',
@@ -62,7 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 16.0),
             TextField(
-              controller: addressController,
+              // controller: _addressController,
               decoration: InputDecoration(
                 labelText: 'Address',
                 border: OutlineInputBorder(),
@@ -79,17 +93,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 );
                 if (pickedDate != null) {
                   setState(() {
-                    dateOfBirth = pickedDate;
+                    // dateOfBirth = pickedDate;
                   });
                 }
               },
               child: AbsorbPointer(
                 child: TextField(
                   decoration: InputDecoration(
-                    labelText: dateOfBirth == null
-                        ? 'Date of Birth'
-                        : 'Date of Birth: ${dateOfBirth!.toLocal()}'
-                            .split(' ')[0],
+                    // labelText: dateOfBirth == null
+                    //     ? 'Date of Birth'
+                    //     : 'Date of Birth: ${dateOfBirth!.toLocal()}'
+                    //         .split(' ')[0],
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -97,7 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 16.0),
             TextField(
-              controller: passwordController,
+              controller: _passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -106,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 16.0),
             TextField(
-              controller: confirmPasswordController,
+              controller: _confirmPasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Confirm Password',
@@ -115,22 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 32.0),
             ElevatedButton(
-              onPressed: () {
-                // Handle register action
-                String name = nameController.text;
-                String email = emailController.text;
-                String phone = phoneController.text;
-                String address = addressController.text;
-                String password = passwordController.text;
-                String confirmPassword = confirmPasswordController.text;
-
-                print(
-                    'Name: $name, Email: $email, Phone: $phone, Address: $address');
-                print(
-                    'Date of Birth: ${dateOfBirth != null ? dateOfBirth.toString() : "Not selected"}');
-                print(
-                    'Password: $password, Confirm Password: $confirmPassword');
-              },
+              onPressed: _register,
               child: Text('Register'),
             ),
           ],

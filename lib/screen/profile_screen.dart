@@ -121,12 +121,7 @@ class ProfileScreen extends StatelessWidget {
                     ]),
                 Column(
                   children: products.map((product) {
-                    return ProductList(
-                      title: product.title,
-                      date: product.date,
-                      price: product.price,
-                      id: product.id,
-                    );
+                    return ProductList(product: product);
                   }).toList(),
                 )
               ],
@@ -141,20 +136,14 @@ class ProfileScreen extends StatelessWidget {
 class ProductList extends StatelessWidget {
   const ProductList({
     super.key,
-    required this.title,
-    required this.date,
-    required this.price,
-    required this.id,
+    required this.product,
   });
-  final String title;
-  final DateTime date;
-  final int price;
-  final int id;
+  final ProductModel product;
 
   @override
   Widget build(BuildContext context) {
-    final String formattedDate = formatDate(date);
-    final formattedPrice = formatPrice(price);
+    // final String formattedDate = formatDate(date);
+    final formattedPrice = formatPrice(product.price);
 
     return Card(
       child: Padding(
@@ -174,7 +163,7 @@ class ProductList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      product.name,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -184,7 +173,7 @@ class ProductList extends StatelessWidget {
                       formattedPrice,
                       style: TextStyle(),
                     ),
-                    Text(formattedDate,
+                    Text(product.description,
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w300,

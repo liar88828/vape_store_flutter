@@ -182,7 +182,7 @@ class ProductList extends StatelessWidget {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
                         return DetailScreen(
-                          id: product.id,
+                          id: product.id ?? 0,
                         );
                       }));
                     },
@@ -193,7 +193,8 @@ class ProductList extends StatelessWidget {
                         Stack(
                           children: [
                             Image.asset(
-                              product.img,
+                              'lib/images/banner1.png',
+                              // product.img,
                               height: 120,
                               width: 120,
                               // fit: BoxFit.fill
@@ -209,7 +210,7 @@ class ProductList extends StatelessWidget {
                           ],
                         ),
                         Text(
-                          product.title,
+                          product.name,
                           style: const TextStyle(
                               color: Colors.grey, fontWeight: FontWeight.bold),
                         ),
@@ -278,7 +279,7 @@ class ProductFlashSale extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (context) => DetailScreen(
-                              id: product.id,
+                              id: product.id ?? 0,
                             ))),
                 child: Card(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -292,7 +293,8 @@ class ProductFlashSale extends StatelessWidget {
                         Stack(
                           children: [
                             Image.asset(
-                              product.img,
+                              'lib/images/banner1.png',
+                              // product.img,
                               height: 120,
                               width: 120,
                               // fit: BoxFit.fill
@@ -308,7 +310,7 @@ class ProductFlashSale extends StatelessWidget {
                           ],
                         ),
                         Text(
-                          product.title,
+                          product.name,
                           style: const TextStyle(
                               color: Colors.grey, fontWeight: FontWeight.bold),
                         ),

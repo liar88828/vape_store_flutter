@@ -10,16 +10,16 @@ class OrderScreen extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         toolbarHeight: 70,
-        title: Text('Order Screen'),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 10),
+        title: const Text('Order Screen'),
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 10),
           child: BackButton(),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
         child: FilledButton(
             style: FilledButton.styleFrom(
-              fixedSize: Size(240, 100),
+              fixedSize: const Size(240, 100),
               backgroundColor: Colors.orange,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -27,15 +27,15 @@ class OrderScreen extends StatelessWidget {
             ),
             onPressed: () {
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()));
+                  MaterialPageRoute(builder: (context) => const HomeScreen()));
             },
-            child: Text('CHECKOUT (RP 123.456)')),
+            child: const Text('CHECKOUT (RP 123.456)')),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(30),
+        padding: const EdgeInsets.all(30),
         child: Column(
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -51,12 +51,12 @@ class OrderScreen extends StatelessWidget {
                       height: 150,
                       width: 150,
                     )),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Monkey Busines',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
@@ -67,7 +67,7 @@ class OrderScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                               color: Colors.grey[500]),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(
                           'RP 123.456',
                           style: TextStyle(
@@ -78,25 +78,26 @@ class OrderScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Card(
-                                margin: EdgeInsets.all(0),
+                                margin: const EdgeInsets.all(0),
                                 child: Row(children: [
                                   IconButton(
                                       onPressed: () {},
-                                      icon: Icon(Icons.remove)),
-                                  Text('1'),
+                                      icon: const Icon(Icons.remove)),
+                                  const Text('1'),
                                   IconButton(
-                                      onPressed: () {}, icon: Icon(Icons.add)),
+                                      onPressed: () {},
+                                      icon: const Icon(Icons.add)),
                                 ])),
-                            SizedBox(width: 20),
+                            const SizedBox(width: 20),
                             IconButton(
                                 style: IconButton.styleFrom(
                                     backgroundColor: Colors.grey[200],
-                                    fixedSize: Size(50, 50),
+                                    fixedSize: const Size(50, 50),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     )),
                                 onPressed: () {},
-                                icon: Icon(Icons.delete)),
+                                icon: const Icon(Icons.delete)),
                           ],
                         ),
                       ],
@@ -105,7 +106,7 @@ class OrderScreen extends StatelessWidget {
                 )
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Container(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,12 +122,12 @@ class OrderScreen extends StatelessWidget {
                         IconButton(
                             style: IconButton.styleFrom(
                                 backgroundColor: Colors.grey[200],
-                                fixedSize: Size(50, 50),
+                                fixedSize: const Size(50, 50),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 )),
                             onPressed: () {},
-                            icon: Icon(Icons.location_on)),
+                            icon: const Icon(Icons.location_on)),
                         Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -135,7 +136,7 @@ class OrderScreen extends StatelessWidget {
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.grey[700])),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text('Jl Kedungjati 12, Jawa Tengah ',
                                   style: TextStyle(
                                       fontSize: 16,
@@ -143,10 +144,11 @@ class OrderScreen extends StatelessWidget {
                                       color: Colors.grey[500])),
                             ]),
                         IconButton(
-                            onPressed: () {}, icon: Icon(Icons.arrow_forward)),
+                            onPressed: () {},
+                            icon: const Icon(Icons.arrow_forward)),
                       ])
                 ])),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Container(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,12 +164,12 @@ class OrderScreen extends StatelessWidget {
                         IconButton(
                             style: IconButton.styleFrom(
                                 backgroundColor: Colors.grey[200],
-                                fixedSize: Size(50, 50),
+                                fixedSize: const Size(50, 50),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 )),
                             onPressed: () {},
-                            icon: Icon(Icons.payment)),
+                            icon: const Icon(Icons.payment)),
                         Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -176,7 +178,7 @@ class OrderScreen extends StatelessWidget {
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.grey[700])),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text('Jl Kedungjati 12, Jawa Tengah ',
                                   style: TextStyle(
                                       fontSize: 16,
@@ -184,17 +186,18 @@ class OrderScreen extends StatelessWidget {
                                       color: Colors.grey[500])),
                             ]),
                         IconButton(
-                            onPressed: () {}, icon: Icon(Icons.arrow_forward)),
+                            onPressed: () {},
+                            icon: const Icon(Icons.arrow_forward)),
                       ])
                 ])),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Container(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Row(
+                  const Row(
                     children: [
-                      const Text(
+                      Text(
                         'Order Info',
                         style: TextStyle(
                             fontSize: 24, fontWeight: FontWeight.bold),
@@ -262,7 +265,7 @@ class OrderScreen extends StatelessWidget {
                                 color: Colors.grey[700]))
                       ])
                 ])),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
           ],
         ),
       ),
