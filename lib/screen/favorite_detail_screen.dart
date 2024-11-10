@@ -17,7 +17,7 @@ class FavoriteDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
+        leading: const BackButton(),
         toolbarHeight: 70,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1),
@@ -58,14 +58,14 @@ class FavoriteDetailScreen extends StatelessWidget {
           final favorite = favorites[index];
           return ListTile(
             leading: Image.asset(
-              favorite.img,
+              'lib/images/banner1.png',
               width: 50,
               height: 50,
               fit: BoxFit.cover,
             ),
             title: Text(favorite.title),
-            subtitle: Text('Items: ${favorite.item}'),
-            trailing: Icon(Icons.arrow_forward),
+            subtitle: Text('Items: ${favorite.description}'),
+            trailing: const Icon(Icons.arrow_forward),
             onTap: () {
               // Handle the tap event, e.g., navigate to a details page
               // print('Tapped on ${favorite.title}');
@@ -73,7 +73,7 @@ class FavoriteDetailScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => DetailScreen(
-                            id: favorite.id,
+                            id: favorite.id!,
                           )));
             },
           );

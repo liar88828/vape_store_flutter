@@ -2,26 +2,39 @@ import 'package:vape_store/models/favorite_model.dart';
 
 final List<FavoriteModel> favoriteExample = [
   FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Premium E-Liquid', item: 2, id: 2),
+    // img: 'lib/images/banner1.png',
+    // item: 2,
+    title: 'Premium E-Liquid',
+    id: 2,
+    description: 'asdasd',
+    id_product: 2,
+    id_user: 2,
+  ),
   FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Nicotine Salts', item: 3, id: 3),
+    // img: 'lib/images/banner1.png',
+    // item: 3,
+    title: 'Nicotine Salts',
+    id: 3,
+    description: 'asdasd',
+    id_product: 2,
+    id_user: 2,
+  ),
   FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Vape Mods', item: 4, id: 4),
+    // img: 'lib/images/banner1.png',
+    // item: 4,
+    title: 'Vape Mods',
+    id: 4,
+    description: 'asdasd',
+    id_product: 2,
+    id_user: 2,
+  ),
   FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Vape Coils', item: 5, id: 5),
-  FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Starter Kits', item: 6, id: 6),
-  FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Disposable Vapes', item: 7, id: 7),
-  FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Pod Systems', item: 8, id: 8),
-  FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Vape Accessories', item: 9, id: 9),
-  FavoriteModel(
-      img: 'lib/images/banner1.png', title: 'Vape Tanks', item: 10, id: 10),
-  FavoriteModel(
-      img: 'lib/images/banner1.png',
-      title: 'Battery Chargers',
-      item: 11,
-      id: 11),
+    // img: 'lib/images/banner1.png',
+    // item: 5,
+    title: 'Vape Coils',
+    id: 5,
+    description: 'asdasd',
+    id_product: 2,
+    id_user: 2,
+  ),
 ];

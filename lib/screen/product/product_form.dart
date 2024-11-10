@@ -60,20 +60,21 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             children: [
               TextField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'Name')),
+                  decoration: const InputDecoration(labelText: 'Name')),
               TextField(
                   controller: _qtyController,
-                  decoration: InputDecoration(labelText: 'Quantity'),
+                  decoration: const InputDecoration(labelText: 'Quantity'),
                   keyboardType: TextInputType.number),
               TextField(
                   controller: _priceController,
-                  decoration: InputDecoration(labelText: 'Price'),
+                  decoration: const InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number),
               TextField(
                   controller: _descriptionController,
-                  decoration: InputDecoration(labelText: 'Description')),
-              SizedBox(height: 20),
-              ElevatedButton(onPressed: _saveProduct, child: Text('Save')),
+                  decoration: const InputDecoration(labelText: 'Description')),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                  onPressed: _saveProduct, child: const Text('Save')),
             ],
           ),
         ));

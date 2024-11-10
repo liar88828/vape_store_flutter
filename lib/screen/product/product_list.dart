@@ -81,11 +81,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         icon: Icon(Icons.edit),
                         onPressed: () async {
                           final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ProductFormScreen(product: product)),
-                          );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProductFormScreen(product: product)));
                           if (result == true) _refreshProducts();
                         },
                       ),

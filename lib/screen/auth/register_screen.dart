@@ -21,12 +21,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Registration successful')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration successful')));
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Registration failed')));
+          .showSnackBar(const SnackBar(content: Text('Registration failed')));
     }
   }
 
@@ -34,9 +34,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
+        leading: const BackButton(),
         centerTitle: true,
-        title: Text('Register'),
+        title: const Text('Register'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -48,25 +48,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 32.0),
+            const SizedBox(height: 32.0),
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Name',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Email',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
-            TextField(
+            const SizedBox(height: 16.0),
+            const TextField(
               // controller: phoneController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
@@ -74,15 +74,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
-            TextField(
+            const SizedBox(height: 16.0),
+            const TextField(
               // controller: _addressController,
               decoration: InputDecoration(
                 labelText: 'Address',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             GestureDetector(
               onTap: () async {
                 DateTime? pickedDate = await showDatePicker(
@@ -97,7 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   });
                 }
               },
-              child: AbsorbPointer(
+              child: const AbsorbPointer(
                 child: TextField(
                   decoration: InputDecoration(
                     // labelText: dateOfBirth == null
@@ -109,28 +109,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _confirmPasswordController,
               obscureText: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Confirm Password',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 32.0),
+            const SizedBox(height: 32.0),
             ElevatedButton(
               onPressed: _register,
-              child: Text('Register'),
+              child: const Text('Register'),
             ),
           ],
         ),

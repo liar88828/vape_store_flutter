@@ -13,7 +13,7 @@ class FavoritesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
+        leading: const BackButton(),
         toolbarHeight: 70,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1),
@@ -93,7 +93,7 @@ class FavoritesScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (context) => FavoriteDetailScreen(
-                                  id: favorite.id,
+                                  id: favorite.id!,
                                 )));
                   },
                   child: Card(
@@ -105,18 +105,18 @@ class FavoritesScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Center(
-                              child: Image.asset(favorite.img,
+                              child: Image.asset('lib/images/banner1.png',
                                   height: 150, width: 150)),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Text(
                             favorite.title,
                             maxLines: 1,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
                           ),
-                          Text("Item : ${favorite.item.toString()}")
+                          const Text("Item : 1")
                         ],
                       ),
                     ),
@@ -230,7 +230,7 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
     var colorTheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
         color: colorTheme.onPrimary,
         border: Border.all(color: colorTheme.primaryContainer),

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/user_network.dart';
 import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/screen/favorite/favorite_list_screen.dart';
 import 'package:vape_store/screen/favorites_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/auth/login_screen.dart';
@@ -40,11 +41,11 @@ class MyApp extends StatelessWidget {
           future: _checkLoginStatus(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasData && snapshot.data == true) {
-              return HomeScreen();
+              return const FavoriteListScreen();
             } else {
-              return LoginScreen();
+              return const LoginScreen();
             }
           },
         ));

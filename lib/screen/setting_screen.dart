@@ -70,18 +70,18 @@ class SettingScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
+        leading: const BackButton(),
         toolbarHeight: 70,
         centerTitle: true,
-        title: Text('Setting'),
+        title: const Text('Setting'),
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
               SettingList('Personal Information', personalSettingsOptions),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               // Divider(),
               SettingList('App Information', appSettingsOptions),
             ],
@@ -98,16 +98,16 @@ class SettingScreen extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Column(
             children: appSettingsOptions.map((option) {
           return ListTile(
             leading: Icon(option['icon']),
             title: Text(option['title']),
             onTap: () => option['onTap'](),
-            trailing: Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right),
           );
         }).toList())
       ],

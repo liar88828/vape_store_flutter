@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/network/user_network.dart';
 import 'package:vape_store/screen/auth/logout_screen.dart';
+import 'package:vape_store/screen/favorite/favorite_list_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/auth/register_screen.dart';
 
@@ -26,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Login successful')));
       Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return LogoutScreen();
+        return FavoriteListScreen();
         // return const HomeScreen();
       }));
     } else {

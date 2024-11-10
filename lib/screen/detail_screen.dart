@@ -40,29 +40,33 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
                 child: Row(
                   children: [
-                    IconButton(onPressed: decrement, icon: Icon(Icons.remove)),
+                    IconButton(
+                        onPressed: decrement, icon: const Icon(Icons.remove)),
                     Text(
                       _counter.toString(),
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    IconButton(onPressed: increment, icon: Icon(Icons.add)),
+                    IconButton(
+                        onPressed: increment, icon: const Icon(Icons.add)),
                   ],
                 ),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  fixedSize: Size(240, 100),
+                  fixedSize: const Size(240, 100),
                   backgroundColor: colorTheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => OrderScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const OrderScreen()));
                 },
-                child: Text(
+                child: const Text(
                   'ADD TO CART',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -82,7 +86,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
           centerTitle: true,
-          title: Text('Detail Product'),
+          title: const Text('Detail Product'),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 10),
@@ -94,11 +98,11 @@ class _DetailScreenState extends State<DetailScreen> {
                         borderRadius: BorderRadius.circular(10))),
                 // color: Colors.red,
                 onPressed: () {},
-                icon: Badge(
+                icon: const Badge(
                   alignment: AlignmentDirectional(3, -2),
                   smallSize: 1,
                   label: Text('1'),
-                  child: const Icon(
+                  child: Icon(
                     Icons.trolley,
                   ),
                 ),
@@ -117,7 +121,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   builder: (BuildContext context) {
                     return Container(
                       width: MediaQuery.of(context).size.width,
-                      margin: EdgeInsets.symmetric(horizontal: 1),
+                      margin: const EdgeInsets.symmetric(horizontal: 1),
                       decoration:
                           BoxDecoration(color: colorTheme.surfaceBright),
                       child: Image.asset(
@@ -202,7 +206,7 @@ class _DetailScreenState extends State<DetailScreen> {
                             const Text('Option',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 16)),
-                            SizedBox(height: 10),
+                            const SizedBox(height: 10),
                             Wrap(
                               spacing: 5.0,
                               children: ['30 ML', '60 ML', '90 ML']
@@ -223,7 +227,7 @@ class _DetailScreenState extends State<DetailScreen> {
                                       ))
                                   .toList(),
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -237,13 +241,14 @@ class _DetailScreenState extends State<DetailScreen> {
                                               fontSize: 16)),
                                       IconButton(
                                           onPressed: () {},
-                                          icon: Icon(Icons.arrow_drop_down))
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down))
                                     ],
                                   ),
-                                  SizedBox(height: 10),
-                                  Text(
+                                  const SizedBox(height: 10),
+                                  const Text(
                                       'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries'),
-                                  SizedBox(height: 100),
+                                  const SizedBox(height: 100),
                                 ])
                           ])
                     ]))
