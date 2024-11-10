@@ -18,6 +18,42 @@ class ProductNetwork {
     }
   }
 
+  Future<List<ProductModel>> fetchProductsFavorite() async {
+    final response = await http.get(Uri.parse('$baseUrl/product/favorite'));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      final List<dynamic> productsData = jsonData['data'];
+      return productsData.map((json) => ProductModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
+
+  Future<List<ProductModel>> fetchProductsNewProduct() async {
+    final response = await http.get(Uri.parse('$baseUrl/product/new-product'));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      final List<dynamic> productsData = jsonData['data'];
+      return productsData.map((json) => ProductModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
+
+  Future<List<ProductModel>> fetchProductsFlashSale() async {
+    final response = await http.get(Uri.parse('$baseUrl/product/flash-sale'));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      final List<dynamic> productsData = jsonData['data'];
+      return productsData.map((json) => ProductModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load products');
+    }
+  }
+
   // Fetch a single product by ID
   Future<ProductModel> fetchProductById(int id) async {
     final response = await http.get(Uri.parse('$baseUrl/product/$id'));

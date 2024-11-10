@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasData && snapshot.data == true) {
-              return const FavoriteListScreen();
+              return const HomeScreen();
             } else {
               return const LoginScreen();
             }

@@ -2,20 +2,60 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:vape_store/assets/product_example.dart';
 import 'package:vape_store/models/product_model.dart';
+import 'package:vape_store/models/user_model.dart';
+import 'package:vape_store/network/product_network.dart';
+import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/detail_screen.dart';
 import 'package:vape_store/utils/money.dart';
+import 'package:vape_store/utils/pref_user.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   static final List<ProductModel> products = productExample;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int? countTrolley;
+  UserModel? userData;
+  // late Future<List<ProductModel>> favoriteProducts;
+  late Future<List<ProductModel>> newProducts;
+  late Future<List<ProductModel>> flashSaleProducts;
+
+  TrolleyNetwork apiTrolley = TrolleyNetwork();
+  ProductNetwork apiProduct = ProductNetwork();
+
+  // Helper function to load user data and initialize countTrolley
+  Future<void> _storeUserData() async {
+    userData = await loadUserData();
+    if (userData != null) {
+      int count = await apiTrolley.fetchTrolleyCount(userData!.id);
+      // print(userData?.toJson());
+      setState(() {
+        countTrolley = count;
+      }); // Trigger a rebuild when userData and countTrolley are ready
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _storeUserData(); // Load user data and set countTrolley
+    // favoriteProducts = apiProduct.fetchProductsFavorite();
+    newProducts = apiProduct.fetchProductsNewProduct();
+    flashSaleProducts = apiProduct.fetchProductsFlashSale();
+  }
 
   @override
   Widget build(BuildContext context) {
     var heightScreen = MediaQuery.of(context).size.height;
     var colorTheme = Theme.of(context).colorScheme;
 
+    // print(countTrolley);
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 70,
@@ -30,8 +70,10 @@ class HomeScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10))),
               // color: Colors.red,
               onPressed: () {},
-              icon: const Icon(
-                Icons.trolley,
+              icon: Badge(
+                isLabelVisible: true,
+                label: Text(countTrolley?.toString() ?? "0"),
+                child: const Icon(Icons.trolley),
               ),
             ),
           ),
@@ -39,7 +81,7 @@ class HomeScreen extends StatelessWidget {
       ),
       bottomNavigationBar: const ButtonNavigation(),
       body: SingleChildScrollView(
-        padding: EdgeInsets.only(top: 20),
+        // padding: EdgeInsets.only(top: 20),
         child: Column(
           children: [
             // const SizedBox(height: 20),
@@ -115,10 +157,40 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  ProductList(heightScreen: heightScreen, products: products),
+                  FutureBuilder<List<ProductModel>>(
+                      future: newProducts,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else {
+                          return ProductList(
+                            title: 'New Products',
+                            heightScreen: heightScreen,
+                            products: snapshot.data!,
+                            colorTheme: colorTheme,
+                          );
+                        }
+                      }),
                   const SizedBox(height: 20),
-                  ProductFlashSale(
-                      heightScreen: heightScreen, products: products),
+                  FutureBuilder<List<ProductModel>>(
+                      future: newProducts,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else {
+                          return ProductList(
+                            title: 'Flash Sale',
+                            heightScreen: heightScreen,
+                            products: snapshot.data!,
+                            colorTheme: colorTheme,
+                          );
+                        }
+                      }),
+                  // ProductFlashSale(
+                  //     heightScreen: heightScreen,
+                  //     products: HomeScreen.products),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -135,10 +207,14 @@ class ProductList extends StatelessWidget {
     super.key,
     required this.heightScreen,
     required this.products,
+    required this.title,
+    required this.colorTheme,
   });
 
   final double heightScreen;
   final List<ProductModel> products;
+  final String title;
+  final ColorScheme colorTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -147,9 +223,9 @@ class ProductList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'New Products',
-              style: TextStyle(
+            Text(
+              title,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -166,109 +242,7 @@ class ProductList extends StatelessWidget {
           ],
         ),
         SizedBox(
-          height: heightScreen / 4.5, // Define a fixed height for the ListView
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final product = products[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return DetailScreen(
-                          id: product.id ?? 0,
-                        );
-                      }));
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Stack(
-                          children: [
-                            Image.asset(
-                              'lib/images/banner1.png',
-                              // product.img,
-                              height: 120,
-                              width: 120,
-                              // fit: BoxFit.fill
-                            ),
-                            const Positioned(
-                              top: 1,
-                              right: 1,
-                              child: Icon(
-                                Icons.favorite,
-                                color: Colors.redAccent,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          product.name,
-                          style: const TextStyle(
-                              color: Colors.grey, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          formatPrice(product.price),
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class ProductFlashSale extends StatelessWidget {
-  const ProductFlashSale({
-    super.key,
-    required this.heightScreen,
-    required this.products,
-  });
-
-  final double heightScreen;
-  final List<ProductModel> products;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Flash Sale',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            TextButton(
-                onPressed: () {},
-                child: const Text(
-                  'View More',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ))
-          ],
-        ),
-        SizedBox(
-          height: heightScreen / 4.5, // Define a fixed height for the ListView
+          height: heightScreen / 4.1, // Define a fixed height for the ListView
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: products.length,
@@ -278,14 +252,16 @@ class ProductFlashSale extends StatelessWidget {
                 onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => DetailScreen(
-                              id: product.id ?? 0,
-                            ))),
+                        builder: (context) =>
+                            DetailScreen(id: product.id ?? 0))),
                 child: Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Padding(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  child: Container(
+                    width: 150,
+                    // height: 500,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 15),
+                        horizontal: 12, vertical: 15),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,14 +287,29 @@ class ProductFlashSale extends StatelessWidget {
                         ),
                         Text(
                           product.name,
+                          maxLines: 1,
                           style: const TextStyle(
-                              color: Colors.grey, fontWeight: FontWeight.bold),
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        Text(
-                          formatPrice(product.price),
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              formatPrice(product.price),
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            // Spacer(),
+                            // IconButton(
+                            //     style: IconButton.styleFrom(
+                            //       backgroundColor: colorTheme.primaryContainer,
+                            //     ),
+                            //     onPressed: () {},
+                            //     icon: const Icon(Icons.trolley)),
+                          ],
+                        )
                       ],
                     ),
                   ),
