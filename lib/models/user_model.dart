@@ -3,7 +3,7 @@ class UserModel {
   final String name;
   final String email;
   final DateTime? emailVerifiedAt;
-  final String password;
+  // final String password;
   final String? rememberToken;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -13,7 +13,7 @@ class UserModel {
     required this.name,
     required this.email,
     this.emailVerifiedAt,
-    required this.password,
+    // required this.password,
     this.rememberToken,
     this.createdAt,
     this.updatedAt,
@@ -28,7 +28,7 @@ class UserModel {
       emailVerifiedAt: json['email_verified_at'] != null
           ? DateTime.parse(json['email_verified_at'])
           : null,
-      password: json['password'],
+      // password: json['password'],
       rememberToken: json['remember_token'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
@@ -46,7 +46,7 @@ class UserModel {
       'name': name,
       'email': email,
       'email_verified_at': emailVerifiedAt?.toIso8601String(),
-      'password': password,
+      // 'password': password,
       'remember_token': rememberToken,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),

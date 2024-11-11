@@ -13,7 +13,7 @@ class TrolleyNetwork {
     if (response.statusCode == 200) {
       final dataJson = json.decode(response.body);
       final data = dataJson['data'];
-      print(data);
+      // print(data);
       return data;
     } else {
       throw Exception('Failed to load trolley count');

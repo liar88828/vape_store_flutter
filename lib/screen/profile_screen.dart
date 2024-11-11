@@ -1,149 +1,204 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/assets/product_example.dart';
+import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/product_model.dart';
+import 'package:vape_store/models/user_model.dart';
+import 'package:vape_store/network/checkout_network.dart';
+import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/screen/detail_screen.dart';
 import 'package:vape_store/utils/date.dart';
 import 'package:vape_store/utils/money.dart';
+import 'package:vape_store/utils/pref_user.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
+  final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
+
+  late Future<List<CheckoutModel>> _checkoutData;
+
+  int? _favoriteCount;
+  UserModel? _userData;
+
+  Future<void> _refreshHandler() async {
+    final session = await loadUserData();
+    if (session != null) {
+      _favoriteCount =
+          await _favoriteNetwork.fetchFavoritesByUserIdCount(session.id);
+      _checkoutData = _checkoutNetwork.fetchAll(session.id);
+      setState(() {
+        _userData = session;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshHandler();
+  }
 
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
-    final List<ProductModel> products = productExample;
+    // final List<ProductModel> products = productExample;
 
-    return Scaffold(
-      // backgroundColor: colorTheme.primaryContainer,
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text('Profile'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-              color: colorTheme.primary,
-              style: IconButton.styleFrom(
-                  backgroundColor: colorTheme.primaryContainer,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
-              // color: Colors.red,
-              onPressed: () {},
-              icon: const Icon(Icons.trolley),
+    if (_userData == null) {
+      return const Center(child: CircularProgressIndicator());
+    } else {
+      return Scaffold(
+        // backgroundColor: colorTheme.primaryContainer,
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('Profile'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: IconButton(
+                color: colorTheme.primary,
+                style: IconButton.styleFrom(
+                    backgroundColor: colorTheme.primaryContainer,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+                // color: Colors.red,
+                onPressed: () {},
+                icon: const Icon(Icons.trolley),
+              ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: ButtonNavigation(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 20),
-        child: Column(children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
+          ],
+        ),
+        bottomNavigationBar: const ButtonNavigation(),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.only(top: 20),
+          child: Column(children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Image.asset(
+                          'lib/images/profile.png',
+                          height: 110,
+                          width: 110,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _userData?.name ?? '',
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              _userData?.email ?? '',
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w300),
+                            ),
+                            Text(
+                              _userData?.createdAt != null
+                                  ? formatDate(_userData!.createdAt!)
+                                  : '',
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        CardStatus(
+                          colorTheme: colorTheme,
+                          title: 'Total Favorite',
+                          count: _favoriteCount ?? 0,
+                        ),
+                        CardStatus(
+                          colorTheme: colorTheme,
+                          title: 'Total Buy',
+                          count: 20,
+                        ),
+                        // CardStatus(
+                        //   colorTheme: colorTheme,
+                        //   title: 'Total Buy',
+                        //   count: 20,
+                        // ),
+                        // CardStatus(
+                        //   colorTheme: colorTheme,
+                        //   title: '',
+                        //   count: 0,
+                        // )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   Row(
-                    children: [
-                      Image.asset(
-                        'lib/images/profile.png',
-                        height: 110,
-                        width: 110,
-                      ),
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'User1 Alex Ganteng',
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'History',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
-                          Text(
-                            '081-1234-1234-123',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w300),
-                          ),
-                          Text(
-                            'Driver',
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      CardStatus(
-                        colorTheme: colorTheme,
-                        title: 'Total Favorite',
-                        count: 20,
-                      ),
-                      CardStatus(
-                        colorTheme: colorTheme,
-                        title: 'Total Buy',
-                        count: 20,
-                      ),
-                      // CardStatus(
-                      //   colorTheme: colorTheme,
-                      //   title: 'Total Buy',
-                      //   count: 20,
-                      // ),
-                      // CardStatus(
-                      //   colorTheme: colorTheme,
-                      //   title: '',
-                      //   count: 0,
-                      // )
-                    ],
-                  )
+                        ),
+                        TextButton(
+                            onPressed: () {}, child: const Text('View More'))
+                      ]),
+                  FutureBuilder(
+                      future: _checkoutData,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return const Center(child: Text('Data is Empty'));
+                        } else {
+                          return Column(
+                            children: snapshot.data!.map((data) {
+                              return HistoryList(data: data);
+                            }).toList(),
+                          );
+                        }
+                      })
                 ],
               ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'History',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton(onPressed: () {}, child: Text('View More'))
-                    ]),
-                Column(
-                  children: products.map((product) {
-                    return ProductList(product: product);
-                  }).toList(),
-                )
-              ],
-            ),
-          )
-        ]),
-      ),
-    );
+            )
+          ]),
+        ),
+      );
+    }
   }
 }
 
-class ProductList extends StatelessWidget {
-  const ProductList({
+class HistoryList extends StatelessWidget {
+  const HistoryList({
     super.key,
-    required this.product,
+    required this.data,
   });
-  final ProductModel product;
+  final CheckoutModel data;
 
   @override
   Widget build(BuildContext context) {
     // final String formattedDate = formatDate(date);
-    final formattedPrice = formatPrice(product.price);
+    final formattedPrice = formatPrice(data.total);
 
     return Card(
       child: Padding(
@@ -163,18 +218,18 @@ class ProductList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      product.name,
-                      style: TextStyle(
+                      data.paymentMethod,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       formattedPrice,
-                      style: TextStyle(),
+                      style: const TextStyle(),
                     ),
-                    Text(product.description,
-                        style: TextStyle(
+                    Text(data.deliveryMethod,
+                        style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w300,
                             color: Colors.grey)),
@@ -188,11 +243,11 @@ class ProductList extends StatelessWidget {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => DetailScreen(
+                          builder: (context) => const DetailScreen(
                                 id: 1,
                               )));
                 },
-                icon: Icon(Icons.arrow_forward))
+                icon: const Icon(Icons.arrow_forward))
           ],
         ),
       ),
@@ -223,9 +278,9 @@ class CardStatus extends StatelessWidget {
           children: [
             Text(
               count.toString(),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            Text(title, style: TextStyle(fontSize: 14)),
+            Text(title, style: const TextStyle(fontSize: 14)),
           ],
         ),
       ),

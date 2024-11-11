@@ -8,7 +8,8 @@ Future<UserModel?> loadUserData() async {
   String? userJson = prefs.getString('user');
   if (userJson != null) {
     Map<String, dynamic> userMap = json.decode(userJson);
-    return UserModel.fromJson(userMap);
+    final data = UserModel.fromJson(userMap);
+    return data;
   }
   return null;
 }

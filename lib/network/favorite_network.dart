@@ -30,6 +30,23 @@ class FavoriteNetwork {
     }
   }
 
+  Future<int> fetchFavoritesByUserIdCount(int id_user) async {
+    // print('-------');
+    // print('user : $id_user');
+    // print('-------');
+
+    final response =
+        await http.get(Uri.parse("$baseUrl/favorite/id-user/count/$id_user"));
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      final int favoriteData = jsonData['data'];
+      // print(favoriteData);
+      return favoriteData;
+    } else {
+      throw Exception('Failed to load favorites');
+    }
+  }
+
   Future<List<FavoriteListModel>> fetchFavoritesByListId(
       int id_favorite) async {
     final response =
