@@ -1,55 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:vape_store/models/product_model.dart';
+import 'package:vape_store/network/product_network.dart';
+import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/utils/money.dart';
 
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
-  static final List<Map<String, String>> products = [
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Melon',
-      'price': 'Rp 200.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Stroberi',
-      'price': 'Rp 220.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Anggur',
-      'price': 'Rp 210.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Anggur',
-      'price': 'Rp 210.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Anggur',
-      'price': 'Rp 210.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Anggur',
-      'price': 'Rp 210.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Anggur',
-      'price': 'Rp 210.000'
-    },
-    {
-      'image': 'lib/images/banner1.png',
-      'title': 'Vape Rasa Anggur',
-      'price': 'Rp 210.000'
-    },
-  ];
+  // static final List<Map<String, String>> products = [
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Melon',
+  //     'price': 'Rp 200.000'
+  //   },
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Stroberi',
+  //     'price': 'Rp 220.000'
+  //   },
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Anggur',
+  //     'price': 'Rp 210.000'
+  //   },
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Anggur',
+  //     'price': 'Rp 210.000'
+  //   },
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Anggur',
+  //     'price': 'Rp 210.000'
+  //   },
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Anggur',
+  //     'price': 'Rp 210.000'
+  //   },
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Anggur',
+  //     'price': 'Rp 210.000'
+  //   },
+  //   {
+  //     'image': 'lib/images/banner1.png',
+  //     'title': 'Vape Rasa Anggur',
+  //     'price': 'Rp 210.000'
+  //   },
+  // ];
+
+  @override
+  State<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
+  final ProductNetwork _productNetwork = ProductNetwork();
+  late Future<List<ProductModel>> _productData;
+  TextEditingController _searchController = TextEditingController();
+  String? _selectedCategory;
+  String? _selectedPrice;
+
+  void _searchHandler() async {
+    setState(() {
+      _productData = _productNetwork.fetchProducts(
+        // category: _selectedCategory,
+        // order: _selectedPrice,
+        name: _searchController.text,
+      );
+    });
+  }
+
+  void _filterHandler() async {
+    setState(() {
+      _productData = _productNetwork.fetchProducts(
+        category: _selectedCategory,
+        order: _selectedPrice,
+        name: _searchController.text,
+      );
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _productData = _productNetwork.fetchProducts();
+  }
 
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
+
+    const listCategory = [
+      'Coil',
+      'Mod',
+      'Liquid',
+      'Battery',
+      "Connector",
+      "Tank/Cartridge",
+      'Mouthpiece/Drip-tip',
+      'Atomizer',
+      'Accessories'
+    ];
+    const listPrice = [
+      'Low Price',
+      // 'Medium Price',
+      'High Price',
+      // 'Premium'
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -58,6 +117,7 @@ class SearchScreen extends StatelessWidget {
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1),
           child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                   fillColor: Colors.white,
                   focusColor: Colors.white,
@@ -69,7 +129,9 @@ class SearchScreen extends StatelessWidget {
                     borderSide: const BorderSide(color: Colors.white),
                   ),
                   suffixIcon: IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.search)))),
+                    onPressed: _searchHandler,
+                    icon: const Icon(Icons.search),
+                  ))),
         ),
         actions: [
           Padding(
@@ -102,48 +164,62 @@ class SearchScreen extends StatelessWidget {
                         backgroundColor: colorTheme.primaryContainer,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10))),
-                    onPressed: () {},
+                    onPressed: _filterHandler,
                     icon: const Icon(Icons.filter_list)),
-                // SizedBox(width: 12),
-                const DropdownButtonExample(list: [
-                  'Coil',
-                  'Mod',
-                  'Liquid',
-                  'Battery',
-                  "Connector",
-                  "Tank/Cartridge",
-                  'Mouthpiece/Drip-tip',
-                  'Atomizer',
-                  'Accessories'
-                ]),
-                // SizedBox(width: 10),
-                const DropdownButtonExample(list: [
-                  'Low Price',
-                  'Medium Price',
-                  'High Price',
-                  'Premium'
-                ]),
-                // Spacer(flex: 3)
+                CategoryDropdown(
+                  listCategory: listCategory,
+                  selectedCategory: _selectedCategory ?? listCategory[0],
+                  onChanged: (String? value) {
+                    setState(() {
+                      _selectedCategory = value!;
+                    });
+                  },
+                  colorTheme: colorTheme,
+                ),
+                CategoryDropdown(
+                  listCategory: listPrice,
+                  selectedCategory: _selectedPrice ?? listPrice[0],
+                  onChanged: (String? value) {
+                    setState(() {
+                      _selectedPrice = value!;
+                    });
+                  },
+                  colorTheme: colorTheme,
+                ),
               ],
             ),
           ),
-          Expanded(
-            child: GridView.count(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              primary: false,
-              // padding: const EdgeInsets.symmetric(horizontal: 10),
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              crossAxisCount: 2,
-              childAspectRatio: 3 / 4,
-              children: products.map((product) {
-                return ProductCard(
-                    image: product['image']!,
-                    price: product['price']!,
-                    title: product['title']!);
-              }).toList(),
-            ),
-          ),
+          FutureBuilder<List<ProductModel>>(
+              future: _productData,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (snapshot.hasError || snapshot.data == null) {
+                  return const Center(child: Text('Error Data Error'));
+                }
+
+                return Expanded(
+                  child: GridView.count(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    primary: false,
+                    // padding: const EdgeInsets.symmetric(horizontal: 10),
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 2,
+                    childAspectRatio: 3 / 4,
+                    children: snapshot.data!.map((product) {
+                      return ProductCard(product: product
+                          // image: 'lib/images/banner1.png',
+                          // price: product.price!,
+                          // title: product.name!,
+                          );
+                    }).toList(),
+                  ),
+                );
+              }),
         ],
       ),
     );
@@ -151,26 +227,29 @@ class SearchScreen extends StatelessWidget {
 }
 
 class ProductCard extends StatelessWidget {
-  final String image;
-  final String title;
-  final String price;
+  // final String image;
+  // final String title;
+  // final String price;
+  final ProductModel product;
 
-  const ProductCard(
-      {super.key,
-      required this.image,
-      required this.title,
-      required this.price});
+  const ProductCard({super.key, required this.product
+      // required this.image,
+      // required this.title,
+      // required this.price,
+      });
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
 
     return InkWell(
       onTap: () {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (context) => DetailScreen()),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => DetailScreen(
+                    id: product.id!,
+                  )),
+        );
       },
       child: Card(
         color: colorTheme.onPrimary,
@@ -178,43 +257,47 @@ class ProductCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Stack(
                     children: [
                       Image.asset(
-                        image,
+                        'lib/images/banner1.png',
                         height: 150,
                         width: 150,
                         // fit: BoxFit.fill
                       ),
                       const Positioned(
-                        top: 1,
-                        right: 1,
-                        child: Icon(
-                          Icons.favorite,
-                          color: Colors.redAccent,
-                        ),
-                      ),
+                          top: 1,
+                          right: 1,
+                          child: Icon(
+                            Icons.favorite,
+                            color: Colors.redAccent,
+                          ))
                     ],
                   ),
                 ],
               ),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      color: Colors.grey, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  price,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ])
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    style: const TextStyle(
+                        color: Colors.grey, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    formatPrice(product.price),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              )
             ],
           ),
         ),
@@ -223,59 +306,46 @@ class ProductCard extends StatelessWidget {
   }
 }
 
-class DropdownButtonExample extends StatefulWidget {
-  final List<String> list;
+class CategoryDropdown extends StatelessWidget {
+  final List<String> listCategory;
+  final String selectedCategory;
+  final ValueChanged<String?> onChanged;
+  final ColorScheme colorTheme;
 
-  const DropdownButtonExample({super.key, required this.list});
-
-  @override
-  State<DropdownButtonExample> createState() => _DropdownButtonExampleState();
-}
-
-class _DropdownButtonExampleState extends State<DropdownButtonExample> {
-  // Initialize dropdownValue with the first item or a default value
-  String dropdownValue = '';
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.list.isNotEmpty) {
-      dropdownValue = widget.list[0]; // Set default value from the list
-    }
-  }
+  const CategoryDropdown({
+    Key? key,
+    required this.listCategory,
+    required this.selectedCategory,
+    required this.onChanged,
+    required this.colorTheme,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var colorTheme = Theme.of(context).colorScheme;
-
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15),
+      padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: colorTheme.onPrimary,
         border: Border.all(color: colorTheme.primaryContainer),
-        borderRadius: BorderRadius.circular(8), // Optional: for rounded corners
+        borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButton<String>(
-        value: dropdownValue,
+        value: selectedCategory,
         icon: const Icon(Icons.arrow_downward),
         dropdownColor: colorTheme.onPrimary,
         elevation: 10,
-        style: const TextStyle(), // Text color
-        underline: Container(), // Optional: to remove the underline
-        onChanged: (String? value) {
-          setState(() {
-            dropdownValue = value!;
-          });
-        },
-        items: widget.list.map<DropdownMenuItem<String>>((String value) {
+        underline: Container(),
+        onChanged: onChanged,
+        items: listCategory.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value,
-                style: TextStyle(
-                  color: colorTheme.primary,
-                  fontWeight: FontWeight.bold,
-                  // fontSize: 16
-                )),
+            child: Text(
+              value,
+              style: TextStyle(
+                color: colorTheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           );
         }).toList(),
       ),

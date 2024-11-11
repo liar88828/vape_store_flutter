@@ -4,7 +4,7 @@ import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/user_network.dart';
 import 'package:vape_store/screen/detail_screen.dart';
 import 'package:vape_store/screen/favorite/favorite_list_screen.dart';
-import 'package:vape_store/screen/favorites_screen.dart';
+import 'package:vape_store/screen/favorite/favorites_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/auth/login_screen.dart';
 import 'package:vape_store/screen/order_screen.dart';

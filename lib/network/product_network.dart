@@ -6,8 +6,26 @@ class ProductNetwork {
   final String baseUrl = 'http://localhost:8000/api';
 
   // Fetch all products
-  Future<List<ProductModel>> fetchProducts() async {
-    final response = await http.get(Uri.parse('$baseUrl/product'));
+  Future<List<ProductModel>> fetchProducts({
+    String? category,
+    String? name,
+    String? order,
+  }) async {
+    // Build the URL with optional parameters
+    final queryParameters = <String, String>{};
+    if (name != null && name.isNotEmpty) queryParameters['name'] = name;
+    if (category != null && category.isNotEmpty)
+      queryParameters['category'] = category;
+    if (order != null && order.isNotEmpty) queryParameters['order'] = order;
+
+    final uri =
+        Uri.parse('$baseUrl/product').replace(queryParameters: queryParameters);
+
+    print(uri);
+
+    final response = await http.get(uri);
+    // final response = await http.get(Uri.parse(
+    //     '$baseUrl/product?name=$name&category=$category&order=$order'));
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);

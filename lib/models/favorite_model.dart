@@ -1,7 +1,7 @@
 class FavoriteModel {
   final int? id;
   final int id_user;
-  final int id_product;
+  // final int id_product;
   final String title;
   final String description;
   // final String img;
@@ -10,7 +10,7 @@ class FavoriteModel {
   FavoriteModel({
     required this.id,
     required this.id_user,
-    required this.id_product,
+    // required this.id_product,
     required this.title,
     required this.description,
     // required this.img,
@@ -22,7 +22,7 @@ class FavoriteModel {
     return FavoriteModel(
       id: json['id'],
       id_user: json['id_user'],
-      id_product: json['id_product'],
+      // id_product: json['id_product'],
       title: json['title'],
       description: json['description'],
       // img: json['img'],
@@ -34,7 +34,7 @@ class FavoriteModel {
     return {
       'id': id,
       'id_user': id_user,
-      'id_product': id_product,
+      // 'id_product': id_product,
       'title': title,
       'description': description,
       // 'img':img,

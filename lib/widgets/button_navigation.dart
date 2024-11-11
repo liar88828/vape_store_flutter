@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vape_store/screen/favorites_screen.dart';
+import 'package:vape_store/screen/favorite/favorites_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/profile_screen.dart';
 import 'package:vape_store/screen/search_screen.dart';
@@ -46,7 +46,7 @@ class ButtonNavigation extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => const HomeScreen(),
-                      settings: const RouteSettings(name: '/home')));
+                      settings: const RouteSettings(name: '/')));
               break;
             case 1:
               Navigator.push(

@@ -41,11 +41,12 @@ class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
   Future<void> _saveFavorite() async {
     try {
       final favorite = FavoriteModel(
-          id: widget.favorite?.id,
-          id_user: userData!.id,
-          description: _descriptionController.text,
-          title: _titleController.text,
-          id_product: 2);
+        id: widget.favorite?.id,
+        id_user: userData!.id,
+        description: _descriptionController.text,
+        title: _titleController.text,
+        // id_product: 2,
+      );
 
       // print(favorite);
       // print(favorite);

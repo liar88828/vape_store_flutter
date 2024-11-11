@@ -1,10 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/assets/favorite_example.dart';
 import 'package:vape_store/models/favorite_model.dart';
-import 'package:vape_store/screen/favorite_detail_screen.dart';
+import 'package:vape_store/models/trolley_model.dart';
+import 'package:vape_store/models/user_model.dart';
+import 'package:vape_store/network/favorite_network.dart';
+import 'package:vape_store/network/trolley_network.dart';
+import 'package:vape_store/screen/favorite/favorite_form_screen.dart';
+import 'package:vape_store/screen/favorite/favorite_detail_screen.dart';
+import 'package:vape_store/utils/pref_user.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  final TrolleyNetwork _apiTrolley = TrolleyNetwork();
+  final FavoriteNetwork _apiFavorite = FavoriteNetwork();
+
+  int? _trolleyCount = 0;
+  UserModel? _userData;
+  Future<List<FavoriteModel>>? _favoriteData;
+
+  Future<void> _refreshData() async {
+    _userData = await loadUserData();
+    if (_userData != null) {
+      int count = await _apiTrolley.fetchTrolleyCount(_userData!.id);
+      _favoriteData = _apiFavorite.fetchFavoritesByUserId(_userData!.id);
+      setState(() {
+        _trolleyCount = count;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +77,11 @@ class FavoritesScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10))),
                 // color: Colors.red,
                 onPressed: () {},
-                icon: const Icon(
-                  Icons.trolley,
+                icon: Badge(
+                  label: Text(_trolleyCount.toString() ?? ''),
+                  child: const Icon(
+                    Icons.trolley,
+                  ),
                 )),
           ),
         ],
@@ -67,7 +105,13 @@ class FavoritesScreen extends StatelessWidget {
                         backgroundColor: colorTheme.primaryContainer,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10))),
-                    onPressed: () {},
+                    onPressed: () async {
+                      final result = await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return const FavoriteFormScreen();
+                      }));
+                      if (result == true) _refreshData();
+                    },
                     icon: const Row(
                       children: [
                         Text('Add'),
@@ -78,53 +122,68 @@ class FavoritesScreen extends StatelessWidget {
                   // SizedBox(width: 12),
                 ]),
           ),
-          Expanded(
-            child: GridView.count(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              primary: false,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              crossAxisCount: 2,
-              childAspectRatio: 3 / 4,
-              children: favorites.map((favorite) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => FavoriteDetailScreen(
-                                  id: favorite.id!,
-                                )));
-                  },
-                  child: Card(
-                    key: Key(favorite.id.toString()),
-                    color: colorTheme.onPrimary,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                              child: Image.asset('lib/images/banner1.png',
-                                  height: 150, width: 150)),
-                          const SizedBox(height: 10),
-                          Text(
-                            favorite.title,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+          FutureBuilder<List<FavoriteModel>>(
+            future: _favoriteData,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError || snapshot.data == null) {
+                return const Center(child: Text('Error Data is not found'));
+              } else if (snapshot.data!.length == 0) {
+                return const Center(child: Text('Data is Empty'));
+              } else {
+                // print(snapshot);
+
+                return Expanded(
+                  child: GridView.count(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    primary: false,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 2,
+                    childAspectRatio: 3 / 4,
+                    children: snapshot.data!.map((favorite) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FavoriteDetailScreen(
+                                        id: favorite.id!,
+                                      )));
+                        },
+                        child: Card(
+                          key: Key(favorite.id.toString()),
+                          color: colorTheme.onPrimary,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                                    child: Image.asset('lib/images/banner1.png',
+                                        height: 150, width: 150)),
+                                const SizedBox(height: 10),
+                                Text(
+                                  favorite.title,
+                                  maxLines: 1,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const Text("Item : 1")
+                              ],
                             ),
                           ),
-                          const Text("Item : 1")
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 );
-              }).toList(),
-            ),
-          ),
+              }
+            },
+          )
         ],
       ),
     );

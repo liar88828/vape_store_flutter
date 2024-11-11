@@ -7,7 +7,7 @@ final List<FavoriteModel> favoriteExample = [
     title: 'Premium E-Liquid',
     id: 2,
     description: 'asdasd',
-    id_product: 2,
+    // id_product: 2,
     id_user: 2,
   ),
   FavoriteModel(
@@ -16,7 +16,7 @@ final List<FavoriteModel> favoriteExample = [
     title: 'Nicotine Salts',
     id: 3,
     description: 'asdasd',
-    id_product: 2,
+    // id_product: 2,
     id_user: 2,
   ),
   FavoriteModel(
@@ -25,7 +25,7 @@ final List<FavoriteModel> favoriteExample = [
     title: 'Vape Mods',
     id: 4,
     description: 'asdasd',
-    id_product: 2,
+    // id_product: 2,
     id_user: 2,
   ),
   FavoriteModel(
@@ -34,7 +34,7 @@ final List<FavoriteModel> favoriteExample = [
     title: 'Vape Coils',
     id: 5,
     description: 'asdasd',
-    id_product: 2,
+    // id_product: 2,
     id_user: 2,
   ),
 ];

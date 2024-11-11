@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:vape_store/models/product_model.dart';
+import 'package:vape_store/network/product_network.dart';
 import 'package:vape_store/screen/order_screen.dart';
+import 'package:vape_store/utils/money.dart';
 
 class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key, required this.id});
@@ -12,14 +15,23 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+  final ProductNetwork _productNetwork = ProductNetwork();
+  late Future<ProductModel> _productData;
   String? _value;
   int _counter = 1;
+
   void increment() {
     setState(() => _counter++);
   }
 
   void decrement() {
     setState(() => _counter--);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _productData = _productNetwork.fetchProductById(widget.id);
   }
 
   @override
@@ -67,7 +79,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           builder: (context) => const OrderScreen()));
                 },
                 child: const Text(
-                  'ADD TO CART',
+                  'ADD TO TROLLEY',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -110,149 +122,176 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-            // padding: EdgeInsets.all(30),
-            child: Column(children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            CarouselSlider(
-              options: CarouselOptions(height: 400.0),
-              items: [1, 2, 3, 4, 5].map((i) {
-                return Builder(
-                  builder: (BuildContext context) {
-                    return Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.symmetric(horizontal: 1),
-                      decoration:
-                          BoxDecoration(color: colorTheme.surfaceBright),
-                      child: Image.asset(
-                        'lib/images/banner1.png',
-                        height: 400,
-                        width: 300,
-                        // fit: BoxFit.contain,
-                      ),
-                    );
-                  },
-                );
-              }).toList(),
-            ),
-            Container(
-                color: Colors.white10,
-                padding: const EdgeInsets.all(30),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Fruit Punch Series',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.purple,
-                                  fontWeight: FontWeight.bold)),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.star,
-                                color: Colors.yellow,
-                              ),
-                              Text('4.7',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))
-                            ],
-                          )
-                        ],
-                      ),
-                      const Text('Fruit Punch Series',
-                          style: TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.bold)),
-                      const Row(
-                        // mainAxisAlignment:
-                        //     MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries',
-                              softWrap: true,
-                              textAlign: TextAlign.justify,
-                              maxLines: 5,
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 14),
-                            ),
-                          ),
-                          SizedBox(width: 20),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Rp123.45',
-                                style: TextStyle(
-                                    fontSize: 30, fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'Stock: 10 pcs',
-                                style: TextStyle(color: Colors.grey),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Option',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16)),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 5.0,
-                              children: ['30 ML', '60 ML', '90 ML']
-                                  .map((label) => ChoiceChip(
-                                        label: Text(label),
-                                        selected: _value == label,
-                                        backgroundColor:
-                                            colorTheme.surfaceBright,
-                                        selectedColor: colorTheme.surface,
-                                        onSelected: (selected) {
-                                          setState(() {
-                                            _value = label;
-                                            debugPrint(_value);
-                                            var data = _value == label;
-                                            debugPrint(data.toString());
-                                          });
-                                        },
-                                      ))
-                                  .toList(),
-                            ),
-                            const SizedBox(height: 20),
-                            Column(
+        body: FutureBuilder<ProductModel>(
+            future: _productData,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data == null) {
+                return const Center(child: Text('No products found.'));
+              } else {
+                return SingleChildScrollView(
+                    // padding: EdgeInsets.all(30),
+                    child: Column(children: [
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CarouselSlider(
+                          options: CarouselOptions(height: 400.0),
+                          items: [1, 2, 3, 4, 5].map((i) {
+                            return Builder(
+                              builder: (BuildContext context) {
+                                return Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 1),
+                                  decoration: BoxDecoration(
+                                      color: colorTheme.surfaceBright),
+                                  child: Image.asset(
+                                    'lib/images/banner1.png',
+                                    height: 400,
+                                    width: 300,
+                                    // fit: BoxFit.contain,
+                                  ),
+                                );
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        Container(
+                            color: Colors.white10,
+                            padding: const EdgeInsets.all(30),
+                            child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  const Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text('Description',
+                                      Text('Rasa Anggur',
                                           style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16)),
-                                      IconButton(
-                                          onPressed: () {},
-                                          icon:
-                                              const Icon(Icons.arrow_drop_down))
+                                              fontSize: 16,
+                                              color: Colors.purple,
+                                              fontWeight: FontWeight.bold)),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.star,
+                                            color: Colors.yellow,
+                                          ),
+                                          Text('4.7',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold))
+                                        ],
+                                      )
                                     ],
                                   ),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                      'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries'),
-                                  const SizedBox(height: 100),
-                                ])
-                          ])
-                    ]))
-          ])
-        ])));
+                                  Text(snapshot.data!.name,
+                                      style: const TextStyle(
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold)),
+                                  Row(
+                                    // mainAxisAlignment:
+                                    //     MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          snapshot.data!.description,
+                                          softWrap: true,
+                                          textAlign: TextAlign.justify,
+                                          maxLines: 5,
+                                          style: const TextStyle(
+                                              color: Colors.grey, fontSize: 14),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            formatPrice(snapshot.data!.price),
+                                            style: const TextStyle(
+                                                fontSize: 30,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            "qty : ${snapshot.data!.qty}",
+                                            style: const TextStyle(
+                                                color: Colors.grey),
+                                          )
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Option',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16)),
+                                        const SizedBox(height: 10),
+                                        Wrap(
+                                          spacing: 5.0,
+                                          children: ['30 ML', '60 ML', '90 ML']
+                                              .map((label) => ChoiceChip(
+                                                    label: Text(label),
+                                                    selected: _value == label,
+                                                    backgroundColor: colorTheme
+                                                        .surfaceBright,
+                                                    selectedColor:
+                                                        colorTheme.surface,
+                                                    onSelected: (selected) {
+                                                      setState(() {
+                                                        _value = label;
+                                                        debugPrint(_value);
+                                                        var data =
+                                                            _value == label;
+                                                        debugPrint(
+                                                            data.toString());
+                                                      });
+                                                    },
+                                                  ))
+                                              .toList(),
+                                        ),
+                                        // const SizedBox(height: 20),
+                                        // Column(
+                                        //     crossAxisAlignment:
+                                        //         CrossAxisAlignment.start,
+                                        //     children: [
+                                        //       Row(
+                                        //         mainAxisAlignment:
+                                        //             MainAxisAlignment
+                                        //                 .spaceBetween,
+                                        //         children: [
+                                        //           const Text('Description',
+                                        //               style: TextStyle(
+                                        //                   fontWeight:
+                                        //                       FontWeight.bold,
+                                        //                   fontSize: 16)),
+                                        //           IconButton(
+                                        //               onPressed: () {},
+                                        //               icon: const Icon(Icons
+                                        //                   .arrow_drop_down))
+                                        //         ],
+                                        //       ),
+                                        //       const SizedBox(height: 10),
+                                        //       Text(snapshot.data!.description),
+                                        //       const SizedBox(height: 100),
+                                        //     ])
+                                      ])
+                                ]))
+                      ])
+                ]));
+              }
+            }));
   }
 }

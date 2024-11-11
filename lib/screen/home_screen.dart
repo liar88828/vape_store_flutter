@@ -20,23 +20,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int? countTrolley;
-  UserModel? userData;
-  // late Future<List<ProductModel>> favoriteProducts;
-  late Future<List<ProductModel>> newProducts;
-  late Future<List<ProductModel>> flashSaleProducts;
+  final _apiTrolley = TrolleyNetwork();
+  final _apiProduct = ProductNetwork();
 
-  TrolleyNetwork apiTrolley = TrolleyNetwork();
-  ProductNetwork apiProduct = ProductNetwork();
+  int? _trolleyCount;
+  late UserModel? _userData;
+  late Future<List<ProductModel>> _newProducts;
+  late Future<List<ProductModel>> _flashSaleProducts;
+
+  // late Future<List<ProductModel>> favoriteProducts;
+  // late Future<List<ProductModel>> favoriteProducts;
 
   // Helper function to load user data and initialize countTrolley
   Future<void> _storeUserData() async {
-    userData = await loadUserData();
-    if (userData != null) {
-      int count = await apiTrolley.fetchTrolleyCount(userData!.id);
+    _userData = await loadUserData();
+    if (_userData != null) {
+      int count = await _apiTrolley.fetchTrolleyCount(_userData!.id);
       // print(userData?.toJson());
       setState(() {
-        countTrolley = count;
+        _trolleyCount = count;
       }); // Trigger a rebuild when userData and countTrolley are ready
     }
   }
@@ -46,8 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _storeUserData(); // Load user data and set countTrolley
     // favoriteProducts = apiProduct.fetchProductsFavorite();
-    newProducts = apiProduct.fetchProductsNewProduct();
-    flashSaleProducts = apiProduct.fetchProductsFlashSale();
+    _newProducts = _apiProduct.fetchProductsNewProduct();
+    _flashSaleProducts = _apiProduct.fetchProductsFlashSale();
   }
 
   @override
@@ -72,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {},
               icon: Badge(
                 isLabelVisible: true,
-                label: Text(countTrolley?.toString() ?? "0"),
+                label: Text(_trolleyCount?.toString() ?? "0"),
                 child: const Icon(Icons.trolley),
               ),
             ),
@@ -158,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const SizedBox(height: 20),
                   FutureBuilder<List<ProductModel>>(
-                      future: newProducts,
+                      future: _newProducts,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -174,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       }),
                   const SizedBox(height: 20),
                   FutureBuilder<List<ProductModel>>(
-                      future: newProducts,
+                      future: _newProducts,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

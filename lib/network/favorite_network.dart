@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:vape_store/models/favorite_list_model.dart';
 import 'package:vape_store/models/favorite_model.dart';
 
 class FavoriteNetwork {
@@ -11,6 +12,35 @@ class FavoriteNetwork {
       final List<dynamic> favoriteData = jsonData['data'];
       print(favoriteData);
       return favoriteData.map((json) => FavoriteModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load favorites');
+    }
+  }
+
+  Future<List<FavoriteModel>> fetchFavoritesByUserId(int id_user) async {
+    final response =
+        await http.get(Uri.parse("$baseUrl/favorite/id-user/$id_user"));
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      final List<dynamic> favoriteData = jsonData['data'];
+      print(favoriteData);
+      return favoriteData.map((json) => FavoriteModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load favorites');
+    }
+  }
+
+  Future<List<FavoriteListModel>> fetchFavoritesByListId(
+      int id_favorite) async {
+    final response =
+        await http.get(Uri.parse("$baseUrl/favorite/id-list/$id_favorite"));
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      final List<dynamic> favoriteData = jsonData['data'];
+      print(favoriteData);
+      return favoriteData
+          .map((json) => FavoriteListModel.fromJson(json))
+          .toList();
     } else {
       throw Exception('Failed to load favorites');
     }
@@ -35,7 +65,7 @@ class FavoriteNetwork {
     );
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      // print(response.body);
+      print(response.body);
       // final favorite = FavoriteModel.fromJson(jsonData['data']);
       return jsonData['message'];
     } else {
