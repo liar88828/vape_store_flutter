@@ -11,7 +11,7 @@ class CheckoutModel {
     required this.updatedAt,
   });
 
-  final int? id;
+  final int id;
   final int? idUser;
   final int total;
   final String paymentMethod;

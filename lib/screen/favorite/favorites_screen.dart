@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/assets/favorite_example.dart';
 import 'package:vape_store/models/favorite_model.dart';
-import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/favorite/favorite_form_screen.dart';
 import 'package:vape_store/screen/favorite/favorite_detail_screen.dart';
+import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/pref_user.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -17,8 +17,8 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  final TrolleyNetwork _apiTrolley = TrolleyNetwork();
-  final FavoriteNetwork _apiFavorite = FavoriteNetwork();
+  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
+  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
 
   int? _trolleyCount = 0;
   UserModel? _userData;
@@ -27,11 +27,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Future<void> _refreshData() async {
     _userData = await loadUserData();
     if (_userData != null) {
-      int count = await _apiTrolley.fetchTrolleyCount(_userData!.id);
-      _favoriteData = _apiFavorite.fetchFavoritesByUserId(_userData!.id);
-      setState(() {
-        _trolleyCount = count;
-      });
+      _trolleyCount = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
+      _favoriteData = _favoriteNetwork.fetchFavoritesByUserId(_userData!.id);
+      setState(() {});
     }
   }
 
@@ -63,22 +61,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.white),
                   ),
-                  suffixIcon: IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.search)))),
+                  suffixIcon: IconButton(onPressed: () {}, icon: const Icon(Icons.search)))),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
                 color: colorTheme.primary,
-                style: IconButton.styleFrom(
-                    backgroundColor: colorTheme.primaryContainer,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
+                style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 // color: Colors.red,
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return const TrolleyScreen();
+                  }));
+                },
                 icon: Badge(
-                  label: Text(_trolleyCount.toString() ?? ''),
+                  label: Text(_trolleyCount.toString()),
                   child: const Icon(
                     Icons.trolley,
                   ),
@@ -91,36 +89,29 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total : ${favorites.length}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 20),
-                  ),
-                  IconButton(
-                    color: colorTheme.primary,
-                    style: IconButton.styleFrom(
-                        backgroundColor: colorTheme.primaryContainer,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                    onPressed: () async {
-                      final result = await Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return const FavoriteFormScreen();
-                      }));
-                      if (result == true) _refreshData();
-                    },
-                    icon: const Row(
-                      children: [
-                        Text('Add'),
-                        Icon(Icons.add),
-                      ],
-                    ),
-                  ),
-                  // SizedBox(width: 12),
-                ]),
+            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(
+                'Total : ${favorites.length}',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              IconButton(
+                color: colorTheme.primary,
+                style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                onPressed: () async {
+                  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return const FavoriteFormScreen();
+                  }));
+                  if (result == true) _refreshData();
+                },
+                icon: const Row(
+                  children: [
+                    Text('Add'),
+                    Icon(Icons.add),
+                  ],
+                ),
+              ),
+              // SizedBox(width: 12),
+            ]),
           ),
           FutureBuilder<List<FavoriteModel>>(
             future: _favoriteData,
@@ -129,7 +120,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError || snapshot.data == null) {
                 return const Center(child: Text('Error Data is not found'));
-              } else if (snapshot.data!.length == 0) {
+              } else if (snapshot.data!.isEmpty) {
                 return const Center(child: Text('Data is Empty'));
               } else {
                 // print(snapshot);
@@ -160,9 +151,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Center(
-                                    child: Image.asset('lib/images/banner1.png',
-                                        height: 150, width: 150)),
+                                Center(child: Image.asset('lib/images/banner1.png', height: 150, width: 150)),
                                 const SizedBox(height: 10),
                                 Text(
                                   favorite.title,
@@ -195,11 +184,7 @@ class ProductCard extends StatelessWidget {
   final String title;
   final String price;
 
-  const ProductCard(
-      {super.key,
-      required this.image,
-      required this.title,
-      required this.price});
+  const ProductCard({super.key, required this.image, required this.title, required this.price});
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
@@ -246,13 +231,11 @@ class ProductCard extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                      color: Colors.grey, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   price,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ])
             ],

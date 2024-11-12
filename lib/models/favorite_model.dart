@@ -1,6 +1,6 @@
 class FavoriteModel {
   final int? id;
-  final int id_user;
+  final int idUser;
   // final int id_product;
   final String title;
   final String description;
@@ -9,7 +9,7 @@ class FavoriteModel {
 
   FavoriteModel({
     required this.id,
-    required this.id_user,
+    required this.idUser,
     // required this.id_product,
     required this.title,
     required this.description,
@@ -21,7 +21,7 @@ class FavoriteModel {
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
     return FavoriteModel(
       id: json['id'],
-      id_user: json['id_user'],
+      idUser: json['id_user'],
       // id_product: json['id_product'],
       title: json['title'],
       description: json['description'],
@@ -33,7 +33,7 @@ class FavoriteModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'id_user': id_user,
+      'id_user': idUser,
       // 'id_product': id_product,
       'title': title,
       'description': description,

@@ -8,7 +8,7 @@ final List<FavoriteModel> favoriteExample = [
     id: 2,
     description: 'asdasd',
     // id_product: 2,
-    id_user: 2,
+    idUser: 2,
   ),
   FavoriteModel(
     // img: 'lib/images/banner1.png',
@@ -17,7 +17,7 @@ final List<FavoriteModel> favoriteExample = [
     id: 3,
     description: 'asdasd',
     // id_product: 2,
-    id_user: 2,
+    idUser: 2,
   ),
   FavoriteModel(
     // img: 'lib/images/banner1.png',
@@ -26,7 +26,7 @@ final List<FavoriteModel> favoriteExample = [
     id: 4,
     description: 'asdasd',
     // id_product: 2,
-    id_user: 2,
+    idUser: 2,
   ),
   FavoriteModel(
     // img: 'lib/images/banner1.png',
@@ -35,6 +35,6 @@ final List<FavoriteModel> favoriteExample = [
     id: 5,
     description: 'asdasd',
     // id_product: 2,
-    id_user: 2,
+    idUser: 2,
   ),
 ];

@@ -1,89 +1,129 @@
-class TrolleyModel {
-  final int? id;
-  final int? id_checkout;
-  final int id_product;
-  final int id_user;
-  final int qty;
-  final DateTime? created_at;
-  final DateTime? updated_at;
+// ignore_for_file: non_constant_identifier_names
 
+class TrolleyModel {
   TrolleyModel({
     required this.id,
-    required this.id_checkout,
-    required this.id_product,
-    required this.id_user,
+    required this.idCheckout,
+    required this.idProduct,
+    required this.trolleyIdUser,
+    required this.idUser,
     required this.qty,
-    required this.created_at,
-    required this.updated_at,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.idTrolley,
+    required this.name,
+    required this.price,
+    required this.category,
+    required this.description,
   });
+
+  final int? id;
+  final dynamic idCheckout;
+  final int idProduct;
+  final int idUser;
+  int qty;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final int idTrolley;
+  final String name;
+  double price;
+  final int? trolleyIdUser;
+  final String? category;
+  final String? description;
 
   factory TrolleyModel.fromJson(Map<String, dynamic> json) {
     return TrolleyModel(
-      id: json['id'],
-      created_at: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : null,
-      updated_at: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'])
-          : null,
-      id_checkout:
-          json['id_checkout'] != null ? int.parse(json['id_checkout']) : null,
-      id_product: json['id_product'],
-      id_user: json['id_user'],
-      qty: json['qty'],
+      id: json["id"],
+      idCheckout: json["id_checkout"],
+      idProduct: json["id_product"],
+      idUser: json["id_user"],
+      trolleyIdUser: json["trolley_id_user"],
+      qty: json["qty"],
+      createdAt: DateTime.tryParse(json["created_at"] ?? ""),
+      updatedAt: DateTime.tryParse(json["updated_at"] ?? ""),
+      idTrolley: json["id_trolley"],
+      name: json["name"],
+      price: json["price"],
+      category: json["category"],
+      description: json["description"],
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'id_checkout': id_checkout,
-      'id_product': id_product,
-      'id_user': id_user,
-      'qty': qty,
-      'created_at': created_at?.toIso8601String(),
-      'updated_at': updated_at?.toIso8601String(),
-    };
-  }
-
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "id_checkout": idCheckout,
+        "id_product": idProduct,
+        "id_user": idUser,
+        "trolley_id_user": trolleyIdUser,
+        "qty": qty,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "id_trolley": idTrolley,
+        "name": name,
+        "price": price,
+        "category": category,
+        "description": description,
+      };
   // Partial constructor
   factory TrolleyModel.create({
     required int id_product,
     required int id_user,
+    required int trolleyIdUser,
     required int qty,
-    int? id,
-    int? id_checkout,
     DateTime? created_at,
     DateTime? updated_at,
+    int? id_checkout,
+    int? id,
+    required int idTrolley,
+    required double price,
+    String? category,
+    String? description,
+    required String name,
   }) {
     return TrolleyModel(
-      id: id,
-      id_checkout: id_checkout,
-      id_product: id_product,
-      id_user: id_user,
-      qty: qty,
-      created_at: created_at,
-      updated_at: updated_at,
-    );
+        trolleyIdUser: trolleyIdUser,
+        id: id,
+        qty: qty,
+        category: category,
+        createdAt: created_at,
+        description: description,
+        idCheckout: id_checkout,
+        idProduct: id_product,
+        idTrolley: idTrolley,
+        idUser: id_user,
+        name: name,
+        price: price,
+        updatedAt: updated_at);
   }
   // Partial constructor
   factory TrolleyModel.update({
-    required int id,
     required int id_product,
     required int id_user,
+    required int trolleyIdUser,
     required int qty,
-    int? id_checkout,
+    required double price,
     DateTime? created_at,
     DateTime? updated_at,
+    int? id_checkout,
+    int? id,
+    required int idTrolley,
+    String? category,
+    String? description,
+    required String name,
   }) {
     return TrolleyModel(
-      id: id,
-      id_checkout: id_checkout,
-      id_product: id_product,
-      id_user: id_user,
-      qty: qty,
-      created_at: created_at,
-      updated_at: updated_at,
-    );
+        id: id,
+        trolleyIdUser: trolleyIdUser,
+        qty: qty,
+        category: category,
+        createdAt: created_at,
+        description: description,
+        idCheckout: id_checkout,
+        idProduct: id_product,
+        idTrolley: idTrolley,
+        idUser: id_user,
+        name: name,
+        price: price,
+        updatedAt: updated_at);
   }
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:vape_store/assets/product_example.dart';
 import 'package:vape_store/models/checkout_model.dart';
-import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/checkout_network.dart';
 import 'package:vape_store/network/favorite_network.dart';
-import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/network/trolley_network.dart';
+import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
+import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/date.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/utils/pref_user.dart';
@@ -21,20 +21,23 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
   final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
+  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
 
   late Future<List<CheckoutModel>> _checkoutData;
 
   int? _favoriteCount;
+  int? _trolleyCount;
   UserModel? _userData;
 
   Future<void> _refreshHandler() async {
     final session = await loadUserData();
     if (session != null) {
-      _favoriteCount =
-          await _favoriteNetwork.fetchFavoritesByUserIdCount(session.id);
+      _favoriteCount = await _favoriteNetwork.fetchFavoritesByUserIdCount(session.id);
       _checkoutData = _checkoutNetwork.fetchAll(session.id);
+      _trolleyCount = await _trolleyNetwork.fetchTrolleyCount(session.id);
       setState(() {
         _userData = session;
+        // _trolleyCount
       });
     }
   }
@@ -66,10 +69,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: IconButton.styleFrom(
                     backgroundColor: colorTheme.primaryContainer,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
+                      borderRadius: BorderRadius.circular(10),
+                    )),
                 // color: Colors.red,
-                onPressed: () {},
-                icon: const Icon(Icons.trolley),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return const TrolleyScreen();
+                  }));
+                },
+                icon: Badge(
+                    label: Text(
+                      _trolleyCount != null ? _trolleyCount.toString() : '',
+                    ),
+                    child: const Icon(Icons.trolley)),
               ),
             ),
           ],
@@ -96,21 +108,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               _userData?.name ?? '',
                               style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
                               _userData?.email ?? '',
                               style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w300),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w300,
+                              ),
                             ),
                             Text(
-                              _userData?.createdAt != null
-                                  ? formatDate(_userData!.createdAt!)
-                                  : '',
+                              _userData?.createdAt != null ? formatDate(_userData!.createdAt!) : '',
                               style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         )
@@ -148,26 +163,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'History',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextButton(
-                            onPressed: () {}, child: const Text('View More'))
-                      ]),
-                  FutureBuilder(
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    const Text(
+                      'History',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(onPressed: () {}, child: const Text('View More'))
+                  ]),
+                  FutureBuilder<List<CheckoutModel>>(
                       future: _checkoutData,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
                           return const Center(child: Text('Data is Empty'));
                         } else {
@@ -230,22 +240,20 @@ class HistoryList extends StatelessWidget {
                     ),
                     Text(data.deliveryMethod,
                         style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.grey)),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.grey,
+                        ))
                   ],
                 ),
               ],
             ),
             IconButton(
                 onPressed: () {
-                  // id
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const DetailScreen(
-                                id: 1,
-                              )));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    // return DetailScreen(id: data.id);
+                    return DetailCheckoutScreen();
+                  }));
                 },
                 icon: const Icon(Icons.arrow_forward))
           ],

@@ -5,7 +5,8 @@ import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/product_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
-import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/screen/product/product_detail_screen.dart';
+import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/utils/pref_user.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
@@ -23,16 +24,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final _apiTrolley = TrolleyNetwork();
   final _apiProduct = ProductNetwork();
 
-  int? _trolleyCount;
   late UserModel? _userData;
   late Future<List<ProductModel>> _newProducts;
-  late Future<List<ProductModel>> _flashSaleProducts;
+
+  int? _trolleyCount;
+  // late Future<List<ProductModel>> _flashSaleProducts;
 
   // late Future<List<ProductModel>> favoriteProducts;
   // late Future<List<ProductModel>> favoriteProducts;
 
   // Helper function to load user data and initialize countTrolley
-  Future<void> _storeUserData() async {
+  Future<void> _refreshData() async {
     _userData = await loadUserData();
     if (_userData != null) {
       int count = await _apiTrolley.fetchTrolleyCount(_userData!.id);
@@ -46,10 +48,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _storeUserData(); // Load user data and set countTrolley
+    _refreshData(); // Load user data and set countTrolley
     // favoriteProducts = apiProduct.fetchProductsFavorite();
     _newProducts = _apiProduct.fetchProductsNewProduct();
-    _flashSaleProducts = _apiProduct.fetchProductsFlashSale();
+    // _flashSaleProducts = _apiProduct.fetchProductsFlashSale();
   }
 
   @override
@@ -66,12 +68,13 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
               color: colorTheme.primary,
-              style: IconButton.styleFrom(
-                  backgroundColor: colorTheme.primaryContainer,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
+              style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
               // color: Colors.red,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return const TrolleyScreen();
+                }));
+              },
               icon: Badge(
                 isLabelVisible: true,
                 label: Text(_trolleyCount?.toString() ?? "0"),
@@ -94,12 +97,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (BuildContext context) {
                     return Container(
                       width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 20),
+                      margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 20),
                       padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                          color: colorTheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(color: colorTheme.primaryContainer, borderRadius: BorderRadius.circular(10)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -110,12 +110,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white70,
                                 )),
-                            const Text("40% OFF",
+                            Text("40% OFF",
                                 style: TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 2)),
+                                  color: colorTheme.primary,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                )),
                             const SizedBox(height: 20),
                             FilledButton(
                                 style: FilledButton.styleFrom(
@@ -126,8 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 onPressed: () {},
-                                child: const Row(children: [
-                                  Text(
+                                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                  const Text(
                                     'EXPLORE',
                                     style: TextStyle(
                                         // color: Colors.white
@@ -136,12 +137,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Icon(
                                     Icons.chevron_right,
                                     // color: colorTheme.primary,
-                                    color: Colors.deepPurple,
-                                  )
+                                    color: colorTheme.primaryContainer,
+                                  ),
                                 ])),
                           ]),
-                          Image.asset('lib/images/banner1.png',
-                              width: 100, height: 120, fit: BoxFit.cover)
+                          Image.asset(
+                            'lib/images/banner1.png',
+                            width: 100,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          )
                         ],
                       ),
                     );
@@ -162,8 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   FutureBuilder<List<ProductModel>>(
                       future: _newProducts,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return const CircularProgressIndicator();
                         } else {
                           return ProductList(
@@ -178,8 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   FutureBuilder<List<ProductModel>>(
                       future: _newProducts,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return const CircularProgressIndicator();
                         } else {
                           return ProductList(
@@ -227,7 +230,8 @@ class ProductList extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
+                color: colorTheme.primary,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -251,19 +255,13 @@ class ProductList extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               return InkWell(
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            DetailScreen(id: product.id ?? 0))),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProductDetailScreen(id: product.id ?? 0))),
                 child: Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   child: Container(
                     width: 150,
                     // height: 500,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,8 +298,7 @@ class ProductList extends StatelessWidget {
                           children: [
                             Text(
                               formatPrice(product.price),
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             // Spacer(),
                             // IconButton(

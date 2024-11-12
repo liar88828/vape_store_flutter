@@ -4,7 +4,7 @@ class ProductModel {
   final int qty;
   final int price;
   final String description;
-  final int id_user;
+  final int idUser;
 
   // final String img;
 
@@ -14,7 +14,7 @@ class ProductModel {
     required this.qty,
     required this.price,
     required this.description,
-    required this.id_user,
+    required this.idUser,
     // required this.img,
   });
 
@@ -22,7 +22,7 @@ class ProductModel {
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
       id: json['id'],
-      id_user: json['id_user'],
+      idUser: json['id_user'],
       name: json['name'],
       qty: json['qty'],
       price: json['price'],
@@ -38,7 +38,7 @@ class ProductModel {
       'qty': qty,
       'price': price,
       'description': description,
-      'id_user': id_user,
+      'id_user': idUser,
       // 'img': img,
     };
   }

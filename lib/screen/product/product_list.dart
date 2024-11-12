@@ -29,12 +29,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
   void _deleteProduct(int id) async {
     bool success = await _apiService.deleteProduct(id);
     if (success) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Product deleted')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product deleted')));
       _refreshProducts();
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Failed to delete product')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete product')));
     }
   }
 
@@ -42,10 +40,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Products'),
+        title: const Text('Products'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -60,11 +58,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
         future: _products,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No products found.'));
+            return const Center(child: Text('No products found.'));
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
@@ -72,24 +70,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 final product = snapshot.data![index];
                 return ListTile(
                   title: Text(product.name),
-                  subtitle:
-                      Text('Quantity: ${product.qty}, Price: ${product.price}'),
+                  subtitle: Text('Quantity: ${product.qty}, Price: ${product.price}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit),
+                        icon: const Icon(Icons.edit),
                         onPressed: () async {
-                          final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      ProductFormScreen(product: product)));
+                          final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProductFormScreen(product: product)));
                           if (result == true) _refreshProducts();
                         },
                       ),
                       IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () => _deleteProduct(product.id!),
                       ),
                     ],

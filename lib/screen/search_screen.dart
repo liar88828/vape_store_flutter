@@ -1,55 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:vape_store/models/product_model.dart';
+import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/product_network.dart';
-import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/network/trolley_network.dart';
+import 'package:vape_store/screen/product/product_detail_screen.dart';
+import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
+import 'package:vape_store/utils/pref_user.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
-
-  // static final List<Map<String, String>> products = [
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Melon',
-  //     'price': 'Rp 200.000'
-  //   },
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Stroberi',
-  //     'price': 'Rp 220.000'
-  //   },
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Anggur',
-  //     'price': 'Rp 210.000'
-  //   },
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Anggur',
-  //     'price': 'Rp 210.000'
-  //   },
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Anggur',
-  //     'price': 'Rp 210.000'
-  //   },
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Anggur',
-  //     'price': 'Rp 210.000'
-  //   },
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Anggur',
-  //     'price': 'Rp 210.000'
-  //   },
-  //   {
-  //     'image': 'lib/images/banner1.png',
-  //     'title': 'Vape Rasa Anggur',
-  //     'price': 'Rp 210.000'
-  //   },
-  // ];
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -57,10 +17,14 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final ProductNetwork _productNetwork = ProductNetwork();
+  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
+  final TextEditingController _searchController = TextEditingController();
   late Future<List<ProductModel>> _productData;
-  TextEditingController _searchController = TextEditingController();
+
+  UserModel? _userData;
   String? _selectedCategory;
   String? _selectedPrice;
+  int? _trolleyCount;
 
   void _searchHandler() async {
     setState(() {
@@ -82,27 +46,28 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  Future<void> _refreshData() async {
+    _userData = await loadUserData();
+    if (_userData != null) {
+      int count = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
+      setState(() {
+        _trolleyCount = count;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _productData = _productNetwork.fetchProducts();
+    _refreshData();
   }
 
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
 
-    const listCategory = [
-      'Coil',
-      'Mod',
-      'Liquid',
-      'Battery',
-      "Connector",
-      "Tank/Cartridge",
-      'Mouthpiece/Drip-tip',
-      'Atomizer',
-      'Accessories'
-    ];
+    const listCategory = ['Coil', 'Mod', 'Liquid', 'Battery', "Connector", "Tank/Cartridge", 'Mouthpiece/Drip-tip', 'Atomizer', 'Accessories'];
     const listPrice = [
       'Low Price',
       // 'Medium Price',
@@ -112,7 +77,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
+        leading: const BackButton(),
         toolbarHeight: 70,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1),
@@ -138,14 +103,18 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
                 color: colorTheme.primary,
-                style: IconButton.styleFrom(
-                    backgroundColor: colorTheme.primaryContainer,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
+                style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 // color: Colors.red,
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.trolley,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return const TrolleyScreen();
+                  }));
+                },
+                icon: Badge(
+                  label: Text(_trolleyCount != null ? _trolleyCount.toString() : ''),
+                  child: const Icon(
+                    Icons.trolley,
+                  ),
                 )),
           ),
         ],
@@ -160,10 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 IconButton(
                     color: colorTheme.primary,
-                    style: IconButton.styleFrom(
-                        backgroundColor: colorTheme.primaryContainer,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10))),
+                    style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     onPressed: _filterHandler,
                     icon: const Icon(Icons.filter_list)),
                 CategoryDropdown(
@@ -246,7 +212,7 @@ class ProductCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => DetailScreen(
+              builder: (context) => ProductDetailScreen(
                     id: product.id!,
                   )),
         );
@@ -288,13 +254,11 @@ class ProductCard extends StatelessWidget {
                   Text(
                     product.name,
                     maxLines: 1,
-                    style: const TextStyle(
-                        color: Colors.grey, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     formatPrice(product.price),
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               )
@@ -313,17 +277,17 @@ class CategoryDropdown extends StatelessWidget {
   final ColorScheme colorTheme;
 
   const CategoryDropdown({
-    Key? key,
+    super.key,
     required this.listCategory,
     required this.selectedCategory,
     required this.onChanged,
     required this.colorTheme,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: colorTheme.onPrimary,
         border: Border.all(color: colorTheme.primaryContainer),

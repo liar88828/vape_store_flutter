@@ -5,7 +5,7 @@ import 'package:vape_store/network/product_network.dart';
 class ProductFormScreen extends StatefulWidget {
   final ProductModel? product;
 
-  ProductFormScreen({this.product});
+  const ProductFormScreen({super.key, this.product});
 
   @override
   _ProductFormScreenState createState() => _ProductFormScreenState();
@@ -32,7 +32,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Future<void> _saveProduct() async {
     final product = ProductModel(
       id: widget.product?.id,
-      id_user: 1, // Example user ID; replace with actual data
+      idUser: 1, // Example user ID; replace with actual data
       name: _nameController.text,
       qty: int.parse(_qtyController.text),
       price: int.parse(_priceController.text),

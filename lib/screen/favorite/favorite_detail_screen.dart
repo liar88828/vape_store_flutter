@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vape_store/assets/favorite_example.dart';
 import 'package:vape_store/models/favorite_list_model.dart';
-import 'package:vape_store/models/favorite_model.dart';
 import 'package:vape_store/network/favorite_network.dart';
-import 'package:vape_store/screen/detail_screen.dart';
+import 'package:vape_store/screen/product/product_detail_screen.dart';
 
 class FavoriteDetailScreen extends StatefulWidget {
   const FavoriteDetailScreen({
@@ -48,18 +46,14 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(color: Colors.white),
                     ),
-                    suffixIcon: IconButton(
-                        onPressed: () {}, icon: const Icon(Icons.search)))),
+                    suffixIcon: IconButton(onPressed: () {}, icon: const Icon(Icons.search)))),
           ),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 10),
               child: IconButton(
                   color: colorTheme.primary,
-                  style: IconButton.styleFrom(
-                      backgroundColor: colorTheme.primaryContainer,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10))),
+                  style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                   // color: Colors.red,
                   onPressed: () {},
                   icon: const Icon(
@@ -75,7 +69,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                 return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return const Center(child: Text('Error Data is not found'));
-              } else if (snapshot.data!.length == 0) {
+              } else if (snapshot.data!.isEmpty) {
                 return const Center(child: Text('Data is Empty'));
               } else {
                 return ListView.builder(
@@ -105,7 +99,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => DetailScreen(
+                                builder: (context) => ProductDetailScreen(
                                       id: favorite.idProduct!,
                                     )));
                       },

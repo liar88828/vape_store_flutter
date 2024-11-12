@@ -11,23 +11,23 @@ class FavoriteListScreen extends StatefulWidget {
 }
 
 class _FavoriteListScreenState extends State<FavoriteListScreen> {
-  final FavoriteNetwork _apiFavorite = FavoriteNetwork();
+  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
   late Future<List<FavoriteModel>> _favorite;
 
   @override
   void initState() {
     super.initState();
-    _favorite = _apiFavorite.fetchFavorites();
+    _favorite = _favoriteNetwork.fetchFavorites();
   }
 
   void _refreshFavorites() {
     setState(() {
-      _favorite = _apiFavorite.fetchFavorites();
+      _favorite = _favoriteNetwork.fetchFavorites();
     });
   }
 
   void _deleteFavorite(int id) async {
-    bool response = await _apiFavorite.deleteFavorite(id);
+    bool response = await _favoriteNetwork.deleteFavorite(id);
 
     if (response) {
       ScaffoldMessenger.of(context)
@@ -64,7 +64,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return const Center(child: Text('Error Data is not found'));
-          } else if (snapshot.data!.length == 0) {
+          } else if (snapshot.data!.isEmpty) {
             return const Center(child: Text('Data is Empty'));
           } else {
             return ListView.builder(

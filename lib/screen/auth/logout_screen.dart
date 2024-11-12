@@ -11,7 +11,7 @@ class LogoutScreen extends StatefulWidget {
 }
 
 class _LogoutScreenState extends State<LogoutScreen> {
-  Map<String, dynamic>? userData;
+  Map<String, dynamic>? _userData;
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _LogoutScreenState extends State<LogoutScreen> {
     String? userJson = prefs.getString('user');
     if (userJson != null) {
       setState(() {
-        userData = json.decode(userJson);
+        _userData = json.decode(userJson);
       });
     }
   }
@@ -42,29 +42,29 @@ class _LogoutScreenState extends State<LogoutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Logout'),
+        title: const Text('Logout'),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: _logout,
           ),
         ],
       ),
-      body: userData != null
+      body: _userData != null
           ? Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Are you sure you want to logout, ${userData!['name']}',
-                      style: TextStyle(fontSize: 20)),
-                  SizedBox(height: 10),
-                  Text('Email: ${userData!['email']}'),
+                  Text('Are you sure you want to logout, ${_userData!['name']}',
+                      style: const TextStyle(fontSize: 20)),
+                  const SizedBox(height: 10),
+                  Text('Email: ${_userData!['email']}'),
                   // Display other user information here
                 ],
               ),
             )
-          : Center(child: CircularProgressIndicator()),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

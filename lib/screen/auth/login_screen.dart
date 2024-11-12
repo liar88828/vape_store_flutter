@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/network/user_network.dart';
-import 'package:vape_store/screen/auth/logout_screen.dart';
-import 'package:vape_store/screen/favorite/favorite_list_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/auth/register_screen.dart';
 
@@ -15,24 +13,22 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _apiService = UserNetwork();
+  final UserNetwork _userNetwork = UserNetwork();
 
   Future<void> _login() async {
-    final success = await _apiService.login(
+    final success = await _userNetwork.login(
       _emailController.text,
       _passwordController.text,
     );
 
     if (success) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Login successful')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login successful')));
       Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return HomeScreen();
+        return const HomeScreen();
         // return const HomeScreen();
       }));
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Login failed')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login failed')));
     }
   }
 
@@ -81,8 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16.0),
             OutlinedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => RegisterScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
               },
               child: const Text('Register'),
             ),

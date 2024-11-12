@@ -1,7 +1,11 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:vape_store/network/user_network.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
@@ -11,10 +15,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _apiService = UserNetwork();
+  final UserNetwork _userNetwork = UserNetwork();
 
   Future<void> _register() async {
-    final success = await _apiService.register(
+    final success = await _userNetwork.register(
       _nameController.text,
       _emailController.text,
       _passwordController.text,

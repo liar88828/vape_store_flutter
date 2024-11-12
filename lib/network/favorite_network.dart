@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vape_store/models/favorite_list_model.dart';
@@ -17,9 +19,9 @@ class FavoriteNetwork {
     }
   }
 
-  Future<List<FavoriteModel>> fetchFavoritesByUserId(int id_user) async {
+  Future<List<FavoriteModel>> fetchFavoritesByUserId(int idUser) async {
     final response =
-        await http.get(Uri.parse("$baseUrl/favorite/id-user/$id_user"));
+        await http.get(Uri.parse("$baseUrl/favorite/id-user/$idUser"));
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
       final List<dynamic> favoriteData = jsonData['data'];
@@ -30,13 +32,13 @@ class FavoriteNetwork {
     }
   }
 
-  Future<int> fetchFavoritesByUserIdCount(int id_user) async {
+  Future<int> fetchFavoritesByUserIdCount(int idUser) async {
     // print('-------');
     // print('user : $id_user');
     // print('-------');
 
     final response =
-        await http.get(Uri.parse("$baseUrl/favorite/id-user/count/$id_user"));
+        await http.get(Uri.parse("$baseUrl/favorite/id-user/count/$idUser"));
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
       final int favoriteData = jsonData['data'];
@@ -47,10 +49,9 @@ class FavoriteNetwork {
     }
   }
 
-  Future<List<FavoriteListModel>> fetchFavoritesByListId(
-      int id_favorite) async {
+  Future<List<FavoriteListModel>> fetchFavoritesByListId(int idFavorite) async {
     final response =
-        await http.get(Uri.parse("$baseUrl/favorite/id-list/$id_favorite"));
+        await http.get(Uri.parse("$baseUrl/favorite/id-list/$idFavorite"));
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
       final List<dynamic> favoriteData = jsonData['data'];

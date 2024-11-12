@@ -1,7 +1,6 @@
+// ignore_for_file: avoid_print, non_constant_identifier_names
+
 import 'package:flutter/material.dart';
-import 'package:vape_store/assets/favorite_example.dart';
-import 'package:vape_store/models/favorite_model.dart';
-import 'package:vape_store/screen/detail_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({
@@ -10,7 +9,7 @@ class SettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var colorTheme = Theme.of(context).colorScheme;
+    // var colorTheme = Theme.of(context).colorScheme;
     final List<Map<String, dynamic>> personalSettingsOptions = [
       {
         'title': 'Personal',

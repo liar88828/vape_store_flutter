@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vape_store/models/product_model.dart';
@@ -14,8 +16,9 @@ class ProductNetwork {
     // Build the URL with optional parameters
     final queryParameters = <String, String>{};
     if (name != null && name.isNotEmpty) queryParameters['name'] = name;
-    if (category != null && category.isNotEmpty)
+    if (category != null && category.isNotEmpty) {
       queryParameters['category'] = category;
+    }
     if (order != null && order.isNotEmpty) queryParameters['order'] = order;
 
     final uri =

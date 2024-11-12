@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:vape_store/models/favorite_model.dart';
 import 'package:vape_store/models/user_model.dart';
@@ -13,16 +15,16 @@ class FavoriteFormScreen extends StatefulWidget {
 }
 
 class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
-  final _apiFavorite = FavoriteNetwork();
+  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  UserModel? userData;
+  UserModel? _userData;
 
   // Use the helper function to load user data
   Future<void> _fetchUserData() async {
-    userData = await loadUserData();
-    if (userData != null) {
+    _userData = await loadUserData();
+    if (_userData != null) {
       setState(() {});
     }
   }
@@ -42,7 +44,7 @@ class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
     try {
       final favorite = FavoriteModel(
         id: widget.favorite?.id,
-        id_user: userData!.id,
+        idUser: _userData!.id,
         description: _descriptionController.text,
         title: _titleController.text,
         // id_product: 2,
@@ -51,9 +53,9 @@ class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
       // print(favorite);
       // print(favorite);
       if (widget.favorite == null) {
-        await _apiFavorite.createFavorite(favorite);
+        await _favoriteNetwork.createFavorite(favorite);
       } else {
-        await _apiFavorite.updateFavorite(favorite);
+        await _favoriteNetwork.updateFavorite(favorite);
       }
       Navigator.pop(context, true);
     } catch (e) {
@@ -74,16 +76,16 @@ class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+              decoration: const InputDecoration(labelText: 'Title'),
             ),
             TextField(
               controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Description'),
+              decoration: const InputDecoration(labelText: 'Description'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
                 onPressed: _saveFavorite,
-                child: Row(
+                child: const Row(
                   children: [Icon(Icons.save), Text("Save")],
                 ))
           ],
