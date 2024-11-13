@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:vape_store/assets/product_example.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/user_model.dart';
+import 'package:vape_store/network/bank_network.dart';
+import 'package:vape_store/network/delivery_network.dart';
 import 'package:vape_store/network/product_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/product/product_detail_screen.dart';
@@ -21,8 +23,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _apiTrolley = TrolleyNetwork();
-  final _apiProduct = ProductNetwork();
+  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
+  final ProductNetwork _networkProduct = ProductNetwork();
+  final BankNetwork _bankNetwork = BankNetwork();
+  final DeliveryNetwork _deliveryNetwork = DeliveryNetwork();
 
   late UserModel? _userData;
   late Future<List<ProductModel>> _newProducts;
@@ -37,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _refreshData() async {
     _userData = await loadUserData();
     if (_userData != null) {
-      int count = await _apiTrolley.fetchTrolleyCount(_userData!.id);
+      int count = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
       // print(userData?.toJson());
       setState(() {
         _trolleyCount = count;
@@ -50,7 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _refreshData(); // Load user data and set countTrolley
     // favoriteProducts = apiProduct.fetchProductsFavorite();
-    _newProducts = _apiProduct.fetchProductsNewProduct();
+    _bankNetwork.fetchBanks();
+    _deliveryNetwork.fetchDelivery();
+    _newProducts = _networkProduct.fetchProductsNewProduct();
     // _flashSaleProducts = _apiProduct.fetchProductsFlashSale();
   }
 

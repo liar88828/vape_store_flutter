@@ -110,16 +110,16 @@ class DetailCheckoutScreen extends StatelessWidget {
             ),
             const Divider(thickness: 1, color: Colors.grey),
             const SizedBox(height: 16),
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Total Amount',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '\$${200}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                 ),
               ],
             ),

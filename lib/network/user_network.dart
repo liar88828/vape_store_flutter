@@ -66,9 +66,11 @@ class UserNetwork {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      final token = data['token'];
       print(data);
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
+      prefs.setString('token', token);
       prefs.setString('user', jsonEncode(data['data']));
       return true;
     } else {
