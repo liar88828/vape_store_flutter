@@ -55,3 +55,29 @@ class FavoriteListModel {
     return data;
   }
 }
+
+class FavoriteListCreate {
+  int? idFavorite;
+  int? idProduct;
+  // int? idUser;
+
+  FavoriteListCreate({
+    this.idFavorite,
+    this.idProduct,
+    // this.idUser,
+  });
+
+  FavoriteListCreate.fromJson(Map<String, dynamic> json) {
+    idFavorite = json['id_favorite'];
+    idProduct = json['id_product'];
+    // idUser = json['id_user'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id_favorite'] = idFavorite;
+    data['id_product'] = idProduct;
+    // data['id_user'] = idUser;
+    return data;
+  }
+}

@@ -13,9 +13,9 @@ class DeliveryNetwork {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         final List<dynamic> data = jsonData['data'];
-        print('-------delivery');
-        print(data);
-        print('-------delivery');
+        // print('-------delivery');
+        // print(data);
+        // print('-------delivery');
         return data.map((json) => DeliveryModel.fromJson(json)).toList();
       }
       throw Exception('Failed to load Delivery');

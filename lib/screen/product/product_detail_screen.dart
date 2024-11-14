@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:vape_store/models/favorite_list_model.dart';
+import 'package:vape_store/models/favorite_model.dart';
 import 'package:vape_store/models/product_model.dart';
+import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
+import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/network/product_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/checkout/order_screen.dart';
@@ -21,39 +25,22 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final ProductNetwork _productNetwork = ProductNetwork();
   final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
+
+  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
   late Future<ProductModel> _productData;
-  String? _value;
-  int? _countTrolley;
-  int _counter = 1;
+  late Future<List<FavoriteModel>> _favoriteData;
+
   UserModel? _userData;
-
-  void increment() {
-    setState(() => _counter++);
-  }
-
-  void decrement() {
-    setState(() => _counter--);
-  }
-
-  Future<void> _addTrolly() async {
-    final response = await _trolleyNetwork.addTrolley(
-      qty: _counter,
-      idProduct: widget.id,
-      idUser: _userData!.id,
-    );
-    // return response;
-    if (response) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success ')));
-      // Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderScreen()));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('fail')));
-    }
-  }
+  String? _valueOption;
+  int? _countTrolley;
+  int _counterQty = 1; // Define _counter as part of the widget state
 
   Future<void> _refreshData() async {
     _userData = await loadUserData();
     if (_userData != null) {
       _countTrolley = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
+      _favoriteData = _favoriteNetwork.fetchFavoritesByUserId(_userData!.id);
+      debugPrint(_favoriteData.toString());
     }
     setState(() {});
   }
@@ -65,6 +52,306 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     _refreshData();
   }
 
+  void _increment(setState) {
+    setState(() => _counterQty++);
+  }
+
+  void _decrement(setState) {
+    setState(() => _counterQty--);
+  }
+
+  Future<void> _addCheckout(ProductModel product) async {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return OrderScreen(
+        productTrolley: [
+          TrolleyModel(
+              category: _valueOption ?? '',
+              id: 0,
+              description: '',
+              name: product.name,
+              price: product.price,
+              qty: _counterQty,
+              idUser: _userData!.id,
+              option: _valueOption ?? '',
+              trolleyIdUser: _userData!.id,
+              idProduct: product.id!,
+              idTrolley: 0,
+              idCheckout: 0,
+              createdAt: null,
+              updatedAt: null)
+        ],
+      );
+    }));
+  }
+
+  Future<void> _toCheckout(ColorScheme colorTheme, ProductModel product) async {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return SizedBox(
+                child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                      const Text('Add Checkout', style: TextStyle(fontSize: 20)),
+                      const SizedBox(height: 10),
+                      const Text('Are you sure you want to add this product to your checkout?'),
+                      const SizedBox(height: 10),
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        const Text('Option', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Wrap(
+                            spacing: 5.0,
+                            children: ['30 ML', '60 ML', '90 ML']
+                                .map((label) => ChoiceChip(
+                                    label: Text(label),
+                                    selected: _valueOption == label,
+                                    backgroundColor: colorTheme.surfaceBright,
+                                    selectedColor: colorTheme.primaryContainer,
+                                    onSelected: (bool selected) {
+                                      _selectOption(label, setState);
+                                    }))
+                                .toList())
+                      ]),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Qty', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Card(
+                            elevation: 0,
+                            color: colorTheme.primaryContainer,
+                            child: Row(
+                              children: [
+                                IconButton(onPressed: () => _decrement(setState), icon: const Icon(Icons.remove)),
+                                Text(
+                                  _counterQty.toString(),
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
+                                IconButton(onPressed: () => _increment(setState), icon: const Icon(Icons.add)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          FilledButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 10),
+                          FilledButton(
+                            onPressed: () {
+                              _addCheckout(product);
+                            },
+                            child: const Text('Add'),
+                          ),
+                        ],
+                      )
+                    ])));
+          });
+        });
+  }
+
+  Future<void> _addTrolly(BuildContext context) async {
+    final response = await _trolleyNetwork.addTrolley(TrolleyCreate(
+      id: 1,
+      qty: 1,
+      idProduct: widget.id,
+      idUser: _userData!.id,
+      option: _valueOption ?? "",
+    ));
+    // return response;
+    if (context.mounted) {
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success ')));
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderScreen()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('fail')));
+      }
+    }
+  }
+
+  Future<void> _showAddTrolley(ColorScheme colorTheme, BuildContext context) {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return SizedBox(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                    const Text('Add Trolley', style: TextStyle(fontSize: 20)),
+                    const SizedBox(height: 20),
+                    const Text('Are you sure you want to add this product to your trolley?'),
+                    const SizedBox(height: 10),
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      const Text('Option', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Wrap(
+                          spacing: 5.0,
+                          children: ['30 ML', '60 ML', '90 ML']
+                              .map((label) => ChoiceChip(
+                                  label: Text(label),
+                                  selected: _valueOption == label,
+                                  backgroundColor: colorTheme.surfaceBright,
+                                  selectedColor: colorTheme.primaryContainer,
+                                  onSelected: (bool selected) {
+                                    _selectOption(label, setState);
+                                  }))
+                              .toList())
+                    ]),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Qty', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Card(
+                          elevation: 0,
+                          color: colorTheme.primaryContainer,
+                          child: Row(
+                            children: [
+                              IconButton(onPressed: () => _decrement(setState), icon: const Icon(Icons.remove)),
+                              Text(
+                                _counterQty.toString(),
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              IconButton(onPressed: () => _increment(setState), icon: const Icon(Icons.add)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FilledButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        const SizedBox(width: 10),
+                        FilledButton(
+                          onPressed: () {
+                            _addTrolly(context);
+                          },
+                          child: const Text('Add'),
+                        ),
+                      ],
+                    )
+                  ]),
+                ),
+              );
+            },
+          );
+        });
+  }
+
+  Future<void> _showAddFavorite(
+    ColorScheme colorTheme,
+    BuildContext context,
+  ) {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return SizedBox(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: FutureBuilder<List<FavoriteModel>>(
+                  future: _favoriteData,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      // debugPrint('Error: ${snapshot.error}');
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data == null) {
+                      return const Center(child: Text('No Favorite found.'));
+                    } else {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Add Favorite', style: TextStyle(fontSize: 20)),
+                          const SizedBox(height: 20),
+                          const Text('Are you sure you want to add this product to your trolley?'),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 200,
+                            child: ListView.builder(
+                                itemCount: snapshot.data!.length,
+                                scrollDirection: Axis.vertical,
+                                itemBuilder: (context, index) {
+                                  final data = snapshot.data![index];
+                                  return ListTile(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    tileColor: colorTheme.primaryContainer,
+                                    // contentPadding: EdgeInsets.all(10),
+                                    title: Text(data.title),
+
+                                    subtitle: Text(data.description),
+                                    trailing: IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () async {
+                                        final response = await _favoriteNetwork.addFavoriteList(FavoriteListCreate(
+                                          idFavorite: data.id,
+                                          idProduct: widget.id,
+                                          // idUser: _userData!.id,
+                                        ));
+                                        print(response.success);
+                                        if (response.success) {
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+                                          Navigator.pop(context);
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+                                        }
+                                      },
+                                    ),
+                                  );
+                                }),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              const SizedBox(width: 10),
+                              FilledButton(
+                                onPressed: () {
+                                  _addTrolly(context);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Add'),
+                              ),
+                            ],
+                          )
+                        ],
+                      );
+                    }
+                  }),
+            ),
+          );
+        });
+  }
+
+  void _selectOption(String label, setState) {
+    setState(() {
+      _valueOption = label;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
@@ -74,37 +361,42 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  border: Border.all(color: Colors.black12),
-                  borderRadius: BorderRadius.circular(10),
+              IconButton.filled(
+                style: IconButton.styleFrom(
+                  fixedSize: const Size.square(60),
+                  backgroundColor: colorTheme.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Row(
-                  children: [
-                    IconButton(onPressed: decrement, icon: const Icon(Icons.remove)),
-                    Text(
-                      _counter.toString(),
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    IconButton(onPressed: increment, icon: const Icon(Icons.add)),
-                  ],
-                ),
+                onPressed: () => _showAddFavorite(colorTheme, context),
+                icon: const Icon(Icons.favorite),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  fixedSize: const Size(240, 100),
+                  fixedSize: const Size.fromHeight(100),
                   backgroundColor: colorTheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed: () async {
-                  await _addTrolly();
-                },
+                onPressed: () => _showAddTrolley(colorTheme, context),
                 child: const Text(
                   'ADD TO TROLLEY',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  fixedSize: const Size.fromHeight(100),
+                  backgroundColor: colorTheme.primaryContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () async {
+                  _toCheckout(colorTheme, await _productData);
+                },
+                child: const Text(
+                  'CHECKOUT',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -238,16 +530,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               children: ['30 ML', '60 ML', '90 ML']
                                   .map((label) => ChoiceChip(
                                         label: Text(label),
-                                        selected: _value == label,
+                                        selected: _valueOption == label,
                                         backgroundColor: colorTheme.surfaceBright,
-                                        selectedColor: colorTheme.surface,
-                                        onSelected: (selected) {
-                                          setState(() {
-                                            _value = label;
-                                            debugPrint(_value);
-                                            var data = _value == label;
-                                            debugPrint(data.toString());
-                                          });
+                                        selectedColor: colorTheme.primaryContainer,
+                                        onSelected: (bool selected) {
+                                          _selectOption(label, setState);
                                         },
                                       ))
                                   .toList(),

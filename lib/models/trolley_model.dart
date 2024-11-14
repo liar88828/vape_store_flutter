@@ -1,12 +1,15 @@
 // ignore_for_file: non_constant_identifier_names
 
-class TrolleyModel {
+sealed class TrolleyData {}
+
+class TrolleyModel extends TrolleyData {
   TrolleyModel({
     required this.id,
     required this.idCheckout,
     required this.idProduct,
     required this.trolleyIdUser,
     required this.idUser,
+    required this.option,
     required this.qty,
     required this.createdAt,
     required this.updatedAt,
@@ -18,29 +21,31 @@ class TrolleyModel {
   });
 
   final int? id;
-  final dynamic idCheckout;
   final int idProduct;
   final int idUser;
   int qty;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  int? idCheckout;
+  String? option;
+  num price;
   final int idTrolley;
   final String name;
-  double price;
-  final int? trolleyIdUser;
-  final String? category;
-  final String? description;
+  final int trolleyIdUser;
+  final String category;
+  final String description;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   factory TrolleyModel.fromJson(Map<String, dynamic> json) {
     return TrolleyModel(
       id: json["id"],
+      option: json["option"],
       idCheckout: json["id_checkout"],
       idProduct: json["id_product"],
       idUser: json["id_user"],
       trolleyIdUser: json["trolley_id_user"],
       qty: json["qty"],
-      createdAt: DateTime.tryParse(json["created_at"] ?? ""),
-      updatedAt: DateTime.tryParse(json["updated_at"] ?? ""),
+      createdAt: DateTime.parse(json["created_at"]),
+      updatedAt: DateTime.parse(json["updated_at"]),
       idTrolley: json["id_trolley"],
       name: json["name"],
       price: json["price"],
@@ -64,66 +69,31 @@ class TrolleyModel {
         "category": category,
         "description": description,
       };
-  // Partial constructor
-  factory TrolleyModel.create({
-    required int id_product,
-    required int id_user,
-    required int trolleyIdUser,
-    required int qty,
-    DateTime? created_at,
-    DateTime? updated_at,
-    int? id_checkout,
-    int? id,
-    required int idTrolley,
-    required double price,
-    String? category,
-    String? description,
-    required String name,
-  }) {
-    return TrolleyModel(
-        trolleyIdUser: trolleyIdUser,
-        id: id,
-        qty: qty,
-        category: category,
-        createdAt: created_at,
-        description: description,
-        idCheckout: id_checkout,
-        idProduct: id_product,
-        idTrolley: idTrolley,
-        idUser: id_user,
-        name: name,
-        price: price,
-        updatedAt: updated_at);
-  }
-  // Partial constructor
-  factory TrolleyModel.update({
-    required int id_product,
-    required int id_user,
-    required int trolleyIdUser,
-    required int qty,
-    required double price,
-    DateTime? created_at,
-    DateTime? updated_at,
-    int? id_checkout,
-    int? id,
-    required int idTrolley,
-    String? category,
-    String? description,
-    required String name,
-  }) {
-    return TrolleyModel(
-        id: id,
-        trolleyIdUser: trolleyIdUser,
-        qty: qty,
-        category: category,
-        createdAt: created_at,
-        description: description,
-        idCheckout: id_checkout,
-        idProduct: id_product,
-        idTrolley: idTrolley,
-        idUser: id_user,
-        name: name,
-        price: price,
-        updatedAt: updated_at);
+}
+
+class TrolleyCreate extends TrolleyData {
+  final int id;
+  final int qty;
+  final int idProduct;
+  final int idUser;
+  final String option;
+
+  TrolleyCreate({
+    required this.id,
+    required this.qty,
+    required this.idProduct,
+    required this.idUser,
+    required this.option,
+  });
+
+  // Convert to JSON for network requests
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'qty': qty,
+      'id_product': idProduct,
+      'id_user': idUser,
+      'option': option,
+    };
   }
 }

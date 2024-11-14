@@ -6,6 +6,7 @@ import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/favorite/favorite_form_screen.dart';
 import 'package:vape_store/screen/favorite/favorite_detail_screen.dart';
+import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/pref_user.dart';
 
@@ -21,6 +22,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
 
   int? _trolleyCount = 0;
+  int? _favoriteCount = 0;
   UserModel? _userData;
   Future<List<FavoriteModel>>? _favoriteData;
 
@@ -29,6 +31,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     if (_userData != null) {
       _trolleyCount = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
       _favoriteData = _favoriteNetwork.fetchFavoritesByUserId(_userData!.id);
+      _favoriteCount = await _favoriteData?.then((value) => value.length);
       setState(() {});
     }
   }
@@ -42,11 +45,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
-    final List<FavoriteModel> favorites = favoriteExample;
+    // final List<FavoriteModel> favorites = favoriteExample;
 
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(),
+        leading: BackButton(
+          onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen())),
+        ),
         toolbarHeight: 70,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1),
@@ -91,7 +96,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text(
-                'Total : ${favorites.length}',
+                'Total : ${_favoriteCount}',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               IconButton(

@@ -23,18 +23,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
   final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
 
-  late Future<List<CheckoutModel>> _checkoutData;
-
   int? _favoriteCount;
   int? _trolleyCount;
   UserModel? _userData;
+  Future<List<CheckoutModel>>? _checkoutData;
 
   Future<void> _refreshHandler() async {
     final session = await loadUserData();
     if (session != null) {
       _favoriteCount = await _favoriteNetwork.fetchFavoritesByUserIdCount(session.id);
-      _checkoutData = _checkoutNetwork.fetchAll(session.id);
       _trolleyCount = await _trolleyNetwork.fetchTrolleyCount(session.id);
+      _checkoutData = _checkoutNetwork.fetchAll(session.id);
       setState(() {
         _userData = session;
         // _trolleyCount

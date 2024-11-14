@@ -15,20 +15,21 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final UserNetwork _userNetwork = UserNetwork();
 
-  Future<void> _login() async {
+  Future<void> _login(BuildContext context) async {
     final success = await _userNetwork.login(
       _emailController.text,
       _passwordController.text,
     );
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login successful')));
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return const HomeScreen();
-        // return const HomeScreen();
-      }));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login failed')));
+    if (context.mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login successful')));
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return const HomeScreen();
+          // return const HomeScreen();
+        }));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login failed')));
+      }
     }
   }
 
@@ -71,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 32.0),
             ElevatedButton(
-              onPressed: _login,
+              onPressed: () => _login(context),
               child: const Text('Login'),
             ),
             const SizedBox(height: 16.0),

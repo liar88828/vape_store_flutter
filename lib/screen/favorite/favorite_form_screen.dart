@@ -40,7 +40,7 @@ class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
     }
   }
 
-  Future<void> _saveFavorite() async {
+  Future<void> _saveFavorite(BuildContext context) async {
     try {
       final favorite = FavoriteModel(
         id: widget.favorite?.id,
@@ -57,7 +57,9 @@ class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
       } else {
         await _favoriteNetwork.updateFavorite(favorite);
       }
-      Navigator.pop(context, true);
+      if (context.mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       print(e);
       // Navigator.pop(context);
@@ -72,24 +74,22 @@ class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
       ),
       body: Container(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-                onPressed: _saveFavorite,
-                child: const Row(
-                  children: [Icon(Icons.save), Text("Save")],
-                ))
-          ],
-        ),
+        child: Column(children: [
+          TextField(
+            controller: _titleController,
+            decoration: const InputDecoration(labelText: 'Title'),
+          ),
+          TextField(
+            controller: _descriptionController,
+            decoration: const InputDecoration(labelText: 'Description'),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+              onPressed: () => _saveFavorite(context),
+              child: const Row(
+                children: [Icon(Icons.save), Text("Save")],
+              ))
+        ]),
       ),
     );
   }

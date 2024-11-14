@@ -4,9 +4,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vape_store/models/favorite_list_model.dart';
 import 'package:vape_store/models/favorite_model.dart';
+import 'package:vape_store/models/response_model.dart';
 
 class FavoriteNetwork {
   final String baseUrl = 'http://127.0.0.1:8000/api';
+
   Future<List<FavoriteModel>> fetchFavorites() async {
     final response = await http.get(Uri.parse("$baseUrl/favorite"));
     if (response.statusCode == 200) {
@@ -20,9 +22,8 @@ class FavoriteNetwork {
   }
 
   Future<List<FavoriteModel>> fetchFavoritesByUserId(int idUser) async {
-    final response =
-        await http.get(Uri.parse("$baseUrl/favorite/id-user/$idUser"));
-    if (response.statusCode == 200) {
+    final response = await http.get(Uri.parse("$baseUrl/favorite/id-user/$idUser"));
+    if (response.statusCode == 201) {
       final jsonData = jsonDecode(response.body);
       final List<dynamic> favoriteData = jsonData['data'];
       print(favoriteData);
@@ -33,13 +34,8 @@ class FavoriteNetwork {
   }
 
   Future<int> fetchFavoritesByUserIdCount(int idUser) async {
-    // print('-------');
-    // print('user : $id_user');
-    // print('-------');
-
-    final response =
-        await http.get(Uri.parse("$baseUrl/favorite/id-user/count/$idUser"));
-    if (response.statusCode == 200) {
+    final response = await http.get(Uri.parse("$baseUrl/favorite/id-user/count/$idUser"));
+    if (response.statusCode == 201) {
       final jsonData = jsonDecode(response.body);
       final int favoriteData = jsonData['data'];
       // print(favoriteData);
@@ -50,15 +46,12 @@ class FavoriteNetwork {
   }
 
   Future<List<FavoriteListModel>> fetchFavoritesByListId(int idFavorite) async {
-    final response =
-        await http.get(Uri.parse("$baseUrl/favorite/id-list/$idFavorite"));
-    if (response.statusCode == 200) {
+    final response = await http.get(Uri.parse("$baseUrl/favorite/id-list/$idFavorite"));
+    if (response.statusCode == 201) {
       final jsonData = jsonDecode(response.body);
       final List<dynamic> favoriteData = jsonData['data'];
       print(favoriteData);
-      return favoriteData
-          .map((json) => FavoriteListModel.fromJson(json))
-          .toList();
+      return favoriteData.map((json) => FavoriteListModel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load favorites');
     }
@@ -66,7 +59,7 @@ class FavoriteNetwork {
 
   Future<FavoriteModel> fetchFavoriteById(int id) async {
     final response = await http.get(Uri.parse("$baseUrl/favorite/$id"));
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       final jsonData = json.decode(response.body);
       return FavoriteModel.fromJson(jsonData['data']);
     } else {
@@ -75,24 +68,50 @@ class FavoriteNetwork {
   }
 
   Future<String> createFavorite(FavoriteModel favorite) async {
-    // print(favorite.toJson());
+    print(favorite.toJson());
     final response = await http.post(
       Uri.parse("$baseUrl/favorite"),
       body: jsonEncode(favorite.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
+    final jsonData = json.decode(response.body);
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      print(response.body);
+      print(jsonData['message']);
       // final favorite = FavoriteModel.fromJson(jsonData['data']);
       return jsonData['message'];
     } else {
+      print(jsonData['message']);
+
       throw Exception('Failed to create favorite');
+    }
+  }
+
+  Future<ResponseModel> addFavoriteList(FavoriteListCreate favorite) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/favorite/list/${favorite.idFavorite}"),
+        body: jsonEncode(favorite.toJson()),
+        headers: {'Content-Type': 'application/json'},
+      );
+      final jsonData = json.decode(response.body);
+      print(jsonData['message']);
+      if (response.statusCode == 200) {
+        return ResponseModel(success: true, message: jsonData['message']);
+      } else {
+        throw Exception('Failed to add favorite list');
+      }
+    } catch (e) {
+      print(e);
+      return ResponseModel(
+        success: false,
+        message: e.toString(),
+      );
     }
   }
 
   Future<bool> updateFavorite(FavoriteModel favorite) async {
     try {
+      print(favorite.toJson());
       final response = await http.put(
         Uri.parse('$baseUrl/favorite/${favorite.id}'),
         body: jsonEncode(favorite.toJson()),
@@ -100,7 +119,9 @@ class FavoriteNetwork {
       );
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+
         print(jsonData['message']);
+        // print(jsonData['message']);
         return true;
       } else {
         throw Exception('Failed to update favorite');

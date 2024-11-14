@@ -21,8 +21,7 @@ class ProductNetwork {
     }
     if (order != null && order.isNotEmpty) queryParameters['order'] = order;
 
-    final uri =
-        Uri.parse('$baseUrl/product').replace(queryParameters: queryParameters);
+    final uri = Uri.parse('$baseUrl/product').replace(queryParameters: queryParameters);
 
     print(uri);
 
@@ -79,7 +78,7 @@ class ProductNetwork {
   Future<ProductModel> fetchProductById(int id) async {
     final response = await http.get(Uri.parse('$baseUrl/product/$id'));
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       final jsonData = json.decode(response.body);
       print(jsonData['message']);
       return ProductModel.fromJson(jsonData['data']);

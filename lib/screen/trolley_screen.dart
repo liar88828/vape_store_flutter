@@ -103,7 +103,11 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
               // Checkout Button
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderScreen()));
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) {const OrderScreen()},
+                  //     ));
                 },
                 child: const Text(
                   'Checkout',
@@ -174,6 +178,16 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 'Price: \$${item.price}',
+                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              ),
+                              // const SizedBox(height: 4),
+                              // Text(
+                              //   'qty: ${item.qty}',
+                              //   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              // ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Type: ${item.option ?? 'null'}',
                                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                               ),
                             ],

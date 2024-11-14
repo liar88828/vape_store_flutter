@@ -34,19 +34,15 @@ class TrolleyNetwork {
     }
   }
 
-  Future<bool> addTrolley({
-    int? idTrolley,
-    required int idUser,
-    required int idProduct,
-    required int qty,
-  }) async {
+  Future<bool> addTrolley(TrolleyCreate trolley) async {
     try {
       final response = await http.put(
-        Uri.parse("$baseUrl/trolley/$idTrolley"),
+        Uri.parse("$baseUrl/trolley/${trolley.id}"),
         body: jsonEncode({
-          'id_user': idUser,
-          'id_product': idProduct,
-          'qty': qty,
+          'id_user': trolley.idUser,
+          'id_product': trolley.idProduct,
+          'qty': trolley.qty,
+          'option': trolley.option,
         }),
         headers: {'Content-Type': 'application/json'},
       );

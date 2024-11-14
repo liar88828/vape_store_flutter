@@ -31,11 +31,12 @@ class _LogoutScreenState extends State<LogoutScreen> {
   }
 
   // Function to log out and clear SharedPreferences
-  Future<void> _logout() async {
+  Future<void> _logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+    if (context.mounted) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+    }
   }
 
   @override
@@ -46,7 +47,7 @@ class _LogoutScreenState extends State<LogoutScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: _logout,
+            onPressed: () => _logout(context),
           ),
         ],
       ),
@@ -56,8 +57,7 @@ class _LogoutScreenState extends State<LogoutScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Are you sure you want to logout, ${_userData!['name']}',
-                      style: const TextStyle(fontSize: 20)),
+                  Text('Are you sure you want to logout, ${_userData!['name']}', style: const TextStyle(fontSize: 20)),
                   const SizedBox(height: 10),
                   Text('Email: ${_userData!['email']}'),
                   // Display other user information here

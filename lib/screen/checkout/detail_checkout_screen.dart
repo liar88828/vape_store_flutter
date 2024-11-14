@@ -19,8 +19,10 @@ class DetailCheckoutScreen extends StatelessWidget {
       price: 25.0,
       category: "Electronics",
       description: "This is a great electronic product.",
+      option: '30 ML',
     ),
     TrolleyModel(
+      option: '30 ML',
       id: 3,
       idCheckout: 103,
       idProduct: 1003,

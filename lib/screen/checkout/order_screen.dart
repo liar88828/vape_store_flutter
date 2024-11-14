@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:vape_store/models/product_model.dart';
+import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/utils/money.dart';
 
 class OrderScreen extends StatelessWidget {
-  const OrderScreen({super.key});
+  final List<TrolleyModel>? productTrolley;
+  const OrderScreen({super.key, required this.productTrolley});
 
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
-
+    // print(productModel.toString());
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -23,7 +26,7 @@ class OrderScreen extends StatelessWidget {
         child: FilledButton(
             style: FilledButton.styleFrom(
               fixedSize: const Size(240, 100),
-              backgroundColor: Colors.orange,
+              backgroundColor: colorTheme.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -55,66 +58,9 @@ class OrderScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: colorTheme.primary,
                     )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Card(
-                            child: Image.asset(
-                          'lib/images/banner1.png',
-                          height: 100,
-                          width: 100,
-                        )),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Monkey Business',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Text(
-                              'Option : 30ML',
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[500]),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'RP 123.456',
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[500]),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                            style: IconButton.styleFrom(
-                                backgroundColor: colorTheme.errorContainer,
-                                fixedSize: const Size(50, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                )),
-                            onPressed: () {},
-                            icon: Icon(
-                              Icons.delete,
-                              color: colorTheme.error,
-                            )),
-                        const SizedBox(height: 5),
-                        Card(
-                            margin: const EdgeInsets.all(0),
-                            child: Row(children: [
-                              IconButton(onPressed: () {}, icon: const Icon(Icons.remove)),
-                              const Text('1'),
-                              IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
-                            ])),
-                      ],
-                    ),
-                  ],
+                TrolleyProductCard(
+                  colorTheme: colorTheme,
+                  product: productTrolley![0],
                 ),
               ],
             ),
@@ -164,6 +110,71 @@ class OrderScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Row TrolleyProductCard({
+    required ColorScheme colorTheme,
+    required TrolleyModel product,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Card(
+                child: Image.asset(
+              'lib/images/banner1.png',
+              height: 100,
+              width: 100,
+            )),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  product.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                Text(
+                  'Option : ${product.option}',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[500]),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  formatPrice(product.price),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          ],
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+                style: IconButton.styleFrom(
+                    backgroundColor: colorTheme.errorContainer,
+                    fixedSize: const Size(50, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    )),
+                onPressed: () {},
+                icon: Icon(
+                  Icons.delete,
+                  color: colorTheme.error,
+                )),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Text("Qty : ${product.qty}"),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 
