@@ -1,25 +1,25 @@
 class CheckoutModel {
   CheckoutModel({
-    required this.id,
+    this.id,
     required this.idUser,
     required this.total,
     required this.paymentMethod,
     required this.paymentPrice,
     required this.deliveryMethod,
     required this.deliveryPrice,
-    required this.createdAt,
-    required this.updatedAt,
+    // required this.createdAt,
+    // required this.updatedAt,
   });
 
-  final int id;
-  final int? idUser;
+  final int? id;
+  final int idUser;
   final int total;
   final String paymentMethod;
   final int paymentPrice;
   final String deliveryMethod;
   final int deliveryPrice;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  // DateTime? createdAt;
+  // DateTime? updatedAt;
 
   factory CheckoutModel.fromJson(Map<String, dynamic> json) {
     return CheckoutModel(
@@ -30,8 +30,8 @@ class CheckoutModel {
       paymentPrice: json["payment_price"],
       deliveryMethod: json["delivery_method"],
       deliveryPrice: json["delivery_price"],
-      createdAt: DateTime.tryParse(json["created_at"] ?? ""),
-      updatedAt: DateTime.tryParse(json["updated_at"] ?? ""),
+      // createdAt: DateTime.tryParse(json["created_at"] ?? ""),
+      // updatedAt: DateTime.tryParse(json["updated_at"] ?? ""),
     );
   }
 
@@ -43,7 +43,7 @@ class CheckoutModel {
         "payment_price": paymentPrice,
         "delivery_method": deliveryMethod,
         "delivery_price": deliveryPrice,
-        "created_at": createdAt?.toIso8601String(),
-        "updated_at": updatedAt?.toIso8601String(),
+        // "created_at": createdAt?.toIso8601String(),
+        // "updated_at": updatedAt?.toIso8601String(),
       };
 }

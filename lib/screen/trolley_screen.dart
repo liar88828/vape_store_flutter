@@ -42,13 +42,15 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
     }
   }
 
-  Future<void> _removeItem(int id, int idUser) async {
+  Future<void> _removeItem(int id, int idUser, BuildContext context) async {
     bool response = await _trolleyNetwork.removeTrolley(id);
-    if (response) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Success  deleted')));
-      _refreshTrolley(idUser);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fall Delete Data $id')));
+    if (context.mounted) {
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Success  deleted')));
+        _refreshTrolley(idUser);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fall Delete Data $id')));
+      }
     }
   }
 
@@ -212,7 +214,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                          onPressed: () => _removeItem(item.idTrolley, item.idUser),
+                          onPressed: () => _removeItem(item.idTrolley, item.idUser, context),
                         ),
                       ],
                     ),

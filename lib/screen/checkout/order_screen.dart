@@ -1,12 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
+import 'package:vape_store/models/user_model.dart';
+import 'package:vape_store/network/checkout_network.dart';
+import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/utils/money.dart';
+import 'package:vape_store/utils/pref_user.dart';
 
-class OrderScreen extends StatelessWidget {
+class OrderScreen extends StatefulWidget {
   final List<TrolleyModel>? productTrolley;
   const OrderScreen({super.key, required this.productTrolley});
+
+  @override
+  State<OrderScreen> createState() => _OrderScreenState();
+}
+
+class _OrderScreenState extends State<OrderScreen> {
+  final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
+  UserModel? _userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshData();
+  }
+
+  Future<void> _refreshData() async {
+    _userData = await loadUserData();
+    if (_userData != null) {}
+
+    setState(() {});
+  }
+
+  Future<void> _createCheckout(BuildContext context, CheckoutModel checkout) async {
+    final response = await _checkoutNetwork.createCheckout(checkout);
+    // print(response);
+    if (context.mounted) {
+      if (response.success) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DetailCheckoutScreen()));
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +69,16 @@ class OrderScreen extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+              _createCheckout(
+                  context,
+                  CheckoutModel(
+                    idUser: _userData!.id,
+                    total: 1,
+                    deliveryMethod: 'mandiri',
+                    paymentMethod: 'jnt',
+                    paymentPrice: 100,
+                    deliveryPrice: 200,
+                  ));
             },
             child: const Text('CHECKOUT (RP 123.456)')),
       ),
@@ -60,7 +106,7 @@ class OrderScreen extends StatelessWidget {
                     )),
                 TrolleyProductCard(
                   colorTheme: colorTheme,
-                  product: productTrolley![0],
+                  product: widget.productTrolley![0],
                 ),
               ],
             ),
