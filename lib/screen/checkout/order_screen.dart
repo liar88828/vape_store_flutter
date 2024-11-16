@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/models/checkout_model.dart';
-import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/checkout_network.dart';
 import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
-import 'package:vape_store/screen/home_screen.dart';
+import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/utils/pref_user.dart';
 
@@ -34,15 +33,27 @@ class _OrderScreenState extends State<OrderScreen> {
     setState(() {});
   }
 
-  Future<void> _createCheckout(BuildContext context, CheckoutModel checkout) async {
-    final response = await _checkoutNetwork.createCheckout(checkout);
+  Future<void> _createCheckout(BuildContext context, CheckoutModel checkout, List<TrolleyModel> trolley) async {
+    // print(checkout.toJson());
+    // print(trolley.map((e) => e.toJson()).toList());
+    final response = await _checkoutNetwork.createCheckout(
+      checkout,
+      trolley.map((d) => d.id!).toList(),
+    );
     // print(response);
     if (context.mounted) {
       if (response.success) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => DetailCheckoutScreen()));
+        // Navigator.push(context, MaterialPageRoute(builder: (context) => DetailCheckoutScreen(checkout: checkout)));
       }
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
     }
+  }
+
+  void _removeData(int id) {
+    setState(() {
+      widget.productTrolley?.removeWhere((item) => item.idProduct == id);
+    });
+    // print(widget.productTrolley?.toList());
   }
 
   @override
@@ -54,10 +65,14 @@ class _OrderScreenState extends State<OrderScreen> {
         centerTitle: true,
         toolbarHeight: 70,
         title: const Text('Order Screen'),
-        leading: const Padding(
-          padding: EdgeInsets.only(left: 10),
-          child: BackButton(),
-        ),
+        leading: BackButton(onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return const TrolleyScreen();
+            }),
+          );
+        }),
       ),
       bottomNavigationBar: BottomAppBar(
         child: FilledButton(
@@ -74,11 +89,12 @@ class _OrderScreenState extends State<OrderScreen> {
                   CheckoutModel(
                     idUser: _userData!.id,
                     total: 1,
-                    deliveryMethod: 'mandiri',
-                    paymentMethod: 'jnt',
+                    deliveryMethod: 'jnt',
+                    paymentMethod: 'mandiri',
                     paymentPrice: 100,
                     deliveryPrice: 200,
-                  ));
+                  ),
+                  widget.productTrolley?.toList() ?? []);
             },
             child: const Text('CHECKOUT (RP 123.456)')),
       ),
@@ -86,7 +102,7 @@ class _OrderScreenState extends State<OrderScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
-            ListCheckout(
+            listCheckout(
               colorTheme: colorTheme,
               text: 'My Location',
               onClick: () {},
@@ -104,13 +120,21 @@ class _OrderScreenState extends State<OrderScreen> {
                       fontWeight: FontWeight.bold,
                       color: colorTheme.primary,
                     )),
-                TrolleyProductCard(
-                  colorTheme: colorTheme,
-                  product: widget.productTrolley![0],
-                ),
+                Column(
+                  children: widget.productTrolley == null
+                      ? [const Text('Data is null')]
+                      : widget.productTrolley!.map(
+                          (product) {
+                            return trolleyProductCard(
+                              colorTheme: colorTheme,
+                              product: product,
+                            );
+                          },
+                        ).toList(),
+                )
               ],
             ),
-            ListCheckout(
+            listCheckout(
               colorTheme: colorTheme,
               text: 'Delivery',
               onClick: () {},
@@ -118,7 +142,7 @@ class _OrderScreenState extends State<OrderScreen> {
               title: "JNT",
               icon: Icons.delivery_dining,
             ),
-            ListCheckout(
+            listCheckout(
               colorTheme: colorTheme,
               text: 'Payment Method',
               onClick: () {},
@@ -159,10 +183,28 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Row TrolleyProductCard({
+  Widget trolleyProductCard({
     required ColorScheme colorTheme,
     required TrolleyModel product,
   }) {
+    // return ListTile(
+    //   contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+    //   leading: Image.asset(
+    //     'lib/images/banner1.png',
+    //     height: 80,
+    //     width: 80,
+    //   ),
+    //   title: Text(product.name),
+    //   subtitle: Text(formatPrice(product.price)),
+    //   trailing: IconButton(
+    //     style: IconButton.styleFrom(
+    //       backgroundColor: colorTheme.errorContainer,
+    //     ),
+    //     onPressed: () {},
+    //     icon: Icon(Icons.delete, color: colorTheme.error),
+    //   ),
+    // );
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -171,8 +213,8 @@ class _OrderScreenState extends State<OrderScreen> {
             Card(
                 child: Image.asset(
               'lib/images/banner1.png',
-              height: 100,
-              width: 100,
+              height: 70,
+              width: 70,
             )),
             const SizedBox(width: 10),
             Column(
@@ -184,7 +226,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 Text(
-                  'Option : ${product.option}',
+                  'Type : ${product.type}',
                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[500]),
                 ),
                 const SizedBox(height: 10),
@@ -198,7 +240,6 @@ class _OrderScreenState extends State<OrderScreen> {
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
-          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             IconButton(
                 style: IconButton.styleFrom(
@@ -207,7 +248,9 @@ class _OrderScreenState extends State<OrderScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     )),
-                onPressed: () {},
+                onPressed: () {
+                  _removeData(product.idProduct);
+                },
                 icon: Icon(
                   Icons.delete,
                   color: colorTheme.error,
@@ -215,7 +258,10 @@ class _OrderScreenState extends State<OrderScreen> {
             const SizedBox(height: 5),
             Row(
               children: [
-                Text("Qty : ${product.qty}"),
+                Text(
+                  "Qty : ${product.trolleyQty}",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[500]),
+                ),
               ],
             ),
           ],
@@ -224,7 +270,7 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Column ListCheckout({
+  Column listCheckout({
     required ColorScheme colorTheme,
     required String text,
     required String title,
@@ -242,7 +288,7 @@ class _OrderScreenState extends State<OrderScreen> {
           )),
       // const SizedBox(height: 2),
       ListTile(
-        contentPadding: EdgeInsets.all(0),
+        contentPadding: const EdgeInsets.all(0),
         leading: IconButton(
             style: IconButton.styleFrom(
                 backgroundColor: colorTheme.primaryContainer,
@@ -272,15 +318,3 @@ class _OrderScreenState extends State<OrderScreen> {
     ]);
   }
 }
-
-// Card(
-//                   child: Padding(
-//                       padding: const EdgeInsets.all(10),
-//                       child: Column(children: [
-//                         Image.asset('lib/images/banner1.png', height: 50, width: 50),
-//                         const Text(
-//                           'Gopay',
-//                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-//                         ),
-//                         const Text('Rp 123.456'),
-//                       ])))

@@ -23,10 +23,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
   final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
 
+  Future<List<CheckoutModel>>? _checkoutData;
   int? _favoriteCount;
   int? _trolleyCount;
   UserModel? _userData;
-  Future<List<CheckoutModel>>? _checkoutData;
 
   Future<void> _refreshHandler() async {
     final session = await loadUserData();
@@ -39,6 +39,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // _trolleyCount
       });
     }
+  }
+
+  void _toDetailCheckout(CheckoutModel data, int id) {
+    // print(data.toJson());
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      // return DetailScreen(id: data.id);
+      return DetailCheckoutScreen(
+        checkout: data,
+        idCheckout: id,
+      );
+    }));
   }
 
   @override
@@ -182,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         } else {
                           return Column(
                             children: snapshot.data!.map((data) {
-                              return HistoryList(data: data);
+                              return listHistory(data);
                             }).toList(),
                           );
                         }
@@ -195,20 +206,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
   }
-}
 
-class HistoryList extends StatelessWidget {
-  const HistoryList({
-    super.key,
-    required this.data,
-  });
-  final CheckoutModel data;
-
-  @override
-  Widget build(BuildContext context) {
-    // final String formattedDate = formatDate(date);
-    final formattedPrice = formatPrice(data.total);
-
+  Card listHistory(CheckoutModel data) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -227,17 +226,17 @@ class HistoryList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      data.paymentMethod,
+                      "ID History : ${data.id}",
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      formattedPrice,
+                      "Total ${formatPrice(data.total)}",
                       style: const TextStyle(),
                     ),
-                    Text(data.deliveryMethod,
+                    Text(formatDate(data.updatedAt!),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w300,
@@ -249,10 +248,7 @@ class HistoryList extends StatelessWidget {
             ),
             IconButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    // return DetailScreen(id: data.id);
-                    return DetailCheckoutScreen();
-                  }));
+                  _toDetailCheckout(data, data.id ?? 0);
                 },
                 icon: const Icon(Icons.arrow_forward))
           ],

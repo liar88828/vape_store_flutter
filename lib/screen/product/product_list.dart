@@ -7,7 +7,7 @@ class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
 
   @override
-  _ProductListScreenState createState() => _ProductListScreenState();
+  State<ProductListScreen> createState() => _ProductListScreenState();
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
@@ -26,13 +26,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
     });
   }
 
-  void _deleteProduct(int id) async {
+  void _deleteProduct(BuildContext context, int id) async {
     bool success = await _apiService.deleteProduct(id);
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product deleted')));
-      _refreshProducts();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete product')));
+    if (context.mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product deleted')));
+        _refreshProducts();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete product')));
+      }
     }
   }
 
@@ -47,7 +49,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             onPressed: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ProductFormScreen()),
+                MaterialPageRoute(builder: (context) => const ProductFormScreen()),
               );
               if (result == true) _refreshProducts();
             },
@@ -83,7 +85,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteProduct(product.id!),
+                        onPressed: () => _deleteProduct(context, product.id!),
                       ),
                     ],
                   ),

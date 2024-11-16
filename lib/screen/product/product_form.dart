@@ -8,7 +8,7 @@ class ProductFormScreen extends StatefulWidget {
   const ProductFormScreen({super.key, this.product});
 
   @override
-  _ProductFormScreenState createState() => _ProductFormScreenState();
+  State<ProductFormScreen> createState() => _ProductFormScreenState();
 }
 
 class _ProductFormScreenState extends State<ProductFormScreen> {
@@ -29,7 +29,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     }
   }
 
-  Future<void> _saveProduct() async {
+  Future<void> _saveProduct(BuildContext context) async {
     final product = ProductModel(
       id: widget.product?.id,
       idUser: 1, // Example user ID; replace with actual data
@@ -44,37 +44,25 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     } else {
       await _apiService.updateProduct(product);
     }
-
-    Navigator.pop(context, true);
+    if (context.mounted) {
+      Navigator.pop(context, true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title:
-                Text(widget.product == null ? 'Add Product' : 'Edit Product')),
+        appBar: AppBar(title: Text(widget.product == null ? 'Add Product' : 'Edit Product')),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Name')),
-              TextField(
-                  controller: _qtyController,
-                  decoration: const InputDecoration(labelText: 'Quantity'),
-                  keyboardType: TextInputType.number),
-              TextField(
-                  controller: _priceController,
-                  decoration: const InputDecoration(labelText: 'Price'),
-                  keyboardType: TextInputType.number),
-              TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description')),
+              TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Name')),
+              TextField(controller: _qtyController, decoration: const InputDecoration(labelText: 'Quantity'), keyboardType: TextInputType.number),
+              TextField(controller: _priceController, decoration: const InputDecoration(labelText: 'Price'), keyboardType: TextInputType.number),
+              TextField(controller: _descriptionController, decoration: const InputDecoration(labelText: 'Description')),
               const SizedBox(height: 20),
-              ElevatedButton(
-                  onPressed: _saveProduct, child: const Text('Save')),
+              ElevatedButton(onPressed: () => _saveProduct(context), child: const Text('Save')),
             ],
           ),
         ));

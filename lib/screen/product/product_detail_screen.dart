@@ -31,7 +31,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late Future<List<FavoriteModel>> _favoriteData;
 
   UserModel? _userData;
-  String? _valueOption;
+  String? _valueType;
   int? _countTrolley;
   int _counterQty = 1; // Define _counter as part of the widget state
 
@@ -57,7 +57,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _decrement(setState) {
-    setState(() => _counterQty--);
+    if (_counterQty > 1) {
+      setState(() => _counterQty--);
+    }
   }
 
   Future<void> _addCheckout(ProductModel product) async {
@@ -65,14 +67,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return OrderScreen(
         productTrolley: [
           TrolleyModel(
-              category: _valueOption ?? '',
+              trolleyQty: _counterQty,
+              category: _valueType ?? '',
               id: 0,
               description: '',
               name: product.name,
               price: product.price,
               qty: _counterQty,
               idUser: _userData!.id,
-              option: _valueOption ?? '',
+              type: _valueType ?? '',
               trolleyIdUser: _userData!.id,
               idProduct: product.id!,
               idTrolley: 0,
@@ -104,11 +107,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             children: ['30 ML', '60 ML', '90 ML']
                                 .map((label) => ChoiceChip(
                                     label: Text(label),
-                                    selected: _valueOption == label,
+                                    selected: _valueType == label,
                                     backgroundColor: colorTheme.surfaceBright,
                                     selectedColor: colorTheme.primaryContainer,
                                     onSelected: (bool selected) {
-                                      _selectOption(label, setState);
+                                      _selectType(label, setState);
                                     }))
                                 .toList())
                       ]),
@@ -158,17 +161,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _addTrolly(BuildContext context) async {
-    final response = await _trolleyNetwork.addTrolley(TrolleyCreate(
-      id: 1,
-      qty: 1,
-      idProduct: widget.id,
-      idUser: _userData!.id,
-      option: _valueOption ?? "",
-    ));
+    final response = await _trolleyNetwork.addTrolley(
+      TrolleyCreate(
+        id: 1,
+        qty: _counterQty,
+        idProduct: widget.id,
+        idUser: _userData!.id,
+        type: _valueType ?? "",
+      ),
+    );
     // return response;
     if (context.mounted) {
       if (response) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success ')));
+        Navigator.pop(context);
         // Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderScreen()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('fail')));
@@ -191,17 +197,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const Text('Are you sure you want to add this product to your trolley?'),
                     const SizedBox(height: 10),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      const Text('Option', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const Text('Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       Wrap(
                           spacing: 5.0,
                           children: ['30 ML', '60 ML', '90 ML']
                               .map((label) => ChoiceChip(
                                   label: Text(label),
-                                  selected: _valueOption == label,
+                                  selected: _valueType == label,
                                   backgroundColor: colorTheme.surfaceBright,
                                   selectedColor: colorTheme.primaryContainer,
                                   onSelected: (bool selected) {
-                                    _selectOption(label, setState);
+                                    _selectType(label, setState);
                                   }))
                               .toList())
                     ]),
@@ -209,21 +215,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Qty', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text('Qty',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            )),
                         Card(
-                          elevation: 0,
-                          color: colorTheme.primaryContainer,
-                          child: Row(
-                            children: [
-                              IconButton(onPressed: () => _decrement(setState), icon: const Icon(Icons.remove)),
+                            elevation: 0,
+                            color: colorTheme.primaryContainer,
+                            child: Row(children: [
+                              IconButton(
+                                onPressed: () => _decrement(setState),
+                                icon: const Icon(Icons.remove),
+                              ),
                               Text(
                                 _counterQty.toString(),
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              IconButton(onPressed: () => _increment(setState), icon: const Icon(Icons.add)),
-                            ],
-                          ),
-                        ),
+                              IconButton(
+                                onPressed: () => _increment(setState),
+                                icon: const Icon(Icons.add),
+                              ),
+                            ]))
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -301,18 +317,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     trailing: IconButton(
                                       icon: const Icon(Icons.add),
                                       onPressed: () async {
-                                        final response = await _favoriteNetwork.addFavoriteList(FavoriteListCreate(
-                                          idFavorite: data.id,
-                                          idProduct: widget.id,
-                                          // idUser: _userData!.id,
-                                        ));
-                                        print(response.success);
-                                        if (response.success) {
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
-                                          Navigator.pop(context);
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
-                                        }
+                                        await addFavorite(context, data);
                                       },
                                     ),
                                   );
@@ -346,9 +351,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         });
   }
 
-  void _selectOption(String label, setState) {
+  Future<void> addFavorite(
+    BuildContext context,
+    FavoriteModel data,
+  ) async {
+    final response = await _favoriteNetwork.addFavoriteList(FavoriteListCreate(
+      idFavorite: data.id,
+      idProduct: widget.id,
+      // idUser: _userData!.id,
+    ));
+    // print(response.success);
+    if (context.mounted) {
+      if (response.success) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+      }
+    }
+  }
+
+  void _selectType(String label, setState) {
     setState(() {
-      _valueOption = label;
+      _valueType = label;
     });
   }
 
@@ -530,11 +555,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               children: ['30 ML', '60 ML', '90 ML']
                                   .map((label) => ChoiceChip(
                                         label: Text(label),
-                                        selected: _valueOption == label,
+                                        selected: _valueType == label,
                                         backgroundColor: colorTheme.surfaceBright,
                                         selectedColor: colorTheme.primaryContainer,
                                         onSelected: (bool selected) {
-                                          _selectOption(label, setState);
+                                          _selectType(label, setState);
                                         },
                                       ))
                                   .toList(),

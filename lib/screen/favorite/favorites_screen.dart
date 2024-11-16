@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vape_store/assets/favorite_example.dart';
 import 'package:vape_store/models/favorite_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/favorite_network.dart';
@@ -96,7 +95,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text(
-                'Total : ${_favoriteCount}',
+                'Total : $_favoriteCount',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               IconButton(

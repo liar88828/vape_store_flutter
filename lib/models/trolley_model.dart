@@ -9,10 +9,11 @@ class TrolleyModel extends TrolleyData {
     required this.idProduct,
     required this.trolleyIdUser,
     required this.idUser,
-    required this.option,
+    required this.type,
     required this.qty,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.trolleyQty,
+    this.createdAt,
+    this.updatedAt,
     required this.idTrolley,
     required this.name,
     required this.price,
@@ -24,8 +25,9 @@ class TrolleyModel extends TrolleyData {
   final int idProduct;
   final int idUser;
   int qty;
+  int trolleyQty;
   int? idCheckout;
-  String? option;
+  String? type;
   num price;
   final int idTrolley;
   final String name;
@@ -38,12 +40,13 @@ class TrolleyModel extends TrolleyData {
   factory TrolleyModel.fromJson(Map<String, dynamic> json) {
     return TrolleyModel(
       id: json["id"],
-      option: json["option"],
+      type: json["type"],
       idCheckout: json["id_checkout"],
       idProduct: json["id_product"],
       idUser: json["id_user"],
       trolleyIdUser: json["trolley_id_user"],
       qty: json["qty"],
+      trolleyQty: json["trolley_qty"],
       createdAt: DateTime.parse(json["created_at"]),
       updatedAt: DateTime.parse(json["updated_at"]),
       idTrolley: json["id_trolley"],
@@ -61,6 +64,7 @@ class TrolleyModel extends TrolleyData {
         "id_user": idUser,
         "trolley_id_user": trolleyIdUser,
         "qty": qty,
+        "trolley_qty": trolleyQty,
         "created_at": createdAt?.toIso8601String(),
         "updated_at": updatedAt?.toIso8601String(),
         "id_trolley": idTrolley,
@@ -76,14 +80,14 @@ class TrolleyCreate extends TrolleyData {
   final int qty;
   final int idProduct;
   final int idUser;
-  final String option;
+  final String type;
 
   TrolleyCreate({
     required this.id,
     required this.qty,
     required this.idProduct,
     required this.idUser,
-    required this.option,
+    required this.type,
   });
 
   // Convert to JSON for network requests
@@ -93,7 +97,7 @@ class TrolleyCreate extends TrolleyData {
       'qty': qty,
       'id_product': idProduct,
       'id_user': idUser,
-      'option': option,
+      'type': type,
     };
   }
 }

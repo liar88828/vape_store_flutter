@@ -26,16 +26,15 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
     });
   }
 
-  void _deleteFavorite(int id) async {
+  void _deleteFavorite(BuildContext context, int id) async {
     bool response = await _favoriteNetwork.deleteFavorite(id);
-
-    if (response) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Favorite Delete')));
-      _refreshFavorites();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fail to delete Favorite')));
+    if (context.mounted) {
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Favorite Delete')));
+        _refreshFavorites();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fail to delete Favorite')));
+      }
     }
   }
 
@@ -47,8 +46,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () async {
-              final result = await Navigator.push(context,
-                  MaterialPageRoute(builder: (context) {
+              final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
                 return const FavoriteFormScreen();
               }));
               if (result == true) _refreshFavorites();
@@ -81,8 +79,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                     children: [
                       IconButton(
                           onPressed: () async {
-                            final result = await Navigator.push(context,
-                                MaterialPageRoute(builder: (context) {
+                            final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
                               return FavoriteFormScreen(favorite: favorite);
                             }));
                             if (result == true) _refreshFavorites();
@@ -90,7 +87,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                           icon: const Icon(Icons.edit)),
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteFavorite(favorite.id!),
+                        onPressed: () => _deleteFavorite(context, favorite.id!),
                       ),
                     ],
                   ),

@@ -34,6 +34,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
 
   Future<void> _refreshData() async {
     final data = await _favoriteData;
+    // ignore: unnecessary_null_comparison
     if (data != null) {
       _titleController.text = data.title;
       _descriptionController.text = data.description;
@@ -41,7 +42,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
     setState(() {});
   }
 
-  Future<void> _updateFavorite() async {
+  Future<void> _updateFavorite(context) async {
     try {
       final favorite = FavoriteModel(
         id: widget.id,
@@ -51,7 +52,10 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
       );
 
       await _favoriteNetwork.updateFavorite(favorite);
-      Navigator.pop(context, true);
+      if (context.mounted) {
+        Navigator.pop(context, true);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+      }
     } catch (e) {
       print(e);
       // Navigator.pop(context);
@@ -128,10 +132,10 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
               ),
               TextButton(
                 child: const Text('Edit'),
-                onPressed: () {
-                  _updateFavorite();
+                onPressed: () async {
+                  await _updateFavorite(context);
                   // Navigator.of(context).pop();
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+                  // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
                 },
               ),
             ],

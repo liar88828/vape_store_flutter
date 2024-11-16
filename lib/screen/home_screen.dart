@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // print(countTrolley);
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 70,
+        toolbarHeight: 60,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (BuildContext context) {
                     return Container(
                       width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 20),
+                      margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(color: colorTheme.primaryContainer, borderRadius: BorderRadius.circular(10)),
                       child: Row(

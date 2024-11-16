@@ -4,13 +4,14 @@ import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/product/product_detail_screen.dart';
 import 'package:vape_store/screen/checkout/order_screen.dart';
+import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/utils/pref_user.dart';
 
 class TrolleyScreen extends StatefulWidget {
   const TrolleyScreen({super.key});
 
   @override
-  _TrolleyScreenState createState() => _TrolleyScreenState();
+  State<TrolleyScreen> createState() => _TrolleyScreenState();
 }
 
 class _TrolleyScreenState extends State<TrolleyScreen> {
@@ -73,14 +74,14 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
     return total;
   }
 
-  void _incrementCount(bool isSelected, item) {
+  void _incrementCount(bool isSelected, TrolleyModel item) {
     setState(() {
       item.qty++;
       if (isSelected) calculateTotalPrice();
     });
   }
 
-  void _decrementCount(bool isSelected, item) {
+  void _decrementCount(bool isSelected, TrolleyModel item) {
     setState(() {
       if (item.qty > 1) {
         item.qty--;
@@ -105,11 +106,11 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
               // Checkout Button
               ElevatedButton(
                 onPressed: () {
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) {const OrderScreen()},
-                  //     ));
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) {
+                      return OrderScreen(productTrolley: cartItems);
+                    },
+                  ));
                 },
                 child: const Text(
                   'Checkout',
@@ -136,10 +137,11 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
               itemBuilder: (context, index) {
                 var item = snapshot.data![index];
                 // var item = availableItems[index];
+
                 // var item = snapshot.data![index];
                 bool isSelected = cartItems.contains(item);
-                itemCounts.putIfAbsent(item.idProduct, () => item.qty);
-
+                // print(item.qty);
+                itemCounts.putIfAbsent(item.idProduct, () => item.trolleyQty);
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                   child: Padding(
@@ -174,12 +176,12 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                             children: [
                               Text(
                                 item.name,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Price: \$${item.price}',
+                                'Price: ${formatPrice(item.price)}',
                                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                               ),
                               // const SizedBox(height: 4),
@@ -189,7 +191,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                               // ),
                               const SizedBox(height: 4),
                               Text(
-                                'Type: ${item.option ?? 'null'}',
+                                'Type: ${item.type ?? 'null'}',
                                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                               ),
                             ],
@@ -202,7 +204,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                               onPressed: () => _decrementCount(isSelected, item),
                               icon: const Icon(Icons.remove, size: 20),
                             ),
-                            Text(item.qty.toString(), style: const TextStyle(fontSize: 16)),
+                            Text(item.trolleyQty.toString(), style: const TextStyle(fontSize: 16)),
                             IconButton(
                               iconSize: 20,
                               onPressed: () {

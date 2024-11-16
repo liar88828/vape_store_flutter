@@ -8,7 +8,7 @@ class CheckoutModel {
     required this.deliveryMethod,
     required this.deliveryPrice,
     // required this.createdAt,
-    // required this.updatedAt,
+    this.updatedAt,
   });
 
   final int? id;
@@ -19,7 +19,7 @@ class CheckoutModel {
   final String deliveryMethod;
   final int deliveryPrice;
   // DateTime? createdAt;
-  // DateTime? updatedAt;
+  DateTime? updatedAt;
 
   factory CheckoutModel.fromJson(Map<String, dynamic> json) {
     return CheckoutModel(
@@ -31,7 +31,7 @@ class CheckoutModel {
       deliveryMethod: json["delivery_method"],
       deliveryPrice: json["delivery_price"],
       // createdAt: DateTime.tryParse(json["created_at"] ?? ""),
-      // updatedAt: DateTime.tryParse(json["updated_at"] ?? ""),
+      updatedAt: DateTime.tryParse(json["updated_at"] ?? ""),
     );
   }
 
@@ -44,6 +44,6 @@ class CheckoutModel {
         "delivery_method": deliveryMethod,
         "delivery_price": deliveryPrice,
         // "created_at": createdAt?.toIso8601String(),
-        // "updated_at": updatedAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
       };
 }

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:vape_store/models/bank_model.dart';
 import 'package:vape_store/models/delivery_model.dart';
 
 class DeliveryNetwork {
