@@ -9,13 +9,13 @@ class BankModel {
     required this.id,
   });
 
-  final String? name;
-  final String? phone;
-  final String? address;
-  final String? accounting;
+  final String name;
+  final String phone;
+  final String address;
+  final String accounting;
   final DateTime? updatedAt;
   final DateTime? createdAt;
-  final int? id;
+  final int id;
 
   factory BankModel.fromJson(Map<String, dynamic> json) {
     return BankModel(

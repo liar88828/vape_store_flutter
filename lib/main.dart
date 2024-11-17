@@ -18,11 +18,18 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    ColorScheme colorScheme = ColorScheme.fromSeed(seedColor: Colors.pinkAccent);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
+      // themeMode: ThemeData.light,
+      // darkTheme: ThemeData.dark(),
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
+        colorScheme: colorScheme,
+        iconButtonTheme: const IconButtonThemeData(
+            style: ButtonStyle(
+                // backgroundColor: WidgetStateProperty.all(colorScheme.primaryContainer),
+                )),
         // Theme.of(context).colorScheme.inversePrimary
         useMaterial3: true,
       ),

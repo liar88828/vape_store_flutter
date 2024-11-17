@@ -62,7 +62,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
     }
   }
 
-  Future<void> _deleteFavorite() async {
+  Future<void> _deleteFavorite(BuildContext context) async {
     // print(widget.id);
     return showDialog(
         context: context,
@@ -203,7 +203,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                 color: colorTheme.primary,
                 style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 // color: Colors.red,
-                onPressed: _deleteFavorite,
+                onPressed: () => _deleteFavorite(context),
                 icon: const Icon(
                   Icons.delete,
                 )),

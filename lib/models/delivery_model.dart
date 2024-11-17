@@ -9,11 +9,11 @@ class DeliveryModel {
     required this.updatedAt,
   });
 
-  final int? id;
-  final String? name;
-  final String? phone;
-  final int? price;
-  final String? address;
+  final int id;
+  final String name;
+  final String phone;
+  final num price;
+  final String address;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 

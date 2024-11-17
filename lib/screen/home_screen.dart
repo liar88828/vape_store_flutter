@@ -74,7 +74,12 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
               color: colorTheme.primary,
-              style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              style: IconButton.styleFrom(
+                // backgroundColor: colorTheme.primaryContainer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               // color: Colors.red,
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {

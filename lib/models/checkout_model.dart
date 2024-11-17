@@ -13,11 +13,11 @@ class CheckoutModel {
 
   final int? id;
   final int idUser;
-  final int total;
+  final num total;
   final String paymentMethod;
   final int paymentPrice;
   final String deliveryMethod;
-  final int deliveryPrice;
+  final num deliveryPrice;
   // DateTime? createdAt;
   DateTime? updatedAt;
 
@@ -46,4 +46,20 @@ class CheckoutModel {
         // "created_at": createdAt?.toIso8601String(),
         "updated_at": updatedAt?.toIso8601String(),
       };
+}
+
+class OrderInfoModel {
+  OrderInfoModel({
+    required this.subTotal,
+    required this.shippingCost,
+    required this.discount,
+    required this.discountPrice,
+    required this.total,
+  });
+
+  num subTotal;
+  num shippingCost;
+  num discount;
+  num discountPrice;
+  num total;
 }

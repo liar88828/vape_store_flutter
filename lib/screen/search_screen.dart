@@ -77,7 +77,12 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(),
+        leading: const BackButton(
+          style: ButtonStyle(
+              // iconColor: WidgetStatePropertyAll(Colors.red),
+              // backgroundColor: WidgetStatePropertyAll(Colors.orange),
+              ),
+        ),
         toolbarHeight: 70,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 1),
