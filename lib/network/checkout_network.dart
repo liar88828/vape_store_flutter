@@ -2,13 +2,15 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:vape_store/models/checkout_model.dart';
+import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/response_model.dart';
+import 'package:vape_store/models/trolley_model.dart';
 
 class CheckoutNetwork {
   final baseUrl = 'http://localhost:8000/api';
 
   Future<List<CheckoutModel>> fetchAll(int idUser) async {
-    print(idUser);
+    // print(idUser);
     final response = await http.get(Uri.parse("$baseUrl/checkout/id-user/$idUser"));
     if (response.statusCode == 201) {
       final dataJson = jsonDecode(response.body);
@@ -29,7 +31,16 @@ class CheckoutNetwork {
     }
   }
 
-  Future<ResponseModel> createCheckout(CheckoutModel checkout, List<int> idTrolley) async {
+  Future<ResponseModel> createSingleCheckout() async {
+    print("single");
+    return ResponseModel(
+      message: '',
+      success: false,
+    );
+  }
+  // Future manyTrolley() {}
+
+  Future<ResponseModel<CheckoutModel>> createManyCheckout(CheckoutModel checkout, List<int> idTrolley) async {
     try {
       final data = {
         "id_user": checkout.idUser,
@@ -50,9 +61,11 @@ class CheckoutNetwork {
         final dataJson = jsonDecode(response.body);
         String message = dataJson['message'];
         print(message);
+        print(dataJson['data']);
         return ResponseModel(
           success: true,
           message: message,
+          data: CheckoutModel.fromJson(dataJson['data']),
         );
       } else {
         // String message = dataJson['message'];
@@ -62,6 +75,23 @@ class CheckoutNetwork {
     } catch (e) {
       print(e.toString());
       return ResponseModel(message: 'Error Checkout', success: false);
+    }
+  }
+
+  Future<List<ProductModel>> fetchTrolleyCheckout(int idCheckout) async {
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/checkout/id-checkout/$idCheckout"));
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        final List<dynamic> trolleyData = jsonData['data'];
+        // print(trolleyData);
+        return trolleyData.map((trolley) => ProductModel.fromJson(trolley)).toList();
+      } else {
+        throw Exception('Failed to load trolley');
+      }
+    } catch (e) {
+      print(e.toString());
+      return [];
     }
   }
 }

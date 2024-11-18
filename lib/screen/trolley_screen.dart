@@ -30,7 +30,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
 
   void _refreshTrolley(int idUser) {
     setState(() {
-      _trolleyData = _trolleyNetwork.fetchTrolley(idUser);
+      _trolleyData = _trolleyNetwork.fetchTrolleyCurrent(idUser);
     });
   }
 
@@ -38,7 +38,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
   Future<void> _refreshData() async {
     _userModel = await loadUserData();
     if (_userModel != null) {
-      _trolleyData = _trolleyNetwork.fetchTrolley(_userModel!.id);
+      _trolleyData = _trolleyNetwork.fetchTrolleyCurrent(_userModel!.id);
       setState(() {});
     }
   }
@@ -102,7 +102,10 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Display Total Price
-              Text('Total Price: \$${totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                'Total Price: ${formatPrice(totalPrice)}',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               // Checkout Button
               ElevatedButton(
                 onPressed: () {

@@ -22,7 +22,7 @@ class TrolleyNetwork {
     }
   }
 
-  Future<List<TrolleyModel>> fetchTrolley(int idUser) async {
+  Future<List<TrolleyModel>> fetchTrolleyCurrent(int idUser) async {
     print('fetch by user id :$idUser');
     final response = await http.get(Uri.parse("$baseUrl/trolley/id-user/$idUser"));
     if (response.statusCode == 200) {

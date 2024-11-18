@@ -21,7 +21,7 @@ class TrolleyModel extends TrolleyData {
     required this.description,
   });
 
-  final int? id;
+  final int id;
   final int idProduct;
   final int idUser;
   int qty;

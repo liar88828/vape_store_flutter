@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/models/checkout_model.dart';
+import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/network/checkout_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
@@ -8,7 +9,7 @@ import 'package:vape_store/utils/money.dart';
 class DetailCheckoutScreen extends StatefulWidget {
   final CheckoutModel? checkout;
   final int? idCheckout;
-  DetailCheckoutScreen({
+  const DetailCheckoutScreen({
     super.key,
     required this.checkout,
     required this.idCheckout,
@@ -20,8 +21,8 @@ class DetailCheckoutScreen extends StatefulWidget {
 
 class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
   final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
-  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
-  Future<List<TrolleyModel>>? _trolleyData;
+  final TrolleyNetwork _trolleyModel = TrolleyNetwork();
+  Future<List<TrolleyModel>>? _trolleyList;
   Future<CheckoutModel>? _checkoutData;
 
   @override
@@ -34,9 +35,7 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
     if (widget.idCheckout != null) {
       // print(widget.idCheckout);
       _checkoutData = _checkoutNetwork.fetchId(widget.idCheckout!);
-      _trolleyData = _trolleyNetwork.fetchTrolleyCheckout(widget.idCheckout!);
-      // print(_trolleyData);
-      // print(_checkoutData);
+      _trolleyList = _trolleyModel.fetchTrolleyCheckout(widget.idCheckout!);
     }
 
     setState(() {});
@@ -60,7 +59,7 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
             const SizedBox(height: 16),
             Expanded(
               child: FutureBuilder<List<TrolleyModel>>(
-                  future: _trolleyData,
+                  future: _trolleyList,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());

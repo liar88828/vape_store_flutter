@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:vape_store/models/response_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -52,7 +53,7 @@ class UserNetwork {
   }
 
   // Login
-  Future<bool> login(String email, String password) async {
+  Future<ResponseModel> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/login'),
       body: jsonEncode({
@@ -64,17 +65,17 @@ class UserNetwork {
 
     // print(response.statusCode);
 
+    final data = json.decode(response.body);
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
       final token = data['token'];
       print(data);
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
       prefs.setString('token', token);
       prefs.setString('user', jsonEncode(data['data']));
-      return true;
+      return ResponseModel(success: true, message: data['message']);
     } else {
-      return false;
+      return ResponseModel(success: false, message: data['message']);
     }
   }
 

@@ -2,6 +2,8 @@ import 'package:vape_store/models/product_model.dart';
 
 final List<ProductModel> productExample = [
   ProductModel(
+      brand: 'Vape Rasa',
+
       // date: DateTime.now(),
       name: 'Vape Rasa Melon',
       price: 200000,
@@ -12,6 +14,7 @@ final List<ProductModel> productExample = [
       qty: 1),
   ProductModel(
       // date: DateTime.now(),
+      brand: 'Vape Rasa',
       name: 'Vape Rasa Anggur',
       price: 200000,
       id: 2,
@@ -21,6 +24,8 @@ final List<ProductModel> productExample = [
       // img: 'lib/images/banner1.png',
       ),
   ProductModel(
+      brand: 'Vape Rasa',
+
       // date: DateTime.now(),
       name: 'Vape Rasa strawberry',
       description: 'is description',
@@ -32,6 +37,7 @@ final List<ProductModel> productExample = [
       ),
   ProductModel(
     // date: DateTime.now(),
+    brand: 'Vape Rasa',
     name: 'Vape Rasa pisang',
     price: 200000,
     id: 4,

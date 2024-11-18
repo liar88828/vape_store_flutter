@@ -15,7 +15,6 @@ import 'package:vape_store/utils/pref_user.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, required this.id});
-
   final int id;
 
   @override
@@ -31,7 +30,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late Future<List<FavoriteModel>> _favoriteData;
 
   UserModel? _userData;
-  String? _valueType;
+  String? _valueType = '';
   int? _countTrolley;
   int _counterQty = 1; // Define _counter as part of the widget state
 
@@ -63,28 +62,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _addCheckout(ProductModel product) async {
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return OrderScreen(
-        productTrolley: [
-          TrolleyModel(
-              trolleyQty: _counterQty,
-              category: _valueType ?? '',
-              id: 0,
-              description: '',
-              name: product.name,
-              price: product.price,
-              qty: _counterQty,
-              idUser: _userData!.id,
-              type: _valueType ?? '',
-              trolleyIdUser: _userData!.id,
-              idProduct: product.id!,
-              idTrolley: 0,
-              idCheckout: 0,
-              createdAt: null,
-              updatedAt: null)
-        ],
-      );
-    }));
+    if (_valueType!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please Add Type'),
+      ));
+      Navigator.pop(context);
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return OrderScreen(
+          productTrolley: [
+            TrolleyModel(
+                trolleyQty: _counterQty,
+                category: _valueType ?? '',
+                id: 0,
+                description: '',
+                name: product.name,
+                price: product.price,
+                qty: _counterQty,
+                idUser: _userData!.id,
+                type: _valueType ?? '',
+                trolleyIdUser: _userData!.id,
+                idProduct: product.id!,
+                idTrolley: 0,
+                idCheckout: 0,
+                createdAt: null,
+                updatedAt: null)
+          ],
+        );
+      }));
+    }
   }
 
   Future<void> _toCheckout(ColorScheme colorTheme, ProductModel product) async {
@@ -101,7 +107,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       const Text('Are you sure you want to add this product to your checkout?'),
                       const SizedBox(height: 10),
                       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        const Text('Option', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text('Type',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            )),
                         Wrap(
                             spacing: 5.0,
                             children: ['30 ML', '60 ML', '90 ML']
@@ -161,23 +171,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _addTrolly(BuildContext context) async {
-    final response = await _trolleyNetwork.addTrolley(
-      TrolleyCreate(
-        id: 1,
-        qty: _counterQty,
-        idProduct: widget.id,
-        idUser: _userData!.id,
-        type: _valueType ?? "",
-      ),
-    );
-    // return response;
-    if (context.mounted) {
-      if (response) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success ')));
-        Navigator.pop(context);
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderScreen()));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('fail')));
+    if (_valueType!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please Add type ')));
+      Navigator.pop(context);
+    } else {
+      final response = await _trolleyNetwork.addTrolley(
+        TrolleyCreate(
+          id: 1,
+          qty: _counterQty,
+          idProduct: widget.id,
+          idUser: _userData!.id,
+          type: _valueType ?? "",
+        ),
+      );
+      // return response;
+      if (context.mounted) {
+        if (response) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success ')));
+          Navigator.pop(context);
+          // Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderScreen()));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('fail')));
+        }
       }
     }
   }
@@ -468,131 +483,157 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data == null) {
-                return const Center(child: Text('No products found.'));
-              } else {
+              } else if (snapshot.hasData) {
                 return SingleChildScrollView(
                     // padding: EdgeInsets.all(30),
-                    child: Column(children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                    CarouselSlider(
-                      options: CarouselOptions(height: 400.0),
-                      items: [1, 2, 3, 4, 5].map((i) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return Container(
-                              width: MediaQuery.of(context).size.width,
-                              margin: const EdgeInsets.symmetric(horizontal: 1),
-                              decoration: BoxDecoration(color: colorTheme.surfaceBright),
-                              child: Image.asset(
-                                'lib/images/banner1.png',
-                                height: 400,
-                                width: 300,
-                                // fit: BoxFit.contain,
-                              ),
-                            );
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    Container(
-                        color: Colors.white10,
-                        padding: const EdgeInsets.all(30),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Rasa Anggur', style: TextStyle(fontSize: 16, color: Colors.purple, fontWeight: FontWeight.bold)),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    color: Colors.yellow,
+                    child: Column(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CarouselSlider(
+                          options: CarouselOptions(height: 400.0),
+                          items: [1, 2, 3, 4, 5].map((i) {
+                            return Builder(
+                              builder: (BuildContext context) {
+                                return Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  margin: const EdgeInsets.symmetric(horizontal: 1),
+                                  decoration: BoxDecoration(color: colorTheme.surfaceBright),
+                                  child: Image.asset(
+                                    'lib/images/banner1.png',
+                                    height: 400,
+                                    width: 300,
+                                    // fit: BoxFit.contain,
                                   ),
-                                  Text('4.7', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
-                                ],
-                              )
-                            ],
-                          ),
-                          Text(snapshot.data!.name, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-                          Row(
-                            // mainAxisAlignment:
-                            //     MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
+                                );
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        Container(
+                            color: Colors.white10,
+                            padding: const EdgeInsets.all(30),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: 200,
+                                          child: Text(snapshot.data!.name,
+                                              style: const TextStyle(
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              )),
+                                        ),
+                                        Text(formatPrice(snapshot.data!.price),
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey[700],
+                                            ))
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        SizedBox(
+                                          width: 150,
+                                          child: Text('brand ${snapshot.data!.brand}',
+                                              textAlign: TextAlign.end,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.purple,
+                                                fontWeight: FontWeight.bold,
+                                              )),
+                                        ),
+                                        Text(
+                                          "Stock : ${snapshot.data!.qty}",
+                                          style: const TextStyle(color: Colors.grey),
+                                        ),
+                                        const Row(
+                                          children: [
+                                            Icon(Icons.star, color: Colors.yellow),
+                                            Text('4.7',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                )),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
                                   snapshot.data!.description,
                                   softWrap: true,
                                   textAlign: TextAlign.justify,
                                   maxLines: 5,
                                   style: const TextStyle(color: Colors.grey, fontSize: 14),
                                 ),
-                              ),
-                              const SizedBox(width: 20),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    formatPrice(snapshot.data!.price),
-                                    style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  const Text('Option', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 5.0,
+                                    children: ['30 ML', '60 ML', '90 ML']
+                                        .map((label) => ChoiceChip(
+                                              label: Text(label),
+                                              selected: _valueType == label,
+                                              backgroundColor: colorTheme.surfaceBright,
+                                              selectedColor: colorTheme.primaryContainer,
+                                              onSelected: (bool selected) {
+                                                _selectType(label, setState);
+                                              },
+                                            ))
+                                        .toList(),
                                   ),
-                                  Text(
-                                    "qty : ${snapshot.data!.qty}",
-                                    style: const TextStyle(color: Colors.grey),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            const Text('Option', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 5.0,
-                              children: ['30 ML', '60 ML', '90 ML']
-                                  .map((label) => ChoiceChip(
-                                        label: Text(label),
-                                        selected: _valueType == label,
-                                        backgroundColor: colorTheme.surfaceBright,
-                                        selectedColor: colorTheme.primaryContainer,
-                                        onSelected: (bool selected) {
-                                          _selectType(label, setState);
-                                        },
-                                      ))
-                                  .toList(),
-                            ),
-                            // const SizedBox(height: 20),
-                            // Column(
-                            //     crossAxisAlignment:
-                            //         CrossAxisAlignment.start,
-                            //     children: [
-                            //       Row(
-                            //         mainAxisAlignment:
-                            //             MainAxisAlignment
-                            //                 .spaceBetween,
-                            //         children: [
-                            //           const Text('Description',
-                            //               style: TextStyle(
-                            //                   fontWeight:
-                            //                       FontWeight.bold,
-                            //                   fontSize: 16)),
-                            //           IconButton(
-                            //               onPressed: () {},
-                            //               icon: const Icon(Icons
-                            //                   .arrow_drop_down))
-                            //         ],
-                            //       ),
-                            //       const SizedBox(height: 10),
-                            //       Text(snapshot.data!.description),
-                            //       const SizedBox(height: 100),
-                            //     ])
-                          ])
-                        ]))
-                  ])
-                ]));
+                                  // const SizedBox(height: 20),
+                                  // Column(
+                                  //     crossAxisAlignment:
+                                  //         CrossAxisAlignment.start,
+                                  //     children: [
+                                  //       Row(
+                                  //         mainAxisAlignment:
+                                  //             MainAxisAlignment
+                                  //                 .spaceBetween,
+                                  //         children: [
+                                  //           const Text('Description',
+                                  //               style: TextStyle(
+                                  //                   fontWeight:
+                                  //                       FontWeight.bold,
+                                  //                   fontSize: 16)),
+                                  //           IconButton(
+                                  //               onPressed: () {},
+                                  //               icon: const Icon(Icons
+                                  //                   .arrow_drop_down))
+                                  //         ],
+                                  //       ),
+                                  //       const SizedBox(height: 10),
+                                  //       Text(snapshot.data!.description),
+                                  //       const SizedBox(height: 100),
+                                  //     ])
+                                ])
+                              ],
+                            )),
+                      ],
+                    )
+                  ],
+                ));
+              } else {
+                return const Center(child: Text('No products found.'));
               }
             }));
   }

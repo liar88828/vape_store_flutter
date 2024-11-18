@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:vape_store/models/bank_model.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/delivery_model.dart';
+import 'package:vape_store/models/response_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/bank_network.dart';
 import 'package:vape_store/network/checkout_network.dart';
 import 'package:vape_store/network/delivery_network.dart';
+import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/utils/pref_user.dart';
+import 'package:vape_store/utils/text.dart';
 
 class OrderScreen extends StatefulWidget {
   final List<TrolleyModel>? productTrolley;
@@ -96,31 +99,48 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Future<void> _createCheckout(BuildContext context) async {
-    List<TrolleyModel> trolley = widget.productTrolley?.toList() ?? [];
-    List<int> idTrolley = trolley.map((d) => d.id!).toList();
-    num total = _calculateTotal(
-      trolley,
-      _deliveryData?.price ?? 0,
-    );
-    CheckoutModel checkout = CheckoutModel(
-      idUser: _userData!.id,
-      total: total,
-      deliveryMethod: _deliveryData?.name ?? '',
-      paymentMethod: _bankData?.name ?? '',
-      paymentPrice: 100,
-      deliveryPrice: _deliveryData?.price ?? 0,
-    );
+    ResponseModel response;
+    if (_deliveryData == null || _bankData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select delivery and bank')));
+      // } else if (_deliveryData == null || _bankData) {
+    } else {
+      List<TrolleyModel> trolley = widget.productTrolley?.toList() ?? [];
+      List<int> idTrolley = trolley.map((d) => d.idTrolley).toList();
+      num total = _calculateTotal(
+        trolley,
+        _deliveryData?.price ?? 0,
+      );
+      CheckoutModel checkout = CheckoutModel(
+        idUser: _userData!.id,
+        total: total,
+        deliveryMethod: _deliveryData!.name,
+        paymentMethod: _bankData!.name,
+        paymentPrice: 100,
+        deliveryPrice: _deliveryData!.price,
+      );
 
-    final response = await _checkoutNetwork.createCheckout(
-      checkout,
-      idTrolley,
-    );
-    // print(response);
-    if (context.mounted) {
-      if (response.success) {
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => DetailCheckoutScreen(checkout: checkout)));
+      if (idTrolley.length == 1) {
+        response = await _checkoutNetwork.createSingleCheckout();
+      } else {
+        response = await _checkoutNetwork.createManyCheckout(
+          checkout,
+          idTrolley,
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+      // print(response);
+      if (context.mounted) {
+        if (response.success) {
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) {
+              return DetailCheckoutScreen(
+                checkout: checkout,
+                idCheckout: response.data?.id,
+              );
+            },
+          ));
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+      }
     }
   }
 
@@ -480,24 +500,6 @@ class _OrderScreenState extends State<OrderScreen> {
     required ColorScheme colorTheme,
     required TrolleyModel product,
   }) {
-    // return ListTile(
-    //   contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-    //   leading: Image.asset(
-    //     'lib/images/banner1.png',
-    //     height: 80,
-    //     width: 80,
-    //   ),
-    //   title: Text(product.name),
-    //   subtitle: Text(formatPrice(product.price)),
-    //   trailing: IconButton(
-    //     style: IconButton.styleFrom(
-    //       backgroundColor: colorTheme.errorContainer,
-    //     ),
-    //     onPressed: () {},
-    //     icon: Icon(Icons.delete, color: colorTheme.error),
-    //   ),
-    // );
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -574,7 +576,7 @@ class _OrderScreenState extends State<OrderScreen> {
         Row(children: [
           const SizedBox(width: 10),
           Text(
-            "${product.trolleyQty} x ${product.name} ${formatPrice(product.price)}",
+            "${product.trolleyQty} x ${truncate(product.name, 15)}",
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[500]),
           )
         ]),

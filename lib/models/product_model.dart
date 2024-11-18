@@ -3,8 +3,11 @@ class ProductModel {
   final String name;
   final int qty;
   final num price;
+  final String brand;
   final String description;
   final int idUser;
+  final int? idProduct;
+  final String? img;
 
   // final String img;
 
@@ -13,9 +16,11 @@ class ProductModel {
     required this.name,
     required this.qty,
     required this.price,
+    required this.brand,
     required this.description,
     required this.idUser,
-    // required this.img,
+    this.idProduct,
+    this.img,
   });
 
   // Convert JSON to ProductModel object
@@ -23,11 +28,13 @@ class ProductModel {
     return ProductModel(
       id: json['id'],
       idUser: json['id_user'],
+      idProduct: json['id_product'],
       name: json['name'],
       qty: json['qty'],
+      brand: json['brand'],
       price: json['price'],
       description: json['description'],
-      // img: json['img'],
+      img: json['img'],
     );
   }
 
@@ -36,27 +43,12 @@ class ProductModel {
     return {
       'name': name,
       'qty': qty,
+      'brand': brand,
       'price': price,
       'description': description,
       'id_user': idUser,
-      // 'img': img,
+      'id_product': idProduct,
+      'img': img,
     };
   }
 }
-
-
-// class ProductModel {
-//   final String title;
-//   final DateTime date;
-//   final String img;
-//   final int price;
-//   final int id;
-
-//   ProductModel({
-//     required this.img,
-//     required this.title,
-//     required this.date,
-//     required this.price,
-//     required this.id,
-//   });
-// }

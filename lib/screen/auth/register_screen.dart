@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:vape_store/network/user_network.dart';
+import 'package:vape_store/validator/auth_validator.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,11 +12,12 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final UserNetwork _userNetwork = UserNetwork();
+  final valid = AuthValidator();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final UserNetwork _userNetwork = UserNetwork();
 
   Future<void> _register() async {
     final success = await _userNetwork.register(
@@ -25,12 +27,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration successful')));
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Registration failed')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration failed')));
     }
   }
 
@@ -53,7 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32.0),
-            TextField(
+            TextFormField(
+              validator: valid.name,
               controller: _nameController,
               decoration: const InputDecoration(
                 labelText: 'Name',
@@ -61,7 +62,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             const SizedBox(height: 16.0),
-            TextField(
+            TextFormField(
+              validator: valid.email,
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
@@ -70,18 +72,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             const SizedBox(height: 16.0),
-            const TextField(
+            TextFormField(
+              validator: valid.phone,
               // controller: phoneController,
               keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Phone',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16.0),
-            const TextField(
+            TextFormField(
+              validator: valid.address,
               // controller: _addressController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Address',
                 border: OutlineInputBorder(),
               ),
@@ -114,7 +118,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             const SizedBox(height: 16.0),
-            TextField(
+            TextFormField(
+              validator: valid.password,
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(
@@ -123,7 +128,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             const SizedBox(height: 16.0),
-            TextField(
+            TextFormField(
+              validator: valid.password,
               controller: _confirmPasswordController,
               obscureText: true,
               decoration: const InputDecoration(

@@ -31,6 +31,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   Future<void> _saveProduct(BuildContext context) async {
     final product = ProductModel(
+      brand: 'pt bangkrut kurut',
+
       id: widget.product?.id,
       idUser: 1, // Example user ID; replace with actual data
       name: _nameController.text,
