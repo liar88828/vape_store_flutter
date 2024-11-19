@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:vape_store/bloc/auth/auth_bloc.dart';
 import 'package:vape_store/models/response_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +34,11 @@ class UserNetwork {
   }
 
   // Register
-  Future<bool> register(String name, String email, String password) async {
+  Future<AuthLoadedState> register({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/register'),
       body: jsonEncode({
@@ -46,14 +51,17 @@ class UserNetwork {
     );
     print(response.statusCode);
     if (response.statusCode == 201) {
-      return true;
+      final jsonData = jsonDecode(response.body);
+      final token = jsonData['token'];
+      final dataUser = jsonData['data'];
+      return AuthLoadedState(token: token, user: UserModel.fromJson(dataUser));
     } else {
-      return false;
+      throw Exception('Fail Register');
     }
   }
 
   // Login
-  Future<ResponseModel> login(String email, String password) async {
+  Future<AuthLoadedState> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/login'),
       body: jsonEncode({
@@ -67,15 +75,18 @@ class UserNetwork {
 
     final data = json.decode(response.body);
     if (response.statusCode == 200) {
-      final token = data['token'];
       print(data);
+      final token = data['token'];
+      final dataUser = data['data'];
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
       prefs.setString('token', token);
-      prefs.setString('user', jsonEncode(data['data']));
-      return ResponseModel(success: true, message: data['message']);
+      prefs.setString('user', jsonEncode(dataUser));
+
+      return AuthLoadedState(token: token, user: UserModel.fromJson(dataUser));
+      //  ResponseModel(success: true, message: data['message']);
     } else {
-      return ResponseModel(success: false, message: data['message']);
+      throw Exception('Fail Login');
     }
   }
 
@@ -93,7 +104,8 @@ class UserNetwork {
     );
 
     if (response.statusCode == 200) {
-      await prefs.remove('token');
+      print('success logout');
+      // await prefs.remove('token');
       return true;
     } else {
       return false;
