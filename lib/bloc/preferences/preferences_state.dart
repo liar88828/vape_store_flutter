@@ -5,8 +5,10 @@ class PreferencesState {
   final UserModel? user;
   final bool isDarkMode;
   final String token;
+  final int count;
 
   const PreferencesState({
+    this.count = 0,
     this.user,
     this.isDarkMode = false,
     this.token = '',
@@ -37,19 +39,19 @@ class PreferencesState {
 }
 
 final class PreferencesInitial extends PreferencesState {
-  const PreferencesInitial({UserModel? user, bool? isDarkMode}) : super(user: user);
+  const PreferencesInitial({super.user, bool? isDarkMode});
 }
 
 final class PrefTokenState extends PreferencesState {
   final String token;
   const PrefTokenState({
     required this.token,
-    UserModel? user,
-  }) : super(user: user);
+    super.user,
+  });
 }
 
 final class PrefUserState extends PreferencesState {
-  const PrefUserState({UserModel? user}) : super(user: user);
+  const PrefUserState({super.user});
 }
 
 final class PrefDarkModeState extends PreferencesState {

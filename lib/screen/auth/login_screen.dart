@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
-import 'package:vape_store/bloc/preferences/preferences_bloc.dart';
-import 'package:vape_store/network/user_network.dart';
-import 'package:vape_store/repository/preferences_repo.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/auth/register_screen.dart';
 import 'package:vape_store/validator/auth_validator.dart';
@@ -37,11 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is AuthLoadedState) {
             // context.read<PreferencesBloc>().add(SetUserPrefEvent(userData: state.user));
 
-            Navigator.push(context, MaterialPageRoute(
-              builder: (context) {
-                return const HomeScreen();
-              },
-            ));
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return const HomeScreen();
+            }));
           }
           if (state is AuthErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(

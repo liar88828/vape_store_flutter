@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:vape_store/models/response_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
 
 class TrolleyNetwork {
@@ -11,40 +12,41 @@ class TrolleyNetwork {
   Future<int> fetchTrolleyCount(int idUser) async {
     print(idUser);
     final response = await http.get(Uri.parse("$baseUrl/trolley/id-user/count/$idUser"));
+    final jsonData = json.decode(response.body);
+    var code = response.statusCode;
 
-    if (response.statusCode == 200) {
-      final dataJson = json.decode(response.body);
-      final data = dataJson['data'];
-      // print(data);
+    if (code == 200) {
+      final data = jsonData['data'];
       return data;
     } else {
-      throw Exception('Failed to load trolley count');
+      throw Exception('Failed to load trolley count : ${jsonData['message']}');
     }
   }
 
   Future<List<TrolleyModel>> fetchTrolleyCurrent(int idUser) async {
-    print('fetch by user id :$idUser');
     final response = await http.get(Uri.parse("$baseUrl/trolley/id-user/$idUser"));
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+    final jsonData = json.decode(response.body);
+    final code = response.statusCode;
+    if (code == 200) {
       final List<dynamic> trolleyData = jsonData['data'];
       print(trolleyData);
       return trolleyData.map((trolley) => TrolleyModel.fromJson(trolley)).toList();
     } else {
-      throw Exception('Failed to load trolley');
+      throw Exception('Failed to load trolley : ${jsonData['message']}');
     }
   }
 
   Future<List<TrolleyModel>> fetchTrolleyCheckout(int idCheckout) async {
     try {
       final response = await http.get(Uri.parse("$baseUrl/trolley/id-checkout/$idCheckout"));
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+      final jsonData = json.decode(response.body);
+      final code = response.statusCode;
+
+      if (code == 200) {
         final List<dynamic> trolleyData = jsonData['data'];
-        // print(trolleyData);
         return trolleyData.map((trolley) => TrolleyModel.fromJson(trolley)).toList();
       } else {
-        throw Exception('Failed to load trolley');
+        throw Exception('Failed to load trolley : ${jsonData['message']}');
       }
     } catch (e) {
       print(e.toString());
@@ -52,75 +54,50 @@ class TrolleyNetwork {
     }
   }
 
-  Future<bool> addTrolley(TrolleyCreate trolley) async {
-    print(trolley.toJson());
-    try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/trolley"),
-        body: jsonEncode(trolley.toJson()),
-        // body: jsonEncode({
-        //   'id_user': trolley.idUser,
-        //   'id_product': trolley.idProduct,
-        //   'qty': trolley.qty,
-        //   'type': trolley.type,
-        // }),
-        headers: {'Content-Type': 'application/json'},
+  Future<ResponseModel> addTrolley(TrolleyCreate trolley) async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/trolley"),
+      body: jsonEncode(trolley.toJson()),
+      headers: {'Content-Type': 'application/json'},
+    );
+    final jsonData = jsonDecode(response.body);
+    var code = response.statusCode;
+    if (code == 200) {
+      return ResponseModel(
+        message: jsonData['message'],
+        success: true,
       );
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        print(jsonData['message']);
-        return true;
-      } else {
-        final jsonData = jsonDecode(response.body);
-        print(jsonData['message']);
-        throw Exception('Failed to add trolley');
-      }
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
-
-  Future<bool> changeTrolley(TrolleyCreate trolley) async {
-    print(trolley.toJson());
-    try {
-      final response = await http.put(
-        Uri.parse("$baseUrl/trolley/${trolley.id}"),
-        body: jsonEncode(trolley.toJson()),
-        // body: jsonEncode({
-        //   'id_user': trolley.idUser,
-        //   'id_product': trolley.idProduct,
-        //   'qty': trolley.qty,
-        //   'type': trolley.type,
-        // }),
-        headers: {'Content-Type': 'application/json'},
-      );
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        print(jsonData['message']);
-        return true;
-      } else {
-        final jsonData = jsonDecode(response.body);
-        print(jsonData['message']);
-        throw Exception('Failed to add trolley');
-      }
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
-
-  Future<bool> removeTrolley(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl/trolley/$id"));
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      print(jsonData['data']);
-      return true;
     } else {
-      final jsonData = jsonDecode(response.body);
-      print(jsonData['data']);
-      return false;
+      // print(jsonData['message']);
+      throw Exception('Failed to add trolley : ${jsonData['message']}');
+    }
+  }
+
+  Future<ResponseModel> changeTrolley(TrolleyCreate trolley) async {
+    final response = await http.put(
+      Uri.parse("$baseUrl/trolley/${trolley.id}"),
+      body: jsonEncode(trolley.toJson()),
+      headers: {'Content-Type': 'application/json'},
+    );
+    final jsonData = jsonDecode(response.body);
+    final code = response.statusCode;
+    if (code == 200) {
+      return ResponseModel(success: true, message: jsonData['message']);
+    } else {
+      print(jsonData['message']);
+      throw Exception('Failed to add trolley : ${jsonData['message']}');
+    }
+  }
+
+  Future<ResponseModel> removeTrolley(int idTrolley) async {
+    final response = await http.delete(Uri.parse("$baseUrl/trolley/$idTrolley"));
+    final code = response.statusCode;
+    final jsonData = jsonDecode(response.body);
+    print(response.statusCode);
+    if (code == 200) {
+      return ResponseModel(success: true, message: jsonData['message']);
+    } else {
+      throw Exception('Failed to remove trolley : ${jsonData['message']}');
     }
   }
 }

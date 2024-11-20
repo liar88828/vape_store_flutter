@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:vape_store/main.dart';
+import 'package:vape_store/network/product_network.dart';
+import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/network/user_network.dart';
 import 'package:vape_store/repository/preferences_repo.dart';
 
@@ -18,6 +20,8 @@ void main() {
     await tester.pumpWidget(MyApp(
       preferencesRepository: PreferencesRepository(),
       userNetwork: UserNetwork(),
+      trolleyNetwork: TrolleyNetwork(),
+      productNetwork: ProductNetwork(),
     ));
 
     // Verify that our counter starts at 0.

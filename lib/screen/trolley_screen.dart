@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/trolley_model.dart';
-import 'package:vape_store/models/user_model.dart';
-import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/product/product_detail_screen.dart';
 import 'package:vape_store/screen/checkout/order_screen.dart';
 import 'package:vape_store/utils/money.dart';
-import 'package:vape_store/utils/pref_user.dart';
 
 class TrolleyScreen extends StatefulWidget {
   const TrolleyScreen({super.key});
@@ -15,45 +14,9 @@ class TrolleyScreen extends StatefulWidget {
 }
 
 class _TrolleyScreenState extends State<TrolleyScreen> {
-  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
   final Map<int, bool> selectedItems = {};
   final Map<int, int> itemCounts = {};
-  late Future<List<TrolleyModel>> _trolleyData;
   List<TrolleyModel> cartItems = [];
-
-  UserModel? _userModel;
-  @override
-  void initState() {
-    super.initState();
-    _refreshData();
-  }
-
-  void _refreshTrolley(int idUser) {
-    setState(() {
-      _trolleyData = _trolleyNetwork.fetchTrolleyCurrent(idUser);
-    });
-  }
-
-  // Function to load trolley items
-  Future<void> _refreshData() async {
-    _userModel = await loadUserData();
-    if (_userModel != null) {
-      _trolleyData = _trolleyNetwork.fetchTrolleyCurrent(_userModel!.id);
-      setState(() {});
-    }
-  }
-
-  Future<void> _removeItem(int id, int idUser, BuildContext context) async {
-    bool response = await _trolleyNetwork.removeTrolley(id);
-    if (context.mounted) {
-      if (response) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Success  deleted')));
-        _refreshTrolley(idUser);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fall Delete Data $id')));
-      }
-    }
-  }
 
   void selectCheckbox(bool? checked, TrolleyModel item) {
     setState(() {
@@ -92,6 +55,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.read<TrolleyBloc>().add(GetTrolleyEvent());
     double totalPrice = calculateTotalPrice(); // Assume a function to calculate total price
     return Scaffold(
       bottomNavigationBar: BottomAppBar(
@@ -124,26 +88,23 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
           ),
         ),
       ),
-      appBar: AppBar(leading: const BackButton(), title: const Text('My Trolley')),
-      body: FutureBuilder<List<TrolleyModel>>(
-        future: _trolleyData,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      appBar: AppBar(
+        leading: const BackButton(),
+        title: const Text('My Trolley'),
+      ),
+      body: BlocBuilder<TrolleyBloc, TrolleyState>(
+        builder: (context, state) {
+          if (state is TrolleyLoadingState) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Your trolley is empty.'));
-          } else {
+          } else if (state is TrolleyErrorState) {
+            return Center(child: Text('Error: ${state.message}'));
+          } else if (state is TrolleyLoadState) {
+            List<TrolleyModel> trolleys = state.trolleys ?? [];
             return ListView.builder(
-              itemCount: snapshot.data!.length,
+              itemCount: trolleys.length,
               itemBuilder: (context, index) {
-                var item = snapshot.data![index];
-                // var item = availableItems[index];
-
-                // var item = snapshot.data![index];
+                var item = trolleys[index];
                 bool isSelected = cartItems.contains(item);
-                // print(item.qty);
                 itemCounts.putIfAbsent(item.idProduct, () => item.trolleyQty);
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
@@ -217,9 +178,20 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                             ),
                           ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                          onPressed: () => _removeItem(item.idTrolley, item.idUser, context),
+                        BlocListener<TrolleyBloc, TrolleyState>(
+                          listener: (context, trolleyState) {
+                            if (trolleyState is TrolleyCaseState) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Success')));
+                            } else if (trolleyState is TrolleyErrorState) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(trolleyState.message)));
+                            }
+                          },
+                          child: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                            onPressed: () {
+                              context.read<TrolleyBloc>().add(RemoveTrolleyEvent(idTrolley: item.idTrolley));
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -227,6 +199,8 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                 );
               },
             );
+          } else {
+            return const Text('error');
           }
         },
       ),

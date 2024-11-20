@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/response_model.dart';
-import 'package:vape_store/models/trolley_model.dart';
 
 class CheckoutNetwork {
   final baseUrl = 'http://localhost:8000/api';

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
-import 'package:vape_store/network/user_network.dart';
 import 'package:vape_store/validator/auth_validator.dart';
 
 class RegisterScreen extends StatefulWidget {

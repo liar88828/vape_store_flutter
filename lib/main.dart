@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
+import 'package:vape_store/bloc/counter/counter_bloc.dart';
 import 'package:vape_store/bloc/preferences/preferences_bloc.dart';
+import 'package:vape_store/bloc/product/product_bloc.dart';
+import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
+import 'package:vape_store/network/product_network.dart';
+import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/network/user_network.dart';
 import 'package:vape_store/repository/preferences_repo.dart';
 import 'package:vape_store/screen/auth/login_screen.dart';
@@ -9,21 +14,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = PreferencesRepository();
-  final userNetwork = UserNetwork();
   runApp(MyApp(
-    userNetwork: userNetwork,
-    preferencesRepository: prefs,
+    userNetwork: UserNetwork(),
+    trolleyNetwork: TrolleyNetwork(),
+    preferencesRepository: PreferencesRepository(),
+    productNetwork: ProductNetwork(),
   ));
 }
 
 class MyApp extends StatelessWidget {
   final PreferencesRepository preferencesRepository;
   final UserNetwork userNetwork;
+  final TrolleyNetwork trolleyNetwork;
+  final ProductNetwork productNetwork;
   const MyApp({
     super.key,
     required this.preferencesRepository,
     required this.userNetwork,
+    required this.trolleyNetwork,
+    required this.productNetwork,
   });
 
   @override
@@ -31,8 +40,25 @@ class MyApp extends StatelessWidget {
     ColorScheme colorScheme = ColorScheme.fromSeed(seedColor: Colors.pinkAccent);
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => PreferencesBloc(preferencesRepository: preferencesRepository)..add(LoadPreferencesEvent())),
-        BlocProvider(create: (context) => AuthBloc(authRepository: userNetwork, preferencesRepository: preferencesRepository)),
+        BlocProvider(
+            create: (context) => TrolleyBloc(
+                  trolleyRepository: trolleyNetwork,
+                  preferencesRepository: preferencesRepository,
+                )..add(GetCountEvent())),
+        BlocProvider(
+            create: (context) => ProductBloc(
+                  productRepository: productNetwork,
+                )),
+        BlocProvider(create: (context) => CounterBloc()),
+        BlocProvider(
+            create: (context) => PreferencesBloc(
+                  preferencesRepository: preferencesRepository,
+                )..add(LoadPreferencesEvent())),
+        BlocProvider(
+            create: (context) => AuthBloc(
+                  authRepository: userNetwork,
+                  preferencesRepository: preferencesRepository,
+                )..add(AuthInfoEvent())),
       ],
       child: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) {
@@ -55,7 +81,6 @@ class ValidationSession extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
-      context.read<AuthBloc>().add(AuthInfoEvent());
       if (state is AuthLoadingState) return const Center(child: CircularProgressIndicator());
       if (state is AuthErrorState) return const LoginScreen();
       if (state is AuthLoadedState) {
