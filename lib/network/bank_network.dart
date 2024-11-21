@@ -12,9 +12,7 @@ class BankNetwork {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         final List<dynamic> data = jsonData['data'];
-        // print('---------bank');
-        // print(data);
-        // print('---------bank');
+
         return data.map((json) => BankModel.fromJson(json)).toList();
       }
       throw Exception('Failed to load banks');

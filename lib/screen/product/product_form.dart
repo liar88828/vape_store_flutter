@@ -38,7 +38,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       name: _nameController.text,
       qty: int.parse(_qtyController.text),
       price: int.parse(_priceController.text),
-      description: _descriptionController.text,
+      description: _descriptionController.text, category: '',
     );
 
     if (widget.product == null) {

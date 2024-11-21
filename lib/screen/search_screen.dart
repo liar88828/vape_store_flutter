@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:vape_store/bloc/product/product_bloc.dart';
+import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/product_model.dart';
-import 'package:vape_store/models/user_model.dart';
-import 'package:vape_store/network/product_network.dart';
-import 'package:vape_store/network/trolley_network.dart';
+import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/product/product_detail_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
-import 'package:vape_store/utils/pref_user.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -16,72 +16,26 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final ProductNetwork _productNetwork = ProductNetwork();
-  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
   final TextEditingController _searchController = TextEditingController();
-  late Future<List<ProductModel>> _productData;
-
-  UserModel? _userData;
   String? _selectedCategory;
   String? _selectedPrice;
-  int? _trolleyCount;
-
-  void _searchHandler() async {
-    setState(() {
-      _productData = _productNetwork.fetchProducts(
-        // category: _selectedCategory,
-        // order: _selectedPrice,
-        name: _searchController.text,
-      );
-    });
-  }
-
-  void _filterHandler() async {
-    setState(() {
-      _productData = _productNetwork.fetchProducts(
-        category: _selectedCategory,
-        order: _selectedPrice,
-        name: _searchController.text,
-      );
-    });
-  }
-
-  Future<void> _refreshData() async {
-    _userData = await loadUserData();
-    if (_userData != null) {
-      int count = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
-      setState(() {
-        _trolleyCount = count;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _productData = _productNetwork.fetchProducts();
-    _refreshData();
-  }
 
   @override
   Widget build(BuildContext context) {
+    context.read<ProductBloc>().add(ProductFilterEvent());
     var colorTheme = Theme.of(context).colorScheme;
-
     const listCategory = ['Coil', 'Mod', 'Liquid', 'Battery', "Connector", "Tank/Cartridge", 'Mouthpiece/Drip-tip', 'Atomizer', 'Accessories'];
     const listPrice = [
       'Low Price',
-      // 'Medium Price',
       'High Price',
-      // 'Premium'
     ];
 
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(
-          style: ButtonStyle(
-              // iconColor: WidgetStatePropertyAll(Colors.red),
-              // backgroundColor: WidgetStatePropertyAll(Colors.orange),
-              ),
+        leading: BackButton(
+          onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen())),
+
+          // style: ButtonStyle(),
         ),
         toolbarHeight: 70,
         title: Padding(
@@ -99,28 +53,37 @@ class _SearchScreenState extends State<SearchScreen> {
                     borderSide: const BorderSide(color: Colors.white),
                   ),
                   suffixIcon: IconButton(
-                    onPressed: _searchHandler,
+                    onPressed: () {
+                      context.read<ProductBloc>().add(ProductSearchEvent(search: _searchController.text));
+                    },
                     icon: const Icon(Icons.search),
                   ))),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-                color: colorTheme.primary,
-                style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                // color: Colors.red,
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const TrolleyScreen();
-                  }));
-                },
-                icon: Badge(
-                  label: Text(_trolleyCount != null ? _trolleyCount.toString() : ''),
-                  child: const Icon(
-                    Icons.trolley,
-                  ),
-                )),
+            child: BlocSelector<TrolleyBloc, TrolleyState, int>(
+              selector: (stateTrolley) {
+                return stateTrolley.count ?? 0;
+              },
+              builder: (context, stateTrolleyCount) {
+                return IconButton(
+                    color: colorTheme.primary,
+                    style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    // color: Colors.red,
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return const TrolleyScreen();
+                      }));
+                    },
+                    icon: Badge(
+                      label: Text(stateTrolleyCount.toString()),
+                      child: const Icon(
+                        Icons.trolley,
+                      ),
+                    ));
+              },
+            ),
           ),
         ],
       ),
@@ -135,7 +98,15 @@ class _SearchScreenState extends State<SearchScreen> {
                 IconButton(
                     color: colorTheme.primary,
                     style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                    onPressed: _filterHandler,
+                    onPressed: () {
+                      context.read<ProductBloc>().add(
+                            ProductFilterEvent(
+                              category: _selectedCategory,
+                              order: _selectedPrice,
+                              name: _searchController.text,
+                            ),
+                          );
+                    },
                     icon: const Icon(Icons.filter_list)),
                 CategoryDropdown(
                   listCategory: listCategory,
@@ -160,18 +131,16 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
           ),
-          FutureBuilder<List<ProductModel>>(
-              future: _productData,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                if (snapshot.hasError || snapshot.data == null) {
-                  return const Center(child: Text('Error Data Error'));
-                }
-
+          BlocBuilder<ProductBloc, ProductState>(
+            // buildWhen: (previous, current) {
+            //   return previous.products != current.products;
+            // },
+            builder: (context, stateProduct) {
+              if (stateProduct is ProductLoadingState) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (stateProduct is ProductErrorState) {
+                return const Center(child: Text('Error Data Error'));
+              } else if (stateProduct is ProductLoadsState) {
                 return Expanded(
                   child: GridView.count(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -181,7 +150,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     mainAxisSpacing: 10,
                     crossAxisCount: 2,
                     childAspectRatio: 3 / 4,
-                    children: snapshot.data!.map((product) {
+                    children: stateProduct.products.map((product) {
                       return ProductCard(product: product
                           // image: 'lib/images/banner1.png',
                           // price: product.price!,
@@ -190,7 +159,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     }).toList(),
                   ),
                 );
-              }),
+              } else {
+                return const Center(child: Text('Something went wrong Bloc or API'));
+              }
+            },
+          ),
         ],
       ),
     );
@@ -219,6 +192,8 @@ class ProductCard extends StatelessWidget {
           MaterialPageRoute(
               builder: (context) => ProductDetailScreen(
                     id: product.id!,
+                    redirect: 'search',
+                    lastId: 0,
                   )),
         );
       },

@@ -7,34 +7,29 @@ import 'package:vape_store/models/product_model.dart';
 class ProductNetwork {
   final String baseUrl = 'http://localhost:8000/api';
 
-  // Fetch all products
   Future<List<ProductModel>> fetchProducts({
     String? category,
     String? name,
     String? order,
   }) async {
-    // Build the URL with optional parameters
     final queryParameters = <String, String>{};
+
     if (name != null && name.isNotEmpty) queryParameters['name'] = name;
-    if (category != null && category.isNotEmpty) {
-      queryParameters['category'] = category;
-    }
+    if (category != null && category.isNotEmpty) queryParameters['category'] = category;
     if (order != null && order.isNotEmpty) queryParameters['order'] = order;
 
     final uri = Uri.parse('$baseUrl/product').replace(queryParameters: queryParameters);
-
-    print(uri);
-
     final response = await http.get(uri);
-    // final response = await http.get(Uri.parse(
-    //     '$baseUrl/product?name=$name&category=$category&order=$order'));
+    final code = response.statusCode;
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+    if (code == 200) {
+      print(code);
+      final jsonData = jsonDecode(response.body);
       final List<dynamic> productsData = jsonData['data'];
       return productsData.map((json) => ProductModel.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load products');
+      // throw Exception('Failed to load products : ${jsonData['message']}');
+      throw Exception('Failed to load products : ');
     }
   }
 
@@ -42,7 +37,7 @@ class ProductNetwork {
     final response = await http.get(Uri.parse('$baseUrl/product/favorite'));
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
+      final jsonData = jsonDecode(response.body);
       final List<dynamic> productsData = jsonData['data'];
       return productsData.map((json) => ProductModel.fromJson(json)).toList();
     } else {

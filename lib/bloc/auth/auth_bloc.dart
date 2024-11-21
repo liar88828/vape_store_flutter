@@ -14,7 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({
     required this.authRepository,
     required this.preferencesRepository,
-  }) : super(AuthInitialState(user: null)) {
+  }) : super(const AuthInitialState(user: null)) {
     on<AuthLoginEvent>((event, emit) async {
       emit(AuthLoadingState());
       try {

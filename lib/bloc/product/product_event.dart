@@ -22,15 +22,21 @@ final class ProductTypeEvent extends ProductEvent {
   ProductTypeEvent({required this.type});
 }
 
-// final class ProductSearchEvent extends ProductEvent {
-//   final String search;
-//   ProductSearchEvent({required this.search});
-// }
+final class ProductSearchEvent extends ProductEvent {
+  final String search;
+  ProductSearchEvent({required this.search});
+}
 
-// final class ProductCategoryEvent extends ProductEvent {
-//   final String category;
-//   ProductCategoryEvent({required this.category});
-// }
+final class ProductFilterEvent extends ProductEvent {
+  final String? category, name, order;
+  ProductFilterEvent({
+    this.category,
+    this.name,
+    this.order,
+  });
+}
+
+final class ProductNewEvent extends ProductEvent {}
 
 // final class ProductOrderEvent extends ProductEvent {
 //   final String order;

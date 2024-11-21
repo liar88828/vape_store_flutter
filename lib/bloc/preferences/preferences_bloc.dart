@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/repository/preferences_repo.dart';
 
@@ -12,18 +11,16 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
 
   PreferencesBloc({
     required this.preferencesRepository,
-  }) : super(PreferencesState()) {
+  }) : super(const PreferencesState()) {
     // on<LoadPreferencesEvent>(_onLoadTheme);
     on<GetThemeEvent>((event, emit) async {
-      print('dark theme');
-
       await preferencesRepository.setDarkMode(true);
-      emit(PrefDarkModeState(isDarkMode: true));
+      emit(const PrefDarkModeState(isDarkMode: true));
     });
 
     on<SetLightThemeEvent>((event, emit) async {
       await preferencesRepository.setDarkMode(false);
-      emit(PrefDarkModeState(isDarkMode: false));
+      emit(const PrefDarkModeState(isDarkMode: false));
     });
 
     on<LoadPreferencesEvent>((event, emit) async {
@@ -48,22 +45,4 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
       emit(PrefTokenState(token: event.token));
     });
   }
-
-  // Future<void> _onLoadTheme(
-  //   LoadPreferencesEvent event,
-  //   Emitter<PreferencesState> emit,
-  // ) async {
-  //   emit(state.copyWith(isLoading: true));
-  //   final isDarkMode = await preferencesRepository.getDarkMode();
-  //   emit(state.copyWith(isDarkMode: isDarkMode, isLoading: false));
-  // }
-
-  // Future<void> _onToggleTheme(
-  //   TogglePreferencesEvent event,
-  //   Emitter<PreferencesState> emit,
-  // ) async {
-  //   final newDarkMode = !state.isDarkMode;
-  //   await preferencesRepository.setDarkMode(newDarkMode);
-  //   emit(state.copyWith(isDarkMode: newDarkMode));
-  // }
 }

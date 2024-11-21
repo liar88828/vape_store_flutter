@@ -59,20 +59,15 @@ class CheckoutNetwork {
       if (response.statusCode == 200) {
         final dataJson = jsonDecode(response.body);
         String message = dataJson['message'];
-        print(message);
-        print(dataJson['data']);
         return ResponseModel(
           success: true,
           message: message,
           data: CheckoutModel.fromJson(dataJson['data']),
         );
       } else {
-        // String message = dataJson['message'];
-        // print(message);
         throw Exception('error bos');
       }
     } catch (e) {
-      print(e.toString());
       return ResponseModel(message: 'Error Checkout', success: false);
     }
   }

@@ -15,7 +15,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       emit(ProductLoadingState());
       try {
         final products = await productRepository.fetchProducts();
-        emit(ProductManyLoadState(products: products));
+        emit(ProductLoadsState(products: products));
       } catch (e) {
         emit(ProductErrorState(message: "Product Error Load ${e.toString()}"));
       }
@@ -25,7 +25,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       emit(ProductLoadingState());
       try {
         final product = await productRepository.fetchProductById(event.id);
-        emit(ProductSingleLoadState(product: product));
+        emit(ProductLoadState(product: product));
       } catch (e) {
         emit(ProductErrorState(message: "Product Error Load ${e.toString()}"));
       }
@@ -33,6 +33,36 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
     on<ProductTypeEvent>((event, emit) {
       emit(ProductTypeState(type: event.type));
+    });
+
+    on<ProductFilterEvent>((event, emit) async {
+      emit(ProductLoadingState());
+      try {
+        final products = await productRepository.fetchProducts(category: event.category, name: event.name, order: event.order);
+        emit(ProductLoadsState(products: products));
+      } catch (e) {
+        emit(ProductErrorState(message: "Product Error Load ${e.toString()}"));
+      }
+    });
+
+    on<ProductSearchEvent>((event, emit) async {
+      emit(ProductLoadingState());
+      try {
+        final products = await productRepository.fetchProducts(name: event.search);
+        emit(ProductLoadsState(products: products));
+      } catch (e) {
+        emit(ProductErrorState(message: "Product Error Load ${e.toString()}"));
+      }
+    });
+
+    on<ProductNewEvent>((event, emit) async {
+      emit(ProductLoadingState());
+      try {
+        final products = await productRepository.fetchProductsNewProduct();
+        emit(ProductNewState(products: products));
+      } catch (e) {
+        emit(ProductErrorState(message: "Product Error Load ${e.toString()}"));
+      }
     });
   }
 }

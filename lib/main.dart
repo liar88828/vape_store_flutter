@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
+import 'package:vape_store/bloc/bank/bank_bloc.dart';
+import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
 import 'package:vape_store/bloc/counter/counter_bloc.dart';
+import 'package:vape_store/bloc/delivery/delivery_bloc.dart';
+import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/bloc/preferences/preferences_bloc.dart';
 import 'package:vape_store/bloc/product/product_bloc.dart';
 import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
+import 'package:vape_store/network/bank_network.dart';
+import 'package:vape_store/network/checkout_network.dart';
+import 'package:vape_store/network/delivery_network.dart';
+import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/network/product_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/network/user_network.dart';
@@ -15,11 +23,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp(
-    userNetwork: UserNetwork(),
-    trolleyNetwork: TrolleyNetwork(),
-    preferencesRepository: PreferencesRepository(),
-    productNetwork: ProductNetwork(),
-  ));
+      userNetwork: UserNetwork(),
+      trolleyNetwork: TrolleyNetwork(),
+      preferencesRepository: PreferencesRepository(),
+      productNetwork: ProductNetwork(),
+      favoriteNetwork: FavoriteNetwork(),
+      bankNetwork: BankNetwork(),
+      deliveryNetwork: DeliveryNetwork(),
+      checkoutNetwork: CheckoutNetwork()));
 }
 
 class MyApp extends StatelessWidget {
@@ -27,24 +38,44 @@ class MyApp extends StatelessWidget {
   final UserNetwork userNetwork;
   final TrolleyNetwork trolleyNetwork;
   final ProductNetwork productNetwork;
-  const MyApp({
-    super.key,
-    required this.preferencesRepository,
-    required this.userNetwork,
-    required this.trolleyNetwork,
-    required this.productNetwork,
-  });
+  final FavoriteNetwork favoriteNetwork;
+  final BankNetwork bankNetwork;
+  final DeliveryNetwork deliveryNetwork;
+  final CheckoutNetwork checkoutNetwork;
+  // final UserModel userSession;
+  const MyApp(
+      {super.key,
+      required this.preferencesRepository,
+      required this.userNetwork,
+      required this.trolleyNetwork,
+      required this.productNetwork,
+      required this.favoriteNetwork,
+      required this.bankNetwork,
+      required this.deliveryNetwork,
+      required this.checkoutNetwork});
 
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = ColorScheme.fromSeed(seedColor: Colors.pinkAccent);
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (context) => DeliveryBloc(deliveryRepository: deliveryNetwork)),
+        BlocProvider(
+            create: (context) => CheckoutBloc(
+                  checkoutRepository: checkoutNetwork,
+                  session: preferencesRepository.getUser(),
+                )),
+        BlocProvider(create: (context) => BankBloc(bankRepository: bankNetwork)),
+        BlocProvider(
+            create: (context) => FavoriteBloc(
+                  favoriteRepository: favoriteNetwork,
+                  session: preferencesRepository.getUser(),
+                )),
         BlocProvider(
             create: (context) => TrolleyBloc(
                   trolleyRepository: trolleyNetwork,
-                  preferencesRepository: preferencesRepository,
-                )..add(GetCountEvent())),
+                  session: preferencesRepository.getUser(),
+                )..add(TrolleyGetSessionEvent())),
         BlocProvider(
             create: (context) => ProductBloc(
                   productRepository: productNetwork,

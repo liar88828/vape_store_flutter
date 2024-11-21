@@ -10,13 +10,23 @@ import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/screen/checkout/order_screen.dart';
+import 'package:vape_store/screen/favorite/favorite_detail_screen.dart';
+import 'package:vape_store/screen/home_screen.dart';
+import 'package:vape_store/screen/search_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  const ProductDetailScreen({super.key, required this.id});
   final int id;
+  final String redirect;
+  final int lastId;
+  const ProductDetailScreen({
+    super.key,
+    required this.id,
+    required this.redirect,
+    required this.lastId,
+  });
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -29,121 +39,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   UserModel? _userData;
 
-  void _addTrollyApi(BuildContext context, int counter, String type) {
-    if (type.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please Add type ')));
-      Navigator.pop(context);
-    } else {
-      final trolley = TrolleyCreate(
-        id: 1,
-        qty: counter,
-        idProduct: widget.id,
-        idUser: _userData!.id,
-        type: type,
-      );
-      context.read<TrolleyBloc>().add(AddTrolleyEvent(trolley: trolley));
-    }
-  }
-
-  Future<void> _showAddFavorite(ColorScheme colorTheme, BuildContext context, int counter, String type) {
-    return showModalBottomSheet(
-        context: context,
-        builder: (context) {
-          return SizedBox(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: FutureBuilder<List<FavoriteModel>>(
-                  future: _favoriteData,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      // debugPrint('Error: ${snapshot.error}');
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data == null) {
-                      return const Center(child: Text('No Favorite found.'));
-                    } else {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Add Favorite', style: TextStyle(fontSize: 20)),
-                          const SizedBox(height: 20),
-                          const Text('Are you sure you want to add this product to your trolley?'),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 200,
-                            child: ListView.builder(
-                                itemCount: snapshot.data!.length,
-                                scrollDirection: Axis.vertical,
-                                itemBuilder: (context, index) {
-                                  final data = snapshot.data![index];
-                                  return ListTile(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    tileColor: colorTheme.primaryContainer,
-                                    // contentPadding: EdgeInsets.all(10),
-                                    title: Text(data.title),
-
-                                    subtitle: Text(data.description),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.add),
-                                      onPressed: () async {
-                                        await addFavorite(context, data);
-                                      },
-                                    ),
-                                  );
-                                }),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              FilledButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Cancel'),
-                              ),
-                              const SizedBox(width: 10),
-                              FilledButton(
-                                onPressed: () {
-                                  _addTrollyApi(context, counter, type);
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Add'),
-                              ),
-                            ],
-                          )
-                        ],
-                      );
-                    }
-                  }),
-            ),
-          );
-        });
-  }
-
-  Future<void> addFavorite(
-    BuildContext context,
-    FavoriteModel data,
-  ) async {
-    final response = await _favoriteNetwork.addFavoriteList(FavoriteListCreate(
-      idFavorite: data.id,
-      idProduct: widget.id,
-      // idUser: _userData!.id,
-    ));
-    // print(response.success);
-    if (context.mounted) {
-      if (response.success) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
-      }
-    }
-  }
-
   void _selectType(String label) {
     context.read<ProductBloc>().add(ProductTypeEvent(type: label));
   }
@@ -151,7 +46,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     context.read<ProductBloc>().add(ProductDetailEvent(id: widget.id));
-
+    var colorTheme = Theme.of(context).colorScheme;
     void increment() {
       context.read<CounterBloc>().add(IncrementCounterEvent());
     }
@@ -162,7 +57,116 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     }
 
-    Future<void> _showAddTrolley(ColorScheme colorTheme, BuildContext context, int counter, String type) {
+    void addTrollyApi(int counter, String type) {
+      if (type.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please Add type ')));
+        Navigator.pop(context);
+      } else {
+        final trolley = TrolleyCreate(
+          id: 1,
+          qty: counter,
+          idProduct: widget.id,
+          idUser: _userData!.id,
+          type: type,
+        );
+        context.read<TrolleyBloc>().add(TrolleyAddEvent(trolley: trolley));
+      }
+    }
+
+    Future<void> addFavorite(FavoriteModel data) async {
+      final response = await _favoriteNetwork.addFavoriteList(FavoriteListCreate(
+        idFavorite: data.id,
+        idProduct: widget.id,
+        // idUser: _userData!.id,
+      ));
+      // print(response.success);
+      if (context.mounted) {
+        if (response.success) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+        }
+      }
+    }
+
+    Future<void> showAddFavorite(int counter, String type) {
+      return showModalBottomSheet(
+          context: context,
+          builder: (context) {
+            return SizedBox(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: FutureBuilder<List<FavoriteModel>>(
+                    future: _favoriteData,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data == null) {
+                        return const Center(child: Text('No Favorite found.'));
+                      } else {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Add Favorite', style: TextStyle(fontSize: 20)),
+                            const SizedBox(height: 20),
+                            const Text('Are you sure you want to add this product to your trolley?'),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 200,
+                              child: ListView.builder(
+                                  itemCount: snapshot.data!.length,
+                                  scrollDirection: Axis.vertical,
+                                  itemBuilder: (context, index) {
+                                    final data = snapshot.data![index];
+                                    return ListTile(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      tileColor: colorTheme.primaryContainer,
+                                      title: Text(data.title),
+                                      subtitle: Text(data.description),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.add),
+                                        onPressed: () async {
+                                          await addFavorite(data);
+                                        },
+                                      ),
+                                    );
+                                  }),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                FilledButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                const SizedBox(width: 10),
+                                FilledButton(
+                                  onPressed: () {
+                                    addTrollyApi(counter, type);
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('Add'),
+                                ),
+                              ],
+                            )
+                          ],
+                        );
+                      }
+                    }),
+              ),
+            );
+          });
+    }
+
+    Future<void> showAddTrolley(int counter, String type) {
       return showModalBottomSheet(
           context: context,
           builder: (context) {
@@ -238,7 +242,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           const SizedBox(width: 10),
                           FilledButton(
                             onPressed: () {
-                              _addTrollyApi(context, counter, type);
+                              addTrollyApi(counter, type);
                             },
                             child: const Text('Add'),
                           ),
@@ -252,7 +256,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           });
     }
 
-    Future<void> _addCheckout(ProductModel product, int counterQty, String type) async {
+    Future<void> addCheckout(ProductModel product, int counterQty, String type) async {
       if (type.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Please Add Type'),
@@ -284,7 +288,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     }
 
-    Future<void> _toCheckout(ColorScheme colorTheme, ProductModel product, int counter, String type) async {
+    Future<void> toCheckout(ProductModel product, int counter, String type) async {
       return showModalBottomSheet(
           context: context,
           builder: (context) {
@@ -351,7 +355,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               const SizedBox(width: 10),
                               FilledButton(
                                 onPressed: () {
-                                  _addCheckout(product, counter, type);
+                                  addCheckout(product, counter, type);
                                 },
                                 child: const Text('Add'),
                               ),
@@ -362,8 +366,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             );
           });
     }
-
-    var colorTheme = Theme.of(context).colorScheme;
 
     return BlocSelector<CounterBloc, CounterState, int>(
       selector: (stateCounter) => stateCounter.counter,
@@ -384,7 +386,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           backgroundColor: colorTheme.primary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        onPressed: () => _showAddFavorite(colorTheme, context, stateCounter, type),
+                        onPressed: () => showAddFavorite(stateCounter, type),
                         icon: const Icon(Icons.favorite),
                       ),
                       FilledButton(
@@ -395,7 +397,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: () => _showAddTrolley(colorTheme, context, stateCounter, type),
+                        onPressed: () => showAddTrolley(stateCounter, type),
                         child: const Text(
                           'ADD TO TROLLEY',
                           style: TextStyle(fontWeight: FontWeight.bold),
@@ -410,7 +412,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                         ),
                         onPressed: () async {
-                          _toCheckout(colorTheme, await _productData, stateCounter, type);
+                          toCheckout(await _productData, stateCounter, type);
                         },
                         child: const Text(
                           'CHECKOUT',
@@ -423,12 +425,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
                 appBar: AppBar(
                   toolbarHeight: 70,
-                  leading: Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: BackButton(
-                      style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                    ),
-                  ),
+                  leading: BackButton(onPressed: () {
+                    if (widget.redirect == 'home') {
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+                    } else if (widget.redirect == 'favorite') {
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => FavoriteDetailScreen(id: widget.lastId)));
+                    } else if (widget.redirect == 'trolley') {
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
+                    } else if (widget.redirect == 'search') {
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
+                    } else {
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+                    }
+                  }),
                   centerTitle: true,
                   title: const Text('Detail Product'),
                   actions: [
@@ -497,16 +506,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             BlocBuilder<ProductBloc, ProductState>(
                               buildWhen: (previous, current) {
-                                final product = previous.product != current.product;
+                                // final product = previous.product != current.product;
                                 final type = previous.type == current.type;
-                                return product && type;
+                                return //product &&
+                                    type;
                               },
                               builder: (context, state) {
                                 if (state is ProductLoadingState) {
                                   return const Center(child: CircularProgressIndicator());
                                 } else if (state is ProductErrorState) {
                                   return Text("data error : ${state.message}");
-                                } else if (state is ProductSingleLoadState) {
+                                } else if (state is ProductLoadState) {
                                   final product = state.product;
                                   return Container(
                                       color: Colors.white10,

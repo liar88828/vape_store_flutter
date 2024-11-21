@@ -1,67 +1,22 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:vape_store/assets/product_example.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/product/product_bloc.dart';
+import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/product_model.dart';
-import 'package:vape_store/models/user_model.dart';
-import 'package:vape_store/network/bank_network.dart';
-import 'package:vape_store/network/delivery_network.dart';
-import 'package:vape_store/network/product_network.dart';
-import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/product/product_detail_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
-import 'package:vape_store/utils/pref_user.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  static final List<ProductModel> products = productExample;
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
-  final ProductNetwork _networkProduct = ProductNetwork();
-  final BankNetwork _bankNetwork = BankNetwork();
-  final DeliveryNetwork _deliveryNetwork = DeliveryNetwork();
-
-  late UserModel? _userData;
-  late Future<List<ProductModel>> _newProducts;
-
-  int? _trolleyCount;
-  // late Future<List<ProductModel>> _flashSaleProducts;
-
-  // late Future<List<ProductModel>> favoriteProducts;
-  // late Future<List<ProductModel>> favoriteProducts;
-
-  // Helper function to load user data and initialize countTrolley
-  Future<void> _refreshData() async {
-    _userData = await loadUserData();
-    if (_userData != null) {
-      int count = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
-      // print(userData?.toJson());
-      setState(() {
-        _trolleyCount = count;
-      }); // Trigger a rebuild when userData and countTrolley are ready
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshData(); // Load user data and set countTrolley
-    // favoriteProducts = apiProduct.fetchProductsFavorite();
-    _bankNetwork.fetchBanks();
-    _deliveryNetwork.fetchDelivery();
-    _newProducts = _networkProduct.fetchProductsNewProduct();
-    // _flashSaleProducts = _apiProduct.fetchProductsFlashSale();
-  }
-
   @override
   Widget build(BuildContext context) {
+    // context.read<BankBloc>().add(BankFetchEvent());
+    // context.read<DeliveryBloc>().add(DeliveryFetchEvent());
+    context.read<ProductBloc>().add(ProductNewEvent());
+
     var heightScreen = MediaQuery.of(context).size.height;
     var colorTheme = Theme.of(context).colorScheme;
 
@@ -72,25 +27,32 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-              color: colorTheme.primary,
-              style: IconButton.styleFrom(
-                // backgroundColor: colorTheme.primaryContainer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              // color: Colors.red,
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return const TrolleyScreen();
-                }));
+            child: BlocSelector<TrolleyBloc, TrolleyState, int>(
+              selector: (stateTrolley) {
+                return stateTrolley.count ?? 0;
               },
-              icon: Badge(
-                isLabelVisible: true,
-                label: Text(_trolleyCount?.toString() ?? "0"),
-                child: const Icon(Icons.trolley),
-              ),
+              builder: (context, stateTrolleyCount) {
+                return IconButton(
+                  color: colorTheme.primary,
+                  style: IconButton.styleFrom(
+                    // backgroundColor: colorTheme.primaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  // color: Colors.red,
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return const TrolleyScreen();
+                    }));
+                  },
+                  icon: Badge(
+                    isLabelVisible: true,
+                    label: Text(stateTrolleyCount.toString()),
+                    child: const Icon(Icons.trolley),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -175,35 +137,57 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  FutureBuilder<List<ProductModel>>(
-                      future: _newProducts,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        } else {
-                          return ProductList(
-                            title: 'New Products',
-                            heightScreen: heightScreen,
-                            products: snapshot.data!,
-                            colorTheme: colorTheme,
-                          );
-                        }
-                      }),
+
+                  BlocBuilder<ProductBloc, ProductState>(
+                    builder: (context, stateProductNew) {
+                      if (stateProductNew is ProductLoadingState) {
+                        return const CircularProgressIndicator();
+                      } else if (stateProductNew is ProductErrorState) {
+                        return Text(stateProductNew.message);
+                      } else if (stateProductNew is ProductNewState) {
+                        return ProductList(
+                          title: 'New Products',
+                          heightScreen: heightScreen,
+                          products: stateProductNew.products,
+                          colorTheme: colorTheme,
+                        );
+                      } else {
+                        return const Text('Something went wrong Bloc or Api');
+                      }
+                    },
+                  ),
+
+                  BlocBuilder<ProductBloc, ProductState>(
+                    // buildWhen: (previous, current) {
+                    //   // final products = previous.products == current.products;
+                    //   // final product = previous.product == current.product;
+
+                    //   // print('----------');
+                    //   // print('products : $products and product : $product');
+                    //   // print('----------');
+                    //   return true //&& product || type
+                    //       ;
+                    // },
+                    builder: (context, stateProductNew) {
+                      if (stateProductNew is ProductLoadingState) {
+                        return const CircularProgressIndicator();
+                      } else if (stateProductNew is ProductErrorState) {
+                        return Text(stateProductNew.message);
+                      } else if (stateProductNew is ProductNewState) {
+                        return ProductList(
+                          title: 'Flash Sale',
+                          heightScreen: heightScreen,
+                          products: stateProductNew.products,
+                          colorTheme: colorTheme,
+                        );
+                      } else {
+                        return const Text('Something went wrong Bloc or Api');
+                      }
+                    },
+                  ),
+
                   const SizedBox(height: 20),
-                  FutureBuilder<List<ProductModel>>(
-                      future: _newProducts,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        } else {
-                          return ProductList(
-                            title: 'Flash Sale',
-                            heightScreen: heightScreen,
-                            products: snapshot.data!,
-                            colorTheme: colorTheme,
-                          );
-                        }
-                      }),
+
                   // ProductFlashSale(
                   //     heightScreen: heightScreen,
                   //     products: HomeScreen.products),
@@ -266,7 +250,14 @@ class ProductList extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               return InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProductDetailScreen(id: product.id ?? 0))),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ProductDetailScreen(
+                              id: product.id ?? 0,
+                              lastId: 0,
+                              redirect: 'home',
+                            ))),
                 child: Card(
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   child: Container(

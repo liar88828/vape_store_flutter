@@ -45,8 +45,9 @@ class ButtonNavigation extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const HomeScreen(),
-                      settings: const RouteSettings(name: '/')));
+                    builder: (context) => const HomeScreen(),
+                    settings: const RouteSettings(name: '/'),
+                  ));
               break;
             case 1:
               Navigator.push(
@@ -60,8 +61,9 @@ class ButtonNavigation extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const SearchScreen(),
-                      settings: const RouteSettings(name: '/search')));
+                    builder: (context) => const SearchScreen(),
+                    settings: const RouteSettings(name: '/search'),
+                  ));
               break;
             case 3:
               Navigator.push(
@@ -83,23 +85,11 @@ class ButtonNavigation extends StatelessWidget {
           }
         },
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.home,
-              ),
-              label: 'Home'),
-          BottomNavigationBarItem(
-              // backgroundColor: Colors.amberAccent,
-              icon: Icon(Icons.favorite),
-              label: 'Favorite'),
-          BottomNavigationBarItem(
-              // backgroundColor: Colors.redAccent,
-
-              icon: Icon(Icons.search),
-              label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorite'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ]);
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/models/checkout_model.dart';
-import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/network/checkout_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
@@ -43,6 +42,9 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // if (widget.idCheckout != null) {
+    //   context.read<CheckoutBloc>().add(CheckoutLoadIdEvent(id: widget.idCheckout));
+    // }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction Details'),
@@ -70,7 +72,7 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
                     } else {
                       return Column(
                         children: snapshot.data!.map((data) {
-                          return CardTrolley(data);
+                          return cardTrolley(data);
                         }).toList(),
                       );
                     }
@@ -182,7 +184,7 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
     );
   }
 
-  Card CardTrolley(TrolleyModel item) {
+  Widget cardTrolley(TrolleyModel item) {
     return Card(
       // margin: const EdgeInsets.symmetric(vertical: 1),
       child: Padding(
@@ -221,7 +223,7 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
               ),
             ),
             Text(
-              '${formatPrice(item.price * item.trolleyQty)}',
+              formatPrice(item.price * item.trolleyQty),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],

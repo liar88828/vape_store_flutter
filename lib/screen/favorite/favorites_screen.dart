@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:vape_store/models/favorite_model.dart';
-import 'package:vape_store/models/user_model.dart';
-import 'package:vape_store/network/favorite_network.dart';
-import 'package:vape_store/network/trolley_network.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
+import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/screen/favorite/favorite_form_screen.dart';
 import 'package:vape_store/screen/favorite/favorite_detail_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
-import 'package:vape_store/utils/pref_user.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -17,39 +15,19 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
-  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
-
-  int? _trolleyCount = 0;
-  int? _favoriteCount = 0;
-  UserModel? _userData;
-  Future<List<FavoriteModel>>? _favoriteData;
-
-  Future<void> _refreshData() async {
-    _userData = await loadUserData();
-    if (_userData != null) {
-      _trolleyCount = await _trolleyNetwork.fetchTrolleyCount(_userData!.id);
-      _favoriteData = _favoriteNetwork.fetchFavoritesByUserId(_userData!.id);
-      _favoriteCount = await _favoriteData?.then((value) => value.length);
-      setState(() {});
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshData();
-  }
-
   @override
   Widget build(BuildContext context) {
-    var colorTheme = Theme.of(context).colorScheme;
-    // final List<FavoriteModel> favorites = favoriteExample;
+    context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
+    final colorTheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
-          onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen())),
+          onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HomeScreen(),
+              )),
         ),
         toolbarHeight: 70,
         title: Padding(
@@ -70,21 +48,32 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-                color: colorTheme.primary,
-                style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                // color: Colors.red,
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const TrolleyScreen();
-                  }));
-                },
-                icon: Badge(
-                  label: Text(_trolleyCount.toString()),
-                  child: const Icon(
-                    Icons.trolley,
-                  ),
-                )),
+            child: BlocSelector<TrolleyBloc, TrolleyState, int>(
+              selector: (stateTrolley) {
+                return stateTrolley.count ?? 0;
+              },
+              builder: (context, stateTrolleyCount) {
+                return IconButton(
+                    color: colorTheme.primary,
+                    style: IconButton.styleFrom(
+                        backgroundColor: colorTheme.primaryContainer,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        )),
+                    // color: Colors.red,
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return const TrolleyScreen();
+                      }));
+                    },
+                    icon: Badge(
+                      label: Text(stateTrolleyCount.toString()),
+                      child: const Icon(
+                        Icons.trolley,
+                      ),
+                    ));
+              },
+            ),
           ),
         ],
       ),
@@ -94,9 +83,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(
-                'Total : $_favoriteCount',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              BlocSelector<FavoriteBloc, FavoriteState, int>(
+                selector: (stateFavorite) {
+                  return stateFavorite.count ?? 0;
+                },
+                builder: (context, stateFavoriteCount) {
+                  return Text(
+                    'Total : $stateFavoriteCount',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  );
+                },
               ),
               IconButton(
                 color: colorTheme.primary,
@@ -105,7 +101,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return const FavoriteFormScreen();
                   }));
-                  if (result == true) _refreshData();
+                  if (context.mounted) {
+                    if (result == true) {
+                      context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
+                    }
+                  }
                 },
                 icon: const Row(
                   children: [
@@ -117,18 +117,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               // SizedBox(width: 12),
             ]),
           ),
-          FutureBuilder<List<FavoriteModel>>(
-            future: _favoriteData,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+          BlocBuilder<FavoriteBloc, FavoriteState>(
+            builder: (context, stateFavorites) {
+              if (stateFavorites is FavoriteLoadingState) {
                 return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError || snapshot.data == null) {
-                return const Center(child: Text('Error Data is not found'));
-              } else if (snapshot.data!.isEmpty) {
-                return const Center(child: Text('Data is Empty'));
-              } else {
-                // print(snapshot);
-
+              } else if (stateFavorites is FavoriteErrorState) {
+                return Center(child: Text('Error Data is not found : ${stateFavorites.message}'));
+              } else if (stateFavorites is FavoriteLoadsState) {
                 return Expanded(
                   child: GridView.count(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -137,7 +132,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     mainAxisSpacing: 10,
                     crossAxisCount: 2,
                     childAspectRatio: 3 / 4,
-                    children: snapshot.data!.map((favorite) {
+                    children: stateFavorites.favorites.map((favorite) {
                       return InkWell(
                         onTap: () {
                           Navigator.push(
@@ -174,6 +169,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     }).toList(),
                   ),
                 );
+              } else {
+                return const Text('Something error Bloc or Api');
               }
             },
           )

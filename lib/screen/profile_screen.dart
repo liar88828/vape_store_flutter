@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/auth/auth_bloc.dart';
+import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
+import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
+import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/checkout_model.dart';
-import 'package:vape_store/models/user_model.dart';
-import 'package:vape_store/network/checkout_network.dart';
-import 'package:vape_store/network/favorite_network.dart';
-import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/date.dart';
 import 'package:vape_store/utils/money.dart';
-import 'package:vape_store/utils/pref_user.dart';
 import 'package:vape_store/widgets/button_navigation.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -19,192 +19,179 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
-  final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
-  final TrolleyNetwork _trolleyNetwork = TrolleyNetwork();
-
-  Future<List<CheckoutModel>>? _checkoutData;
-  int? _favoriteCount;
-  int? _trolleyCount;
-  UserModel? _userData;
-
-  Future<void> _refreshHandler() async {
-    final session = await loadUserData();
-    if (session != null) {
-      _favoriteCount = await _favoriteNetwork.fetchFavoritesByUserIdCount(session.id);
-      _trolleyCount = await _trolleyNetwork.fetchTrolleyCount(session.id);
-      _checkoutData = _checkoutNetwork.fetchAll(session.id);
-      setState(() {
-        _userData = session;
-        // _trolleyCount
-      });
-    }
-  }
-
   void _toDetailCheckout(CheckoutModel data, int id) {
-    // print(data.toJson());
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      // return DetailScreen(id: data.id);
-      return DetailCheckoutScreen(
-        checkout: data,
-        idCheckout: id,
-      );
+      return DetailCheckoutScreen(checkout: data, idCheckout: id);
     }));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshHandler();
   }
 
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
-    // final List<ProductModel> products = productExample;
 
-    if (_userData == null) {
-      return const Center(child: CircularProgressIndicator());
-    } else {
-      return Scaffold(
-        // backgroundColor: colorTheme.primaryContainer,
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text('Profile'),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: IconButton(
-                color: colorTheme.primary,
-                style: IconButton.styleFrom(
-                    backgroundColor: colorTheme.primaryContainer,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    )),
-                // color: Colors.red,
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const TrolleyScreen();
-                  }));
-                },
-                icon: Badge(
-                    label: Text(
-                      _trolleyCount != null ? _trolleyCount.toString() : '',
-                    ),
-                    child: const Icon(Icons.trolley)),
-              ),
+    context.read<AuthBloc>().add(AuthInfoEvent());
+    context.read<FavoriteBloc>().add(FavoriteCountByUserId());
+    context.read<CheckoutBloc>().add(CheckoutLoadEvent());
+
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Profile'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: BlocSelector<TrolleyBloc, TrolleyState, int>(
+              selector: (stateTrolley) {
+                return stateTrolley.count ?? 0;
+              },
+              builder: (context, stateTrolleyCount) {
+                return IconButton(
+                  color: colorTheme.primary,
+                  style: IconButton.styleFrom(
+                      backgroundColor: colorTheme.primaryContainer,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      )),
+                  // color: Colors.red,
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return const TrolleyScreen();
+                    }));
+                  },
+                  icon: Badge(label: Text(stateTrolleyCount.toString()), child: const Icon(Icons.trolley)),
+                );
+              },
             ),
-          ],
-        ),
-        bottomNavigationBar: const ButtonNavigation(),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.only(top: 20),
-          child: Column(children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Image.asset(
-                          'lib/images/profile.png',
-                          height: 110,
-                          width: 110,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _userData?.name ?? '',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              _userData?.email ?? '',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                            Text(
-                              _userData?.createdAt != null ? formatDate(_userData!.createdAt!) : '',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        CardStatus(
-                          colorTheme: colorTheme,
-                          title: 'Total Favorite',
-                          count: _favoriteCount ?? 0,
-                        ),
-                        CardStatus(
-                          colorTheme: colorTheme,
-                          title: 'Total Buy',
-                          count: 20,
-                        ),
-                        // CardStatus(
-                        //   colorTheme: colorTheme,
-                        //   title: 'Total Buy',
-                        //   count: 20,
-                        // ),
-                        // CardStatus(
-                        //   colorTheme: colorTheme,
-                        //   title: '',
-                        //   count: 0,
-                        // )
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(20),
+          ),
+        ],
+      ),
+      bottomNavigationBar: const ButtonNavigation(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(top: 20),
+        child: Column(children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    const Text(
-                      'History',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextButton(onPressed: () {}, child: const Text('View More'))
-                  ]),
-                  FutureBuilder<List<CheckoutModel>>(
-                      future: _checkoutData,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return const Center(child: Text('Data is Empty'));
-                        } else {
-                          return Column(
-                            children: snapshot.data!.map((data) {
-                              return listHistory(data);
-                            }).toList(),
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, stateAuth) {
+                      if (stateAuth is AuthLoadingState) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (stateAuth is AuthErrorState) {
+                        return Text(stateAuth.message);
+                      } else if (stateAuth is AuthLoadedState) {
+                        final user = stateAuth.user;
+                        return Row(
+                          children: [
+                            Image.asset(
+                              'lib/images/profile.png',
+                              height: 110,
+                              width: 110,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user.name,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  user.email,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                ),
+                                Text(
+                                  formatDate(user.createdAt),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        );
+                      } else {
+                        return const Text('Something error');
+                      }
+                    },
+                  ),
+                  Row(
+                    children: [
+                      BlocSelector<FavoriteBloc, FavoriteState, int>(
+                        selector: (stateFavorite) {
+                          return stateFavorite.count ?? 0;
+                        },
+                        builder: (context, stateFavoriteCount) {
+                          return CardStatus(
+                            colorTheme: colorTheme,
+                            title: 'Total Favorite',
+                            count: stateFavoriteCount,
                           );
-                        }
-                      })
+                        },
+                      ),
+                      CardStatus(
+                        colorTheme: colorTheme,
+                        title: 'Total Buy',
+                        count: 20,
+                      ),
+                      // CardStatus(
+                      //   colorTheme: colorTheme,
+                      //   title: 'Total Buy',
+                      //   count: 20,
+                      // ),
+                      // CardStatus(
+                      //   colorTheme: colorTheme,
+                      //   title: '',
+                      //   count: 0,
+                      // )
+                    ],
+                  )
                 ],
               ),
-            )
-          ]),
-        ),
-      );
-    }
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  const Text(
+                    'History',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton(onPressed: () {}, child: const Text('View More'))
+                ]),
+                BlocBuilder<CheckoutBloc, CheckoutState>(builder: (context, stateCheckout) {
+                  if (stateCheckout is CheckoutLoadingState) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (stateCheckout is CheckoutErrorState) {
+                    return const Center(child: Text('Data is Empty'));
+                  } else if (stateCheckout is CheckoutLoadsState) {
+                    return Column(
+                        children: stateCheckout.checkouts.map((data) {
+                      return listHistory(data);
+                    }).toList());
+                  } else {
+                    return const Text('Something Error');
+                  }
+                })
+              ],
+            ),
+          )
+        ]),
+      ),
+    );
   }
 
   Card listHistory(CheckoutModel data) {

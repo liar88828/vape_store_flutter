@@ -8,9 +8,7 @@ sealed class AuthState {
 }
 
 final class AuthInitialState extends AuthState {
-  @override
-  final UserModel? user;
-  const AuthInitialState({required this.user}) : super(user: user);
+  const AuthInitialState({required super.user});
 }
 
 class AuthErrorState extends AuthState {

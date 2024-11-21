@@ -8,6 +8,7 @@ class ProductModel {
   final int idUser;
   final int? idProduct;
   final String? img;
+  final String? category;
 
   // final String img;
 
@@ -18,6 +19,7 @@ class ProductModel {
     required this.price,
     required this.brand,
     required this.description,
+    required this.category,
     required this.idUser,
     this.idProduct,
     this.img,
@@ -26,6 +28,7 @@ class ProductModel {
   // Convert JSON to ProductModel object
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
+      category: json['category'],
       id: json['id'],
       idUser: json['id_user'],
       idProduct: json['id_product'],
@@ -41,6 +44,7 @@ class ProductModel {
   // Convert ProductModel object to JSON
   Map<String, dynamic> toJson() {
     return {
+      'category': category,
       'name': name,
       'qty': qty,
       'brand': brand,

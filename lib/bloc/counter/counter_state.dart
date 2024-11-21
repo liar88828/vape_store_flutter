@@ -8,7 +8,5 @@ sealed class CounterState {
 final class CounterInitial extends CounterState {}
 
 final class ChangeCounterState extends CounterState {
-  @override
-  final int counter;
-  ChangeCounterState({required this.counter}) : super(counter: counter);
+  ChangeCounterState({required super.counter});
 }

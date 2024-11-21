@@ -3,31 +3,35 @@ part of 'trolley_bloc.dart';
 @immutable
 sealed class TrolleyEvent {}
 
-class GetCountEvent extends TrolleyEvent {}
+class TrolleyCountEvent extends TrolleyEvent {}
 
-class GetTrolleyEvent extends TrolleyEvent {}
+class TrolleyLoadsEvent extends TrolleyEvent {}
 
 class GetCheckoutEvent extends TrolleyEvent {
   final int idCheckout;
   GetCheckoutEvent({required this.idCheckout});
 }
 
-class AddTrolleyEvent extends TrolleyEvent {
+class TrolleyAddEvent extends TrolleyEvent {
   final TrolleyCreate trolley;
-  AddTrolleyEvent({required this.trolley});
+  TrolleyAddEvent({required this.trolley});
 }
 
-class RemoveTrolleyEvent extends TrolleyEvent {
+class TrolleyRemoveEvent extends TrolleyEvent {
   final int idTrolley;
-  RemoveTrolleyEvent({required this.idTrolley});
+  TrolleyRemoveEvent({required this.idTrolley});
 }
 
-class ChangeTrolleyEvent extends TrolleyEvent {
+class TrolleyChangeEvent extends TrolleyEvent {
   final TrolleyCreate trolley;
-  ChangeTrolleyEvent({required this.trolley});
+  TrolleyChangeEvent({required this.trolley});
 }
 
-class ChangeTypeEvent extends TrolleyEvent {
+class TrolleyChangeTypeEvent extends TrolleyEvent {
   final String type;
-  ChangeTypeEvent({required this.type});
+  TrolleyChangeTypeEvent({required this.type});
+}
+
+class TrolleyGetSessionEvent extends TrolleyEvent {
+  TrolleyGetSessionEvent();
 }

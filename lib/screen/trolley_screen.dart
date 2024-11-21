@@ -55,7 +55,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    context.read<TrolleyBloc>().add(GetTrolleyEvent());
+    context.read<TrolleyBloc>().add(TrolleyLoadsEvent());
     double totalPrice = calculateTotalPrice(); // Assume a function to calculate total price
     return Scaffold(
       bottomNavigationBar: BottomAppBar(
@@ -99,7 +99,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
           } else if (state is TrolleyErrorState) {
             return Center(child: Text('Error: ${state.message}'));
           } else if (state is TrolleyLoadState) {
-            List<TrolleyModel> trolleys = state.trolleys ?? [];
+            final trolleys = state.trolleys;
             return ListView.builder(
               itemCount: trolleys.length,
               itemBuilder: (context, index) {
@@ -122,7 +122,11 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                         InkWell(
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (context) {
-                              return ProductDetailScreen(id: item.idProduct);
+                              return ProductDetailScreen(
+                                id: item.idProduct,
+                                redirect: 'trolley',
+                                lastId: 0,
+                              );
                             }));
                           },
                           child: Image.network(
@@ -189,7 +193,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                           child: IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                             onPressed: () {
-                              context.read<TrolleyBloc>().add(RemoveTrolleyEvent(idTrolley: item.idTrolley));
+                              context.read<TrolleyBloc>().add(TrolleyRemoveEvent(idTrolley: item.idTrolley));
                             },
                           ),
                         ),

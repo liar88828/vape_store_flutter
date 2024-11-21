@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vape_store/models/favorite_list_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/models/favorite_model.dart';
 import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/screen/favorite/favorites_screen.dart';
@@ -18,16 +19,14 @@ class FavoriteDetailScreen extends StatefulWidget {
 
 class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
   final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
-  late Future<List<FavoriteListModel>> _favoriteListData;
   late Future<FavoriteModel> _favoriteData;
-
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _favoriteListData = _favoriteNetwork.fetchFavoritesByListId(widget.id);
+    // _favoriteListData = _favoriteNetwork.fetchFavoritesByListId(widget.id);
     _favoriteData = _favoriteNetwork.fetchFavoriteById(widget.id);
     _refreshData();
   }
@@ -42,28 +41,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
     setState(() {});
   }
 
-  Future<void> _updateFavorite(context) async {
-    try {
-      final favorite = FavoriteModel(
-        id: widget.id,
-        idUser: 0,
-        description: _descriptionController.text,
-        title: _titleController.text,
-      );
-
-      await _favoriteNetwork.updateFavorite(favorite);
-      if (context.mounted) {
-        Navigator.pop(context, true);
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
-      }
-    } catch (e) {
-      print(e);
-      // Navigator.pop(context);
-    }
-  }
-
   Future<void> _deleteFavorite(BuildContext context) async {
-    // print(widget.id);
     return showDialog(
         context: context,
         barrierDismissible: false,
@@ -79,9 +57,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
               TextButton(
                 child: const Text('Delete'),
                 onPressed: () {
-                  _favoriteNetwork.deleteFavorite(widget.id);
-                  // Navigator.of(context).pop();
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+                  context.read<FavoriteBloc>().add(FavoriteDeleteEvent(id: widget.id));
                 },
               ),
             ],
@@ -93,28 +69,6 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
             ),
           );
         });
-    // showModalBottomSheet(
-    //     context: context,
-    //     builder: (BuildContext context) {
-    //       return SizedBox(
-    //         height: 200,
-    //         child: Center(
-    //           child: Column(
-    //             mainAxisAlignment: MainAxisAlignment.center,
-    //             mainAxisSize: MainAxisSize.min,
-    //             children: [
-    //               Text('Modal Sheet'),
-    //               ElevatedButton(
-    //                 onPressed: () {
-    //                   Navigator.pop(context);
-    //                 },
-    //                 child: const Text('Delete'),
-    //               )
-    //             ],
-    //           ),
-    //         ),
-    //       );
-    //     });
   }
 
   Future<void> _editFavorite() async {
@@ -132,10 +86,15 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
               ),
               TextButton(
                 child: const Text('Edit'),
-                onPressed: () async {
-                  await _updateFavorite(context);
-                  // Navigator.of(context).pop();
-                  // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+                onPressed: () {
+                  context.read<FavoriteBloc>().add(FavoriteUpdateEvent(
+                        favorite: FavoriteModel(
+                          id: widget.id,
+                          idUser: 0,
+                          description: _descriptionController.text,
+                          title: _titleController.text,
+                        ),
+                      ));
                 },
               ),
             ],
@@ -161,7 +120,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
     // final List<FavoriteModel> favorites = favoriteExample;
-
+    context.read<FavoriteBloc>().add(FavoriteListIdEvent(id: widget.id));
     return Scaffold(
         appBar: AppBar(
           leading: BackButton(
@@ -210,51 +169,57 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
             const SizedBox(width: 5)
           ],
         ),
-        body: FutureBuilder(
-            future: _favoriteListData,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return const Center(child: Text('Error Data is not found'));
-              } else if (snapshot.data!.isEmpty) {
-                return const Center(child: Text('Data is Empty'));
-              } else {
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    final favorite = snapshot.data![index];
-                    return ListTile(
-                      // tileColor: colorTheme.primary,
-                      leading: Image.asset(
-                        'lib/images/banner1.png',
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                      title: Text(
-                        favorite.name!,
-                        maxLines: 1,
-                      ),
-                      subtitle: Text(
-                        favorite.description!,
-                        maxLines: 1,
-                      ),
-                      trailing: const Icon(Icons.arrow_forward),
-                      onTap: () {
-                        // Handle the tap event, e.g., navigate to a details page
-                        // print('Tapped on ${favorite.title}');
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ProductDetailScreen(
-                                      id: favorite.idProduct!,
-                                    )));
-                      },
-                    );
-                  },
-                );
-              }
-            }));
+        body: BlocListener<FavoriteBloc, FavoriteState>(
+          listener: (context, stateFavoriteListener) {
+            if (stateFavoriteListener is FavoriteUpdateState) {
+              Navigator.pop(context, true);
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+            }
+            if (stateFavoriteListener is FavoriteDeleteState) {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+            }
+          },
+          child: BlocBuilder<FavoriteBloc, FavoriteState>(builder: (context, stateFavoriteList) {
+            if (stateFavoriteList is FavoriteLoadingState) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (stateFavoriteList is FavoriteErrorState) {
+              return const Center(child: Text('Error Data is not found'));
+            } else if (stateFavoriteList is FavoriteListIdState) {
+              final favoriteList = stateFavoriteList.favoriteList;
+              return ListView.builder(
+                itemCount: favoriteList.length,
+                itemBuilder: (context, index) {
+                  final favorite = favoriteList[index];
+                  return ListTile(
+                    // tileColor: colorTheme.primary,
+                    leading: Image.asset(
+                      'lib/images/banner1.png',
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                    title: Text(favorite.name!, maxLines: 1),
+                    subtitle: Text(favorite.description!, maxLines: 1),
+                    trailing: const Icon(Icons.arrow_forward),
+                    onTap: () {
+                      // Handle the tap event, e.g., navigate to a details page
+                      // print('Tapped on ${favorite.title}');
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ProductDetailScreen(
+                                    id: favorite.idProduct!,
+                                    redirect: 'favorite',
+                                    lastId: widget.id,
+                                  )));
+                    },
+                  );
+                },
+              );
+            } else {
+              return const Center(child: Text('Something went wrong Bloc or API'));
+            }
+          }),
+        ));
   }
 }

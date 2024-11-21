@@ -9,6 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:vape_store/main.dart';
+import 'package:vape_store/network/bank_network.dart';
+import 'package:vape_store/network/checkout_network.dart';
+import 'package:vape_store/network/delivery_network.dart';
+import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/network/product_network.dart';
 import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/network/user_network.dart';
@@ -22,6 +26,10 @@ void main() {
       userNetwork: UserNetwork(),
       trolleyNetwork: TrolleyNetwork(),
       productNetwork: ProductNetwork(),
+      favoriteNetwork: FavoriteNetwork(),
+      bankNetwork: BankNetwork(),
+      deliveryNetwork: DeliveryNetwork(),
+      checkoutNetwork: CheckoutNetwork(),
     ));
 
     // Verify that our counter starts at 0.

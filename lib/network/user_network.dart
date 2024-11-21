@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
-import 'package:vape_store/models/response_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,8 +70,6 @@ class UserNetwork {
       headers: {'Content-Type': 'application/json'},
     );
 
-    // print(response.statusCode);
-
     final data = json.decode(response.body);
     if (response.statusCode == 200) {
       print(data);
@@ -84,7 +81,6 @@ class UserNetwork {
       prefs.setString('user', jsonEncode(dataUser));
 
       return AuthLoadedState(token: token, user: UserModel.fromJson(dataUser));
-      //  ResponseModel(success: true, message: data['message']);
     } else {
       throw Exception('Fail Login');
     }

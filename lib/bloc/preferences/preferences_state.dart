@@ -13,29 +13,6 @@ class PreferencesState {
     this.isDarkMode = false,
     this.token = '',
   });
-  // final bool isLoading;
-  // final UserModel? user;
-  // final String token;
-
-  // PreferencesState({
-  //   required this.isDarkMode,
-  //   this.user,
-  //   this.token = '',
-  //   this.isLoading = false,
-  // });
-  // PreferencesState copyWith({
-  //   bool? isDarkMode,
-  //   bool? isLoading,
-  //   String? token,
-  //   UserModel? user,
-  // }) {
-  //   return PreferencesState(
-  //     isDarkMode: isDarkMode ?? this.isDarkMode,
-  //     isLoading: isLoading ?? this.isLoading,
-  //     token: token ?? this.token,
-  //     user: user ?? this.user,
-  //   );
-  // }
 }
 
 final class PreferencesInitial extends PreferencesState {
@@ -43,11 +20,7 @@ final class PreferencesInitial extends PreferencesState {
 }
 
 final class PrefTokenState extends PreferencesState {
-  final String token;
-  const PrefTokenState({
-    required this.token,
-    super.user,
-  });
+  const PrefTokenState({required super.token, super.user});
 }
 
 final class PrefUserState extends PreferencesState {
