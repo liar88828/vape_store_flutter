@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/response_model.dart';
+import 'package:vape_store/models/user_model.dart';
 
 class CheckoutNetwork {
   final baseUrl = 'http://localhost:8000/api';
@@ -20,7 +21,7 @@ class CheckoutNetwork {
     }
   }
 
-  Future<CheckoutModel> fetchId(int idCheckout) async {
+  Future<CheckoutModel> fetchId({required int idCheckout}) async {
     final response = await http.get(Uri.parse("$baseUrl/checkout/$idCheckout"));
     if (response.statusCode == 201) {
       final dataJson = jsonDecode(response.body);
@@ -30,7 +31,11 @@ class CheckoutNetwork {
     }
   }
 
-  Future<ResponseModel> createSingleCheckout() async {
+  Future<ResponseModel> createSingleCheckout({
+    required CheckoutModel checkout,
+    required int idTrolley,
+    required UserModel user,
+  }) async {
     print("single");
     return ResponseModel(
       message: '',
@@ -39,10 +44,14 @@ class CheckoutNetwork {
   }
   // Future manyTrolley() {}
 
-  Future<ResponseModel<CheckoutModel>> createManyCheckout(CheckoutModel checkout, List<int> idTrolley) async {
+  Future<ResponseModel<CheckoutModel>> createManyCheckout({
+    required CheckoutModel checkout,
+    required List<int> idTrolley,
+    required UserModel user,
+  }) async {
     try {
       final data = {
-        "id_user": checkout.idUser,
+        "id_user": user,
         "id_trolley": idTrolley,
         "total": checkout.total,
         "delivery_price": checkout.deliveryPrice,

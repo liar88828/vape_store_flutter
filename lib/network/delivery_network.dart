@@ -15,7 +15,6 @@ class DeliveryNetwork {
       }
       throw Exception('Failed to load Delivery');
     } catch (e) {
-      print(e.toString());
       throw Exception('fail fetch data delivery');
     }
   }

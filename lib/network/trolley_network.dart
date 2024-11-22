@@ -36,7 +36,7 @@ class TrolleyNetwork {
     }
   }
 
-  Future<List<TrolleyModel>> fetchTrolleyCheckout(int idCheckout) async {
+  Future<List<TrolleyModel>> fetchTrolleyCheckout({required int idCheckout}) async {
     try {
       final response = await http.get(Uri.parse("$baseUrl/trolley/id-checkout/$idCheckout"));
       final jsonData = json.decode(response.body);

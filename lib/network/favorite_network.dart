@@ -71,22 +71,18 @@ class FavoriteNetwork {
     }
   }
 
-  Future<String> createFavorite(FavoriteModel favorite) async {
-    print(favorite.toJson());
+  Future<String> createFavoriteCase(FavoriteModel favorite) async {
     final response = await http.post(
       Uri.parse("$baseUrl/favorite"),
       body: jsonEncode(favorite.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
     final jsonData = json.decode(response.body);
-    if (response.statusCode == 200) {
-      print(jsonData['message']);
-      // final favorite = FavoriteModel.fromJson(jsonData['data']);
+    var code = response.statusCode;
+    if (code == 200) {
       return jsonData['message'];
     } else {
-      print(jsonData['message']);
-
-      throw Exception('Failed to create favorite');
+      throw Exception('Failed to create favorite : ${jsonData['message']}');
     }
   }
 
@@ -113,7 +109,7 @@ class FavoriteNetwork {
     }
   }
 
-  Future<ResponseModel> updateFavorite(
+  Future<ResponseModel> updateFavoriteCase(
     FavoriteModel favorite,
   ) async {
     final response = await http.put(
@@ -132,6 +128,18 @@ class FavoriteNetwork {
 
   Future<ResponseModel> deleteFavorite(int id) async {
     final response = await http.delete(Uri.parse("$baseUrl/favorite/$id"));
+    final jsonData = json.decode(response.body);
+    final code = response.statusCode;
+
+    if (code == 200) {
+      return ResponseModel(success: true, message: jsonData['message']);
+    } else {
+      throw Exception('Failed to delete favorite : ${jsonData['message']}');
+    }
+  }
+
+  Future<ResponseModel> deleteToFavoriteList(int id) async {
+    final response = await http.delete(Uri.parse("$baseUrl/favorite/list/$id"));
     final jsonData = json.decode(response.body);
     final code = response.statusCode;
 

@@ -15,9 +15,14 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     on<FavoriteLoadsEvent>((event, emit) async {
       emit(FavoriteLoadingState());
       try {
-        final user = await session;
-        final data = await favoriteRepository.fetchFavoritesByUserId(user.id);
-        emit(FavoriteLoadsState(favorites: data, count: data.length));
+        if (state.favorites == null) {
+          final user = await session;
+          final data = await favoriteRepository.fetchFavoritesByUserId(user.id);
+          emit(FavoriteLoadsState(favorites: data, count: data.length));
+        }
+        if (state.favorites != null) {
+          emit(FavoriteLoadsState(favorites: state.favorites!, count: state.favorites!.length));
+        }
       } catch (e) {
         emit(FavoriteErrorState(message: e.toString()));
       }
@@ -26,8 +31,30 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     on<FavoriteUpdateEvent>((event, emit) async {
       emit(FavoriteLoadingState());
       try {
-        final data = await favoriteRepository.updateFavorite(event.favorite);
+        final user = await session;
+        final data = await favoriteRepository.updateFavoriteCase(FavoriteModel(
+          id: event.favorite.id,
+          idUser: user.id,
+          title: event.favorite.title,
+          description: event.favorite.description,
+        ));
         emit(FavoriteUpdateState(message: data.message));
+      } catch (e) {
+        emit(FavoriteErrorState(message: e.toString()));
+      }
+    });
+
+    on<FavoriteCreateEvent>((event, emit) async {
+      emit(FavoriteLoadingState());
+      try {
+        final user = await session;
+        final response = await favoriteRepository.createFavoriteCase(FavoriteModel(
+          id: null,
+          idUser: user.id,
+          title: event.favorite.title,
+          description: event.favorite.description,
+        ));
+        emit(FavoriteUpdateState(message: response));
       } catch (e) {
         emit(FavoriteErrorState(message: e.toString()));
       }
@@ -42,15 +69,6 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
         emit(FavoriteErrorState(message: e.toString()));
       }
     });
-    on<FavoriteListIdEvent>((event, emit) async {
-      emit(FavoriteLoadingState());
-      try {
-        final data = await favoriteRepository.fetchFavoritesByListId(event.id);
-        emit(FavoriteListIdState(favoriteList: data));
-      } catch (e) {
-        emit(FavoriteErrorState(message: e.toString()));
-      }
-    });
 
     on<FavoriteCountByUserId>((event, emit) async {
       emit(FavoriteLoadingState());
@@ -58,6 +76,57 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
         final user = await session;
         final data = await favoriteRepository.fetchFavoritesByUserIdCount(user.id);
         emit(FavoriteInitial(count: data));
+      } catch (e) {
+        emit(FavoriteErrorState(message: e.toString()));
+      }
+    });
+    on<FavoriteAddListEvent>((event, emit) async {
+      emit(FavoriteLoadingState());
+      try {
+        final data = await favoriteRepository.addFavoriteList(event.favorite);
+        emit(FavoriteSuccessState(message: data.message));
+      } catch (e) {
+        emit(FavoriteErrorState(message: e.toString()));
+      }
+    });
+
+    on<FavoriteListUserEvent>((event, emit) async {
+      emit(FavoriteLoadingState());
+      try {
+        final data = await favoriteRepository.fetchFavorites();
+        emit(FavoriteListUserState(favoriteList: data));
+      } catch (e) {
+        emit(FavoriteErrorState(message: e.toString()));
+      }
+    });
+
+    on<FavoriteListIdEvent>((event, emit) async {
+      emit(FavoriteLoadingState());
+      try {
+        final data = await favoriteRepository.fetchFavoritesByListId(event.idFavorite);
+        emit(FavoriteListIdState(favoriteList: data));
+      } catch (e) {
+        emit(FavoriteErrorState(message: e.toString()));
+      }
+    });
+
+    on<FavoriteListIdUserEvent>((event, emit) async {
+      emit(FavoriteLoadingState());
+      try {
+        final data = await favoriteRepository.fetchFavoriteById(event.idFavorite);
+        // print(data.description);
+        // print('For form');
+        emit(FavoriteListIdUserState(favorite: data));
+      } catch (e) {
+        emit(FavoriteErrorState(message: e.toString()));
+      }
+    });
+
+    on<FavoriteListDeleteEvent>((event, emit) async {
+      emit(FavoriteLoadingState());
+      try {
+        final response = await favoriteRepository.deleteToFavoriteList(event.idFavoriteList);
+        emit(FavoriteDeleteSuccessState(message: response.message));
       } catch (e) {
         emit(FavoriteErrorState(message: e.toString()));
       }

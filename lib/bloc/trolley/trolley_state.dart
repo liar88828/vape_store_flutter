@@ -5,6 +5,7 @@ sealed class TrolleyState {
   final UserModel? session;
   final int? count;
   final List<TrolleyModel>? trolleys;
+  // final String type;
 
   const TrolleyState({this.count, this.trolleys, this.session});
 }
@@ -31,10 +32,10 @@ final class TrolleySessionState extends TrolleyState {
   const TrolleySessionState({required super.session});
 }
 
-final class TrolleyLoadState extends TrolleyState {
+final class TrolleyLoadsState extends TrolleyState {
   @override
   final List<TrolleyModel> trolleys;
-  const TrolleyLoadState({required this.trolleys}) : super(trolleys: trolleys);
+  const TrolleyLoadsState({required this.trolleys}) : super(trolleys: trolleys);
 }
 
 final class TrolleyCaseState extends TrolleyState {

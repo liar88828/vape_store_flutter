@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
+import 'package:vape_store/bloc/delivery/delivery_bloc.dart';
 import 'package:vape_store/models/bank_model.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/delivery_model.dart';
-import 'package:vape_store/models/response_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
 import 'package:vape_store/network/bank_network.dart';
-import 'package:vape_store/network/checkout_network.dart';
 import 'package:vape_store/network/delivery_network.dart';
-import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/utils/pref_user.dart';
@@ -23,7 +23,6 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
   final BankNetwork _bankNetwork = BankNetwork();
   final DeliveryNetwork _deliveryNetwork = DeliveryNetwork();
 
@@ -99,7 +98,6 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Future<void> _createCheckout(BuildContext context) async {
-    ResponseModel response;
     if (_deliveryData == null || _bankData == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select delivery and bank')));
       // } else if (_deliveryData == null || _bankData) {
@@ -120,27 +118,24 @@ class _OrderScreenState extends State<OrderScreen> {
       );
 
       if (idTrolley.length == 1) {
-        response = await _checkoutNetwork.createSingleCheckout();
+        context.read<CheckoutBloc>().add(CheckoutCreateManyEvent(checkout: checkout, idTrolley: idTrolley));
       } else {
-        response = await _checkoutNetwork.createManyCheckout(
-          checkout,
-          idTrolley,
-        );
+        context.read<CheckoutBloc>().add(CheckoutCreateManyEvent(checkout: checkout, idTrolley: idTrolley));
       }
       // print(response);
-      if (context.mounted) {
-        if (response.success) {
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) {
-              return DetailCheckoutScreen(
-                checkout: checkout,
-                idCheckout: response.data?.id,
-              );
-            },
-          ));
-        }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
-      }
+      // if (context.mounted) {
+      //   if (response.success) {
+      //     Navigator.push(context, MaterialPageRoute(
+      //       builder: (context) {
+      //         return DetailCheckoutScreen(
+      //           checkout: checkout,
+      //           idCheckout: response.data?.id,
+      //         );
+      //       },
+      //     ));
+      //   }
+      //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
+      // }
     }
   }
 
@@ -218,55 +213,55 @@ class _OrderScreenState extends State<OrderScreen> {
                 )
               ],
             ),
-            listCheckout(
-              colorTheme: colorTheme,
-              text: 'Delivery',
-              subtitle: _deliveryData?.price != null ? formatPrice(_deliveryData?.price ?? 0) : null,
-              title: _deliveryData?.name,
-              icon: Icons.delivery_dining,
-              onClick: () {
-                showDialog(
-                  context: context,
-                  // barrierDismissible: false,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Delivery Method'),
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: [
-                          _deliveryData != null
-                              ? Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ListTile(
-                                      // tileColor: colorTheme.primaryContainer,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                      title: Text(_deliveryData!.name),
-                                      subtitle: Text(formatPrice(_deliveryData!.price)),
-                                      trailing: IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _deliveryData = null;
-                                          });
-                                          _setOrderInfo();
-
-                                          Navigator.pop(context); // Close the dialog after selection
-                                        },
-                                        icon: const Icon(Icons.check_box),
+            BlocSelector<DeliveryBloc, DeliveryState, DeliveryModel?>(
+              selector: (stateDelivery) {
+                return stateDelivery.delivery;
+              },
+              builder: (context, stateDeliveryData) {
+                return listCheckout(
+                  colorTheme: colorTheme,
+                  text: 'Delivery',
+                  subtitle: stateDeliveryData?.price != null ? formatPrice(stateDeliveryData?.price ?? 0) : null,
+                  title: stateDeliveryData?.name,
+                  icon: Icons.delivery_dining,
+                  onClick: () {
+                    showDialog(
+                      context: context,
+                      // barrierDismissible: false,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Delivery Method'),
+                        content: SingleChildScrollView(
+                          child: ListBody(
+                            children: [
+                              stateDeliveryData != null
+                                  ? Card(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ListTile(
+                                          // tileColor: colorTheme.primaryContainer,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                          title: Text(stateDeliveryData.name),
+                                          subtitle: Text(formatPrice(stateDeliveryData.price)),
+                                          trailing: IconButton(
+                                            onPressed: () {
+                                              context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: null));
+                                              print('the _setOrderInfo(); is required');
+                                              Navigator.pop(context); // Close the dialog after selection
+                                            },
+                                            icon: const Icon(Icons.check_box),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                )
-                              : const Text('Please Select Delivery Method'),
-                          FutureBuilder<List<DeliveryModel>>(
-                              future: _deliveryList,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                    )
+                                  : const Text('Please Select Delivery Method'),
+                              BlocBuilder<DeliveryBloc, DeliveryState>(builder: (context, stateDelivery) {
+                                if (stateDelivery is DeliveryLoadingState) {
                                   return const Center(child: CircularProgressIndicator());
-                                } else if (snapshot.hasError) {
-                                  return const Center(child: Text('Error fetching data'));
-                                } else if (snapshot.hasData) {
+                                } else if (stateDelivery is DeliveryErrorState) {
+                                  return Center(child: Text(stateDelivery.message));
+                                } else if (stateDelivery is DeliveryLoadsState) {
                                   return Column(
-                                    children: snapshot.data!.where((data) {
+                                    children: stateDelivery.deliverys.where((data) {
                                       return data.id != _deliveryData?.id;
                                     }).map((data) {
                                       return ListTile(
@@ -275,11 +270,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                         subtitle: Text(formatPrice(data.price)),
                                         trailing: IconButton(
                                           onPressed: () {
-                                            setState(() {
-                                              _deliveryData = data;
-                                            });
-                                            _setOrderInfo();
-
+                                            context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: data));
+                                            print('the _setOrderInfo(); is required');
                                             Navigator.pop(context); // Close the dialog after selection
                                           },
                                           icon: const Icon(Icons.check_box_outline_blank),
@@ -291,17 +283,19 @@ class _OrderScreenState extends State<OrderScreen> {
                                   return const Center(child: Text('No data available'));
                                 }
                               }),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('Back')),
                         ],
                       ),
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Back')),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),

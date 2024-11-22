@@ -3,16 +3,20 @@ part of 'product_bloc.dart';
 sealed class ProductState {
   String type;
   // List<ProductModel>? products;
-  // ProductModel? product;
+  ProductModel? product;
 
   ProductState({
     this.type = '',
-    // this.products,
+    this.product,
     // this.product,
   });
 }
 
-final class ProductInitial extends ProductState {}
+final class ProductInitial extends ProductState {
+  // final String type;
+  // final ProductModel? product;
+  // ProductInitial({this.type = '', this.product}) : super(product: product, type: type);
+}
 
 final class ProductLoadsState extends ProductState {
   // @override
@@ -29,8 +33,9 @@ final class ProductNewState extends ProductState {
 }
 
 final class ProductLoadState extends ProductState {
+  @override
   final ProductModel product;
-  ProductLoadState({required this.product});
+  ProductLoadState({required this.product}) : super(product: product);
 }
 
 final class ProductErrorState extends ProductState {

@@ -13,10 +13,14 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
       emit(DeliveryLoadingState());
       try {
         final data = await deliveryRepository.fetchDelivery();
-        emit(DeliveryLoadsState(deliveryList: data));
+        emit(DeliveryLoadsState(deliverys: data));
       } catch (e) {
         emit(DeliveryErrorState(message: e.toString()));
       }
+    });
+
+    on<DeliverySelectEvent>((event, emit) {
+      emit(DeliverySelectState(delivery: event.delivery));
     });
   }
 }

@@ -24,6 +24,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ProductDetailEvent>((event, emit) async {
       emit(ProductLoadingState());
       try {
+        print('load 1 time');
         final product = await productRepository.fetchProductById(event.id);
         emit(ProductLoadState(product: product));
       } catch (e) {
@@ -32,7 +33,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     });
 
     on<ProductTypeEvent>((event, emit) {
-      emit(ProductTypeState(type: event.type));
+      if (state.type != event.type) {
+        emit(ProductTypeState(type: event.type));
+      }
     });
 
     on<ProductFilterEvent>((event, emit) async {

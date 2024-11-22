@@ -7,14 +7,9 @@ import 'package:vape_store/screen/favorite/favorite_detail_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 
-class FavoritesScreen extends StatefulWidget {
+class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
 
-  @override
-  State<FavoritesScreen> createState() => _FavoritesScreenState();
-}
-
-class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
@@ -97,10 +92,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               IconButton(
                 color: colorTheme.primary,
                 style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                onPressed: () async {
-                  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return const FavoriteFormScreen();
-                  }));
+                onPressed: () {
+                  final result = Navigator.push(context, MaterialPageRoute(
+                    builder: (context) {
+                      return const FavoriteFormScreen();
+                    },
+                  ));
                   if (context.mounted) {
                     if (result == true) {
                       context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
@@ -124,6 +121,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               } else if (stateFavorites is FavoriteErrorState) {
                 return Center(child: Text('Error Data is not found : ${stateFavorites.message}'));
               } else if (stateFavorites is FavoriteLoadsState) {
+                final favorites = stateFavorites.favorites;
                 return Expanded(
                   child: GridView.count(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -132,15 +130,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     mainAxisSpacing: 10,
                     crossAxisCount: 2,
                     childAspectRatio: 3 / 4,
-                    children: stateFavorites.favorites.map((favorite) {
+                    children: favorites.map((favorite) {
+                      print(favorite.id);
                       return InkWell(
                         onTap: () {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => FavoriteDetailScreen(
-                                        id: favorite.id!,
-                                      )));
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FavoriteDetailScreen(
+                                idFavorite: favorite.id ?? 0,
+                              ),
+                            ),
+                          );
                         },
                         child: Card(
                           key: Key(favorite.id.toString()),
@@ -160,7 +161,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                     fontSize: 16,
                                   ),
                                 ),
-                                const Text("Item : 1")
+                                Text("Item : ${favorites.length}")
                               ],
                             ),
                           ),

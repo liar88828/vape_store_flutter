@@ -1,39 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
-import 'package:vape_store/models/favorite_model.dart';
-import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/screen/favorite/favorite_form_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class FavoriteListScreen extends StatefulWidget {
-  const FavoriteListScreen({super.key});
-
-  @override
-  State<FavoriteListScreen> createState() => _FavoriteListScreenState();
-}
-
-class _FavoriteListScreenState extends State<FavoriteListScreen> {
-  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
-  late Future<List<FavoriteModel>> _favorite;
-
-  @override
-  void initState() {
-    super.initState();
-    _favorite = _favoriteNetwork.fetchFavorites();
-  }
-
-  void _refreshFavorites() {
-    setState(() {
-      _favorite = _favoriteNetwork.fetchFavorites();
-    });
-  }
-
-  void _deleteFavorite(BuildContext context, int id) {
-    context.read<FavoriteBloc>().add(FavoriteDeleteEvent(id: id));
-  }
+class FavoriteListScreenx extends StatelessWidget {
+  const FavoriteListScreenx({super.key});
 
   @override
   Widget build(BuildContext context) {
+    void deleteFavorite(BuildContext context, int id) {
+      context.read<FavoriteBloc>().add(FavoriteDeleteEvent(id: id));
+    }
+
+    context.read<FavoriteBloc>().add(FavoriteListUserEvent());
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -43,63 +22,72 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
               final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
                 return const FavoriteFormScreen();
               }));
-              if (result == true) _refreshFavorites();
+              if (result == true) {
+                if (context.mounted) {
+                  context.read<FavoriteBloc>().add(FavoriteListUserEvent());
+                }
+              }
             },
           )
         ],
         title: const Text('Favorite List'),
       ),
-      body: BlocListener<FavoriteBloc, FavoriteState>(
+      body: BlocConsumer<FavoriteBloc, FavoriteState>(
         listener: (context, stateFavoriteListener) {
           if (stateFavoriteListener is FavoriteDeleteState) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Favorite Delete')));
-            _refreshFavorites();
+            context.read<FavoriteBloc>().add(FavoriteListUserEvent());
           } else {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fail to delete Favorite')));
           }
         },
-        child: FutureBuilder<List<FavoriteModel>>(
-          future: _favorite,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return const Center(child: Text('Error Data is not found'));
-            } else if (snapshot.data!.isEmpty) {
-              return const Center(child: Text('Data is Empty'));
-            } else {
-              return ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final favorite = snapshot.data![index];
-                  return ListTile(
-                    // leading: Image.network(favorite.image!),
-                    leading: Image.asset('lib/images/banner1.png'),
-                    title: Text(favorite.title),
-                    subtitle: Text(favorite.description),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                            onPressed: () async {
-                              final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+        builder: (context, stateFavorite) {
+          if (stateFavorite is FavoriteLoadingState) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (stateFavorite is FavoriteErrorState) {
+            return const Center(child: Text('Error Data is not found'));
+          } else if (stateFavorite is FavoriteListUserState) {
+            final favorites = stateFavorite.favoriteList;
+            return ListView.builder(
+              itemCount: favorites.length,
+              itemBuilder: (context, index) {
+                final favorite = favorites[index];
+                return ListTile(
+                  // leading: Image.network(favorite.image!),
+                  leading: Image.asset('lib/images/banner1.png'),
+                  title: Text(favorite.title),
+                  subtitle: Text(favorite.description),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
                                 return FavoriteFormScreen(favorite: favorite);
-                              }));
-                              if (result == true) _refreshFavorites();
-                            },
-                            icon: const Icon(Icons.edit)),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteFavorite(context, favorite.id!),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            }
-          },
-        ),
+                              }),
+                            );
+                            if (result == true) {
+                              if (context.mounted) {
+                                context.read<FavoriteBloc>().add(FavoriteListUserEvent());
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.edit)),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => deleteFavorite(context, favorite.id!),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(child: Text('Data is Empty'));
+          }
+        },
       ),
     );
   }

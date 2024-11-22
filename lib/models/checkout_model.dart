@@ -1,7 +1,7 @@
 class CheckoutModel {
   CheckoutModel({
     this.id,
-    required this.idUser,
+    this.idUser,
     required this.total,
     required this.paymentMethod,
     required this.paymentPrice,
@@ -12,7 +12,7 @@ class CheckoutModel {
   });
 
   final int? id;
-  final int idUser;
+  int? idUser;
   final num total;
   final String paymentMethod;
   final int paymentPrice;

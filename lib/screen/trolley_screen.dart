@@ -98,7 +98,7 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
             return const Center(child: CircularProgressIndicator());
           } else if (state is TrolleyErrorState) {
             return Center(child: Text('Error: ${state.message}'));
-          } else if (state is TrolleyLoadState) {
+          } else if (state is TrolleyLoadsState) {
             final trolleys = state.trolleys;
             return ListView.builder(
               itemCount: trolleys.length,

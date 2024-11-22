@@ -2,45 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/models/favorite_model.dart';
-import 'package:vape_store/network/favorite_network.dart';
 import 'package:vape_store/screen/favorite/favorites_screen.dart';
 import 'package:vape_store/screen/product/product_detail_screen.dart';
 
 class FavoriteDetailScreen extends StatefulWidget {
   const FavoriteDetailScreen({
     super.key,
-    required this.id,
+    required this.idFavorite,
   });
-  final int id;
+  final int idFavorite;
 
   @override
   State<FavoriteDetailScreen> createState() => _FavoriteDetailScreenState();
 }
 
 class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
-  final FavoriteNetwork _favoriteNetwork = FavoriteNetwork();
-  late Future<FavoriteModel> _favoriteData;
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    // _favoriteListData = _favoriteNetwork.fetchFavoritesByListId(widget.id);
-    _favoriteData = _favoriteNetwork.fetchFavoriteById(widget.id);
-    _refreshData();
-  }
-
-  Future<void> _refreshData() async {
-    final data = await _favoriteData;
-    // ignore: unnecessary_null_comparison
-    if (data != null) {
-      _titleController.text = data.title;
-      _descriptionController.text = data.description;
-    }
-    setState(() {});
-  }
-
   Future<void> _deleteFavorite(BuildContext context) async {
     return showDialog(
         context: context,
@@ -57,7 +35,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
               TextButton(
                 child: const Text('Delete'),
                 onPressed: () {
-                  context.read<FavoriteBloc>().add(FavoriteDeleteEvent(id: widget.id));
+                  context.read<FavoriteBloc>().add(FavoriteDeleteEvent(id: widget.idFavorite));
                 },
               ),
             ],
@@ -71,56 +49,70 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
         });
   }
 
-  Future<void> _editFavorite() async {
-    return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return AlertDialog(
-            actions: [
-              TextButton(
-                child: const Text('Cancel'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                child: const Text('Edit'),
-                onPressed: () {
-                  context.read<FavoriteBloc>().add(FavoriteUpdateEvent(
-                        favorite: FavoriteModel(
-                          id: widget.id,
-                          idUser: 0,
-                          description: _descriptionController.text,
-                          title: _titleController.text,
-                        ),
-                      ));
-                },
-              ),
-            ],
-            title: const Text('Edit'),
-            content: SingleChildScrollView(
-              child: ListBody(children: <Widget>[
-                const Text('Are you sure you want to delete this favorite?'),
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                ),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-              ]),
-            ),
-          );
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     var colorTheme = Theme.of(context).colorScheme;
-    // final List<FavoriteModel> favorites = favoriteExample;
-    context.read<FavoriteBloc>().add(FavoriteListIdEvent(id: widget.id));
+    context.read<FavoriteBloc>().add(FavoriteListIdEvent(idFavorite: widget.idFavorite));
+    // for form
+    Future<void> editFavorite() async {
+      context.read<FavoriteBloc>().add(FavoriteListIdUserEvent(idFavorite: widget.idFavorite));
+
+      return showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return BlocBuilder<FavoriteBloc, FavoriteState>(builder: (context, stateFavoriteForm) {
+              if (stateFavoriteForm is FavoriteLoadingState) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (stateFavoriteForm is FavoriteErrorState) {
+                return Text(stateFavoriteForm.message);
+              } else if (stateFavoriteForm is FavoriteListIdUserState) {
+                _titleController.text = stateFavoriteForm.favorite.title;
+                _descriptionController.text = stateFavoriteForm.favorite.description;
+                return AlertDialog(
+                  actions: [
+                    TextButton(
+                      child: const Text('Cancel'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('Edit'),
+                      onPressed: () {
+                        context.read<FavoriteBloc>().add(FavoriteUpdateEvent(
+                              favorite: FavoriteModel(
+                                id: widget.idFavorite,
+                                idUser: 0,
+                                description: _descriptionController.text,
+                                title: _titleController.text,
+                              ),
+                            ));
+                      },
+                    ),
+                  ],
+                  title: const Text('Edit'),
+                  content: SingleChildScrollView(
+                    child: ListBody(children: <Widget>[
+                      const Text('Are you sure you want to delete this favorite?'),
+                      TextField(
+                        controller: _titleController,
+                        decoration: const InputDecoration(labelText: 'Title'),
+                      ),
+                      TextField(
+                        controller: _descriptionController,
+                        decoration: const InputDecoration(labelText: 'Description'),
+                      ),
+                    ]),
+                  ),
+                );
+              } else {
+                return const Text("Something error");
+              }
+            });
+          });
+    }
+
     return Scaffold(
         appBar: AppBar(
           leading: BackButton(
@@ -154,7 +146,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                 color: colorTheme.primary,
                 style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 // color: Colors.red,
-                onPressed: _editFavorite,
+                onPressed: editFavorite,
                 icon: const Icon(
                   Icons.edit,
                 )),
@@ -169,8 +161,12 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
             const SizedBox(width: 5)
           ],
         ),
-        body: BlocListener<FavoriteBloc, FavoriteState>(
+        body: BlocConsumer<FavoriteBloc, FavoriteState>(
           listener: (context, stateFavoriteListener) {
+            if (stateFavoriteListener is FavoriteDeleteSuccessState) {
+              context.read<FavoriteBloc>().add(FavoriteListIdEvent(idFavorite: widget.idFavorite));
+              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateFavoriteListener.message)));
+            }
             if (stateFavoriteListener is FavoriteUpdateState) {
               Navigator.pop(context, true);
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
@@ -179,7 +175,10 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
             }
           },
-          child: BlocBuilder<FavoriteBloc, FavoriteState>(builder: (context, stateFavoriteList) {
+          // buildWhen: (previous, current) {
+          //   // return previous. != current.favoriteList;
+          // },
+          builder: (context, stateFavoriteList) {
             if (stateFavoriteList is FavoriteLoadingState) {
               return const Center(child: CircularProgressIndicator());
             } else if (stateFavoriteList is FavoriteErrorState) {
@@ -200,26 +199,42 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                     ),
                     title: Text(favorite.name!, maxLines: 1),
                     subtitle: Text(favorite.description!, maxLines: 1),
-                    trailing: const Icon(Icons.arrow_forward),
-                    onTap: () {
-                      // Handle the tap event, e.g., navigate to a details page
-                      // print('Tapped on ${favorite.title}');
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProductDetailScreen(
-                                    id: favorite.idProduct!,
+                    trailing: SizedBox(
+                      width: 120, // Adjust the width based on your button sizes
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              context.read<FavoriteBloc>().add(FavoriteListDeleteEvent(idFavoriteList: favorite.favoriteListsId));
+                            },
+                            icon: const Icon(Icons.delete),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProductDetailScreen(
+                                    id: favorite.idProduct,
                                     redirect: 'favorite',
-                                    lastId: widget.id,
-                                  )));
-                    },
+                                    lastId: widget.idFavorite,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.arrow_forward),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 },
               );
             } else {
               return const Center(child: Text('Something went wrong Bloc or API'));
             }
-          }),
+          },
         ));
   }
 }

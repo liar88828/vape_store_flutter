@@ -18,5 +18,9 @@ class BankBloc extends Bloc<BankEvent, BankState> {
         emit(BankErrorState(message: e.toString()));
       }
     });
+
+    on<BankSelectEvent>((event, emit) {
+      emit(BankSelectState(bank: event.bank));
+    });
   }
 }

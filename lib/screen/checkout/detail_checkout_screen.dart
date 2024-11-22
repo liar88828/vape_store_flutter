@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
+import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
-import 'package:vape_store/network/checkout_network.dart';
-import 'package:vape_store/network/trolley_network.dart';
 import 'package:vape_store/utils/money.dart';
 
-class DetailCheckoutScreen extends StatefulWidget {
+class DetailCheckoutScreen extends StatelessWidget {
   final CheckoutModel? checkout;
   final int? idCheckout;
   const DetailCheckoutScreen({
@@ -15,36 +16,11 @@ class DetailCheckoutScreen extends StatefulWidget {
   });
 
   @override
-  State<DetailCheckoutScreen> createState() => _DetailCheckoutScreenState();
-}
-
-class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
-  final CheckoutNetwork _checkoutNetwork = CheckoutNetwork();
-  final TrolleyNetwork _trolleyModel = TrolleyNetwork();
-  Future<List<TrolleyModel>>? _trolleyList;
-  Future<CheckoutModel>? _checkoutData;
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshData();
-  }
-
-  Future<void> _refreshData() async {
-    if (widget.idCheckout != null) {
-      // print(widget.idCheckout);
-      _checkoutData = _checkoutNetwork.fetchId(widget.idCheckout!);
-      _trolleyList = _trolleyModel.fetchTrolleyCheckout(widget.idCheckout!);
-    }
-
-    setState(() {});
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // if (widget.idCheckout != null) {
-    //   context.read<CheckoutBloc>().add(CheckoutLoadIdEvent(id: widget.idCheckout));
-    // }
+    if (idCheckout != null) {
+      context.read<CheckoutBloc>().add(CheckoutDetailEvent(idCheckout: idCheckout!));
+      context.read<TrolleyBloc>().add(TrolleyCheckoutEvent(idCheckout: idCheckout!));
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction Details'),
@@ -60,104 +36,99 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: FutureBuilder<List<TrolleyModel>>(
-                  future: _trolleyList,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('Your trolley is empty.'));
-                    } else {
-                      return Column(
-                        children: snapshot.data!.map((data) {
-                          return cardTrolley(data);
-                        }).toList(),
-                      );
-                    }
-                  }),
+              child: BlocBuilder<TrolleyBloc, TrolleyState>(builder: (context, stateTrolley) {
+                if (stateTrolley is TrolleyLoadingState) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (stateTrolley is TrolleyErrorState) {
+                  return Center(child: Text('Error: ${stateTrolley.message}'));
+                } else if (stateTrolley is TrolleyLoadsState) {
+                  return Column(
+                      children: stateTrolley.trolleys.map((data) {
+                    return cardTrolley(data);
+                  }).toList());
+                } else {
+                  return const Text('Something Error Bloc or Api');
+                }
+              }),
             ),
             const Divider(thickness: 1, color: Colors.grey),
             const SizedBox(height: 16),
-            FutureBuilder(
-                future: _checkoutData,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData) {
-                    return const Center(child: Text('Your checkout is empty.'));
-                  } else {
-                    final data = snapshot.data;
-                    return Column(
+            BlocBuilder<CheckoutBloc, CheckoutState>(builder: (context, stateCheckout) {
+              if (stateCheckout is CheckoutLoadingState) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (stateCheckout is CheckoutErrorState) {
+                return Center(child: Text('Error: ${stateCheckout.message}'));
+              } else if (stateCheckout is CheckoutLoadState) {
+                final data = stateCheckout.checkout;
+                return Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Payment',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  data!.paymentMethod,
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                                ),
-                                Text(
-                                  formatPrice(data.paymentPrice),
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                                ),
-                              ],
-                            ),
-                          ],
+                        const Text(
+                          'Payment',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text(
-                              'Delivery',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  data.deliveryMethod,
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                                ),
-                                Text(
-                                  formatPrice(data.deliveryPrice),
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Total Amount',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            Text(
+                              data.paymentMethod,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                             ),
                             Text(
-                              formatPrice(data.total),
+                              formatPrice(data.paymentPrice),
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                             ),
                           ],
                         ),
                       ],
-                    );
-                  }
-                }),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Delivery',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              data.deliveryMethod,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                            ),
+                            Text(
+                              formatPrice(data.deliveryPrice),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Total Amount',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          formatPrice(data.total),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              } else {
+                return const Text('Something Error Bloc or Api');
+              }
+            }),
             const SizedBox(height: 16),
             Center(
               child: ElevatedButton(
@@ -224,7 +195,10 @@ class _DetailCheckoutScreenState extends State<DetailCheckoutScreen> {
             ),
             Text(
               formatPrice(item.price * item.trolleyQty),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

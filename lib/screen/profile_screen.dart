@@ -19,7 +19,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  void _toDetailCheckout(CheckoutModel data, int id) {
+  void toDetailCheckout(CheckoutModel data, int id) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return DetailCheckoutScreen(checkout: data, idCheckout: id);
     }));
@@ -31,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     context.read<AuthBloc>().add(AuthInfoEvent());
     context.read<FavoriteBloc>().add(FavoriteCountByUserId());
-    context.read<CheckoutBloc>().add(CheckoutLoadEvent());
+    context.read<CheckoutBloc>().add(CheckoutLoadsEvent());
 
     return Scaffold(
       appBar: AppBar(
@@ -130,14 +130,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           return stateFavorite.count ?? 0;
                         },
                         builder: (context, stateFavoriteCount) {
-                          return CardStatus(
+                          return cardStatus(
                             colorTheme: colorTheme,
                             title: 'Total Favorite',
                             count: stateFavoriteCount,
                           );
                         },
                       ),
-                      CardStatus(
+                      cardStatus(
                         colorTheme: colorTheme,
                         title: 'Total Buy',
                         count: 20,
@@ -194,7 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Card listHistory(CheckoutModel data) {
+  Widget listHistory(CheckoutModel data) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -235,7 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             IconButton(
                 onPressed: () {
-                  _toDetailCheckout(data, data.id ?? 0);
+                  toDetailCheckout(data, data.id ?? 0);
                 },
                 icon: const Icon(Icons.arrow_forward))
           ],
@@ -243,22 +243,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-}
 
-class CardStatus extends StatelessWidget {
-  const CardStatus({
-    super.key,
-    required this.colorTheme,
-    required this.title,
-    required this.count,
-  });
-
-  final ColorScheme colorTheme;
-  final String title;
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget cardStatus({
+    required ColorScheme colorTheme,
+    required String title,
+    required int count,
+  }) {
     return Card(
       color: colorTheme.primaryContainer,
       child: Container(

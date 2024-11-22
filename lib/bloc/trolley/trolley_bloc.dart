@@ -42,17 +42,17 @@ class TrolleyBloc extends Bloc<TrolleyEvent, TrolleyState> {
       try {
         final user = await session;
         final trolleys = await trolleyRepository.fetchTrolleyCurrent(user.id);
-        emit(TrolleyLoadState(trolleys: trolleys));
+        emit(TrolleyLoadsState(trolleys: trolleys));
       } catch (e) {
         emit(TrolleyErrorState(message: e.toString()));
       }
     });
 
-    on<GetCheckoutEvent>((event, emit) async {
+    on<TrolleyCheckoutEvent>((event, emit) async {
       emit(TrolleyLoadingState());
       try {
-        final trolleys = await trolleyRepository.fetchTrolleyCheckout(event.idCheckout);
-        emit(TrolleyLoadState(trolleys: trolleys));
+        final trolleys = await trolleyRepository.fetchTrolleyCheckout(idCheckout: event.idCheckout);
+        emit(TrolleyLoadsState(trolleys: trolleys));
       } catch (e) {
         emit(TrolleyErrorState(message: e.toString()));
       }
@@ -61,7 +61,15 @@ class TrolleyBloc extends Bloc<TrolleyEvent, TrolleyState> {
     on<TrolleyAddEvent>((event, emit) async {
       emit(TrolleyCaseLoadingState());
       try {
-        final response = await trolleyRepository.addTrolley(event.trolley);
+        final user = await session;
+
+        final response = await trolleyRepository.addTrolley(TrolleyCreate(
+          id: event.id,
+          idProduct: event.idProduct,
+          qty: event.qty,
+          idUser: user.id,
+          type: event.type,
+        ));
         emit(TrolleyCaseState(response: response));
       } catch (e) {
         emit(TrolleyCaseErrorState(message: e.toString()));

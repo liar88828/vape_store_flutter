@@ -7,14 +7,23 @@ class TrolleyCountEvent extends TrolleyEvent {}
 
 class TrolleyLoadsEvent extends TrolleyEvent {}
 
-class GetCheckoutEvent extends TrolleyEvent {
+class TrolleyCheckoutEvent extends TrolleyEvent {
   final int idCheckout;
-  GetCheckoutEvent({required this.idCheckout});
+  TrolleyCheckoutEvent({required this.idCheckout});
 }
 
 class TrolleyAddEvent extends TrolleyEvent {
-  final TrolleyCreate trolley;
-  TrolleyAddEvent({required this.trolley});
+  final int id;
+  final int qty;
+  final int idProduct;
+  final String type;
+
+  TrolleyAddEvent({
+    required this.id,
+    required this.qty,
+    required this.idProduct,
+    required this.type,
+  });
 }
 
 class TrolleyRemoveEvent extends TrolleyEvent {
