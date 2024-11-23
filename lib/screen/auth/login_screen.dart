@@ -6,19 +6,12 @@ import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/auth/register_screen.dart';
 import 'package:vape_store/validator/auth_validator.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
+class LoginScreen extends StatelessWidget {
+  LoginScreen({super.key});
   final _formKey = GlobalKey<FormState>();
   final valid = AuthValidator();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     void login() {
@@ -28,6 +21,10 @@ class _LoginScreenState extends State<LoginScreen> {
               email: _emailController.text,
             ));
       }
+    }
+
+    void goRegistrationScreen() {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
     }
 
     return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
@@ -93,9 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16.0),
                   OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
-                    },
+                    onPressed: () => goRegistrationScreen(),
                     child: const Text('Register'),
                   ),
                 ],

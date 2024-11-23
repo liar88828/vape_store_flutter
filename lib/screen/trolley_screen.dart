@@ -6,85 +6,66 @@ import 'package:vape_store/screen/product/product_detail_screen.dart';
 import 'package:vape_store/screen/checkout/order_screen.dart';
 import 'package:vape_store/utils/money.dart';
 
-class TrolleyScreen extends StatefulWidget {
+class TrolleyScreen extends StatelessWidget {
   const TrolleyScreen({super.key});
-
-  @override
-  State<TrolleyScreen> createState() => _TrolleyScreenState();
-}
-
-class _TrolleyScreenState extends State<TrolleyScreen> {
-  final Map<int, bool> selectedItems = {};
-  final Map<int, int> itemCounts = {};
-  List<TrolleyModel> cartItems = [];
-
-  void selectCheckbox(bool? checked, TrolleyModel item) {
-    setState(() {
-      if (checked == true) {
-        cartItems.add(item);
-      } else {
-        cartItems.remove(item);
-      }
-    });
-  }
-
-  // Calculate total price based on selected cart items
-  double calculateTotalPrice() {
-    double total = 0.0;
-    for (var item in cartItems) {
-      total += item.price * item.qty;
-    }
-    return total;
-  }
-
-  void _incrementCount(bool isSelected, TrolleyModel item) {
-    setState(() {
-      item.qty++;
-      if (isSelected) calculateTotalPrice();
-    });
-  }
-
-  void _decrementCount(bool isSelected, TrolleyModel item) {
-    setState(() {
-      if (item.qty > 1) {
-        item.qty--;
-        if (isSelected) calculateTotalPrice();
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     context.read<TrolleyBloc>().add(TrolleyLoadsEvent());
-    double totalPrice = calculateTotalPrice(); // Assume a function to calculate total price
+
+    void selectCheckbox(bool checked, TrolleyModel item) => context.read<TrolleyBloc>().add(TrolleySelectEvent(checked, item));
+    void incrementCount(TrolleyModel item) => context.read<TrolleyBloc>().add(TrolleyIncrementEvent(item));
+    void decrementCount(TrolleyModel item) => context.read<TrolleyBloc>().add(TrolleyDecrementEvent(item));
+    void removeHandler(TrolleyModel item) => context.read<TrolleyBloc>().add(TrolleyRemoveEvent(idTrolley: item.idTrolley));
+
+    void goProductScreen(TrolleyModel item) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return ProductDetailScreen(
+          id: item.idProduct,
+          redirect: 'trolley',
+          lastId: 0,
+        );
+      }));
+    }
+
+    void goOrderScreen(TrolleyState stateTrolley) {
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return OrderScreen(productTrolley: stateTrolley.cartItems);
+        },
+      ));
+    }
+
+    // double totalPrice = calculateTotalPrice(); // Assume a function to calculate total price
     return Scaffold(
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Display Total Price
-              Text(
-                'Total Price: ${formatPrice(totalPrice)}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              // Checkout Button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (context) {
-                      return OrderScreen(productTrolley: cartItems);
-                    },
-                  ));
-                },
-                child: const Text(
-                  'Checkout',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
+          child: BlocSelector<TrolleyBloc, TrolleyState, TrolleyState>(
+            selector: (stateTrolley) {
+              return stateTrolley;
+            },
+            builder: (context, stateTrolley) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Display Total Price
+                  Text(
+                    'Total Price: ${formatPrice(stateTrolley.totalPrice)}',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  // Checkout Button
+                  ElevatedButton(
+                    onPressed: () => goOrderScreen(stateTrolley),
+                    child: const Text(
+                      'Checkout',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -92,7 +73,38 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
         leading: const BackButton(),
         title: const Text('My Trolley'),
       ),
-      body: BlocBuilder<TrolleyBloc, TrolleyState>(
+      body: BlocConsumer<TrolleyBloc, TrolleyState>(
+        listener: (context, stateListener) {
+          if (stateListener is TrolleyCaseState) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Success')));
+          }
+          if (stateListener is TrolleyErrorState) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateListener.message)));
+          }
+          if (stateListener is TrolleyRemoveState) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateListener.message)));
+            context.read<TrolleyBloc>().add(TrolleyLoadsEvent());
+          }
+        },
+        buildWhen: (previous, current) {
+          if (current is TrolleyLoadingState) {
+            return true;
+          }
+          if (current is TrolleyErrorState) {
+            return true;
+          }
+          if (current is TrolleyLoadsState) {
+            return true;
+          }
+          if (previous is TrolleyInitial && current is TrolleyInitial) {
+            final cartItems = previous.cartItems != current.cartItems;
+            final trolleys = previous.trolleys != current.trolleys;
+
+            return cartItems && trolleys;
+          }
+
+          return false;
+        },
         builder: (context, state) {
           if (state is TrolleyLoadingState) {
             return const Center(child: CircularProgressIndicator());
@@ -104,8 +116,6 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
               itemCount: trolleys.length,
               itemBuilder: (context, index) {
                 var item = trolleys[index];
-                bool isSelected = cartItems.contains(item);
-                itemCounts.putIfAbsent(item.idProduct, () => item.trolleyQty);
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                   child: Padding(
@@ -113,22 +123,19 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Checkbox(
-                          value: isSelected,
-                          onChanged: (bool? checked) {
-                            selectCheckbox(checked, item);
+                        BlocSelector<TrolleyBloc, TrolleyState, bool>(
+                          selector: (state) {
+                            return state.cartItems.contains(item);
+                          },
+                          builder: (context, stateBool) {
+                            return Checkbox(
+                              value: stateBool,
+                              onChanged: (bool? checked) => selectCheckbox(checked ?? false, item),
+                            );
                           },
                         ),
                         InkWell(
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) {
-                              return ProductDetailScreen(
-                                id: item.idProduct,
-                                redirect: 'trolley',
-                                lastId: 0,
-                              );
-                            }));
-                          },
+                          onTap: () => goProductScreen(item),
                           child: Image.network(
                             'lib/images/banner1.png',
                             // item.imageUrl, // Assuming TrolleyModel has an 'imageUrl' field
@@ -169,33 +176,27 @@ class _TrolleyScreenState extends State<TrolleyScreen> {
                           children: [
                             IconButton(
                               iconSize: 20,
-                              onPressed: () => _decrementCount(isSelected, item),
+                              onPressed: () => decrementCount(item),
                               icon: const Icon(Icons.remove, size: 20),
                             ),
-                            Text(item.trolleyQty.toString(), style: const TextStyle(fontSize: 16)),
+                            BlocSelector<TrolleyBloc, TrolleyState, TrolleyState>(
+                              selector: (state) {
+                                return state;
+                              },
+                              builder: (context, state) {
+                                return Text(item.trolleyQty.toString(), style: const TextStyle(fontSize: 16));
+                              },
+                            ),
                             IconButton(
                               iconSize: 20,
-                              onPressed: () {
-                                _incrementCount(isSelected, item);
-                              },
+                              onPressed: () => incrementCount(item),
                               icon: const Icon(Icons.add, size: 20),
                             ),
                           ],
                         ),
-                        BlocListener<TrolleyBloc, TrolleyState>(
-                          listener: (context, trolleyState) {
-                            if (trolleyState is TrolleyCaseState) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Success')));
-                            } else if (trolleyState is TrolleyErrorState) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(trolleyState.message)));
-                            }
-                          },
-                          child: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                            onPressed: () {
-                              context.read<TrolleyBloc>().add(TrolleyRemoveEvent(idTrolley: item.idTrolley));
-                            },
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                          onPressed: () => removeHandler(item),
                         ),
                       ],
                     ),

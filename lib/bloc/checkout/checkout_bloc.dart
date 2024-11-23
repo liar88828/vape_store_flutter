@@ -45,7 +45,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       emit(CheckoutLoadingState());
       try {
         final user = await session;
-        final ResponseModel response = await checkoutRepository.createSingleCheckout(
+        // final ResponseModel response =
+        await checkoutRepository.createSingleCheckout(
           checkout: event.checkout,
           idTrolley: event.idTrolley,
           user: user,

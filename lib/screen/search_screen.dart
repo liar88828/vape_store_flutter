@@ -23,6 +23,23 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     context.read<ProductBloc>().add(ProductFilterEvent());
+
+    void filterProductHandler() {
+      context.read<ProductBloc>().add(
+            ProductFilterEvent(
+              category: _selectedCategory,
+              order: _selectedPrice,
+              name: _searchController.text,
+            ),
+          );
+    }
+
+    void goTrolleyScreen() {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return const TrolleyScreen();
+      }));
+    }
+
     var colorTheme = Theme.of(context).colorScheme;
     const listCategory = ['Coil', 'Mod', 'Liquid', 'Battery', "Connector", "Tank/Cartridge", 'Mouthpiece/Drip-tip', 'Atomizer', 'Accessories'];
     const listPrice = [
@@ -63,19 +80,13 @@ class _SearchScreenState extends State<SearchScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: BlocSelector<TrolleyBloc, TrolleyState, int>(
-              selector: (stateTrolley) {
-                return stateTrolley.count ?? 0;
-              },
+              selector: (stateTrolley) => stateTrolley.count ?? 0,
               builder: (context, stateTrolleyCount) {
                 return IconButton(
                     color: colorTheme.primary,
                     style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     // color: Colors.red,
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const TrolleyScreen();
-                      }));
-                    },
+                    onPressed: () => goTrolleyScreen(),
                     icon: Badge(
                       label: Text(stateTrolleyCount.toString()),
                       child: const Icon(
@@ -98,17 +109,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 IconButton(
                     color: colorTheme.primary,
                     style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                    onPressed: () {
-                      context.read<ProductBloc>().add(
-                            ProductFilterEvent(
-                              category: _selectedCategory,
-                              order: _selectedPrice,
-                              name: _searchController.text,
-                            ),
-                          );
-                    },
+                    onPressed: () => filterProductHandler(),
                     icon: const Icon(Icons.filter_list)),
-                CategoryDropdown(
+                MyCategoryDropdown(
                   listCategory: listCategory,
                   selectedCategory: _selectedCategory ?? listCategory[0],
                   onChanged: (String? value) {
@@ -118,7 +121,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   },
                   colorTheme: colorTheme,
                 ),
-                CategoryDropdown(
+                MyCategoryDropdown(
                   listCategory: listPrice,
                   selectedCategory: _selectedPrice ?? listPrice[0],
                   onChanged: (String? value) {
@@ -151,11 +154,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     crossAxisCount: 2,
                     childAspectRatio: 3 / 4,
                     children: stateProduct.products.map((product) {
-                      return ProductCard(product: product
-                          // image: 'lib/images/banner1.png',
-                          // price: product.price!,
-                          // title: product.name!,
-                          );
+                      return MyProductCard(product: product, colorTheme: colorTheme);
                     }).toList(),
                   ),
                 );
@@ -168,23 +167,44 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-}
 
-class ProductCard extends StatelessWidget {
-  // final String image;
-  // final String title;
-  // final String price;
-  final ProductModel product;
+  Container MyCategoryDropdown({
+    required List<String> listCategory,
+    required String selectedCategory,
+    required ValueChanged<String?> onChanged,
+    required ColorScheme colorTheme,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: colorTheme.onPrimary,
+        border: Border.all(color: colorTheme.primaryContainer),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<String>(
+        value: selectedCategory,
+        icon: const Icon(Icons.arrow_downward),
+        dropdownColor: colorTheme.onPrimary,
+        elevation: 10,
+        underline: Container(),
+        onChanged: onChanged,
+        items: listCategory.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: colorTheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
-  const ProductCard({super.key, required this.product
-      // required this.image,
-      // required this.title,
-      // required this.price,
-      });
-  @override
-  Widget build(BuildContext context) {
-    var colorTheme = Theme.of(context).colorScheme;
-
+  InkWell MyProductCard({required ProductModel product, required ColorScheme colorTheme}) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -245,53 +265,6 @@ class ProductCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class CategoryDropdown extends StatelessWidget {
-  final List<String> listCategory;
-  final String selectedCategory;
-  final ValueChanged<String?> onChanged;
-  final ColorScheme colorTheme;
-
-  const CategoryDropdown({
-    super.key,
-    required this.listCategory,
-    required this.selectedCategory,
-    required this.onChanged,
-    required this.colorTheme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: colorTheme.onPrimary,
-        border: Border.all(color: colorTheme.primaryContainer),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButton<String>(
-        value: selectedCategory,
-        icon: const Icon(Icons.arrow_downward),
-        dropdownColor: colorTheme.onPrimary,
-        elevation: 10,
-        underline: Container(),
-        onChanged: onChanged,
-        items: listCategory.map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: TextStyle(
-                color: colorTheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

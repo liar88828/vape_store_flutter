@@ -8,11 +8,12 @@ class FavoriteListScreenx extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<FavoriteBloc>().add(FavoriteListUserEvent());
+
     void deleteFavorite(BuildContext context, int id) {
       context.read<FavoriteBloc>().add(FavoriteDeleteEvent(id: id));
     }
 
-    context.read<FavoriteBloc>().add(FavoriteListUserEvent());
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -20,7 +21,7 @@ class FavoriteListScreenx extends StatelessWidget {
             icon: const Icon(Icons.add),
             onPressed: () async {
               final result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return const FavoriteFormScreen();
+                return FavoriteFormScreen();
               }));
               if (result == true) {
                 if (context.mounted) {

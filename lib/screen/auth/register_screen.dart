@@ -5,14 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
 import 'package:vape_store/validator/auth_validator.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class RegisterScreen extends StatelessWidget {
+  RegisterScreen({super.key});
 
-  @override
-  _RegisterScreenState createState() => _RegisterScreenState();
-}
-
-class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final valid = AuthValidator();
   final _nameController = TextEditingController();
@@ -23,7 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
-      Future<void> register() async {
+      void register() {
         if (_formKey.currentState?.validate() == true) {
           context.read<AuthBloc>().add(AuthRegisterEvent(
                 name: _nameController.text,
@@ -112,9 +107,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         lastDate: DateTime.now(),
                       );
                       if (pickedDate != null) {
-                        setState(() {
-                          // dateOfBirth = pickedDate;
-                        });
+                        // setState(() {
+                        //   // dateOfBirth = pickedDate;
+                        // });
                       }
                     },
                     child: const AbsorbPointer(
@@ -151,7 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 32.0),
                   ElevatedButton(
-                    onPressed: register,
+                    onPressed: () => register(),
                     child: const Text('Register'),
                   ),
                 ],

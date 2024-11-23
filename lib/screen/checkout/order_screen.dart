@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vape_store/bloc/bank/bank_bloc.dart';
 import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
 import 'package:vape_store/bloc/delivery/delivery_bloc.dart';
 import 'package:vape_store/models/bank_model.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/delivery_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
-import 'package:vape_store/models/user_model.dart';
-import 'package:vape_store/network/bank_network.dart';
-import 'package:vape_store/network/delivery_network.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
-import 'package:vape_store/utils/pref_user.dart';
 import 'package:vape_store/utils/text.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -23,14 +20,7 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  final BankNetwork _bankNetwork = BankNetwork();
-  final DeliveryNetwork _deliveryNetwork = DeliveryNetwork();
-
-  UserModel? _userData;
-  Future<List<DeliveryModel>>? _deliveryList;
-  Future<List<BankModel>>? _bankList;
   DeliveryModel? _deliveryData;
-  BankModel? _bankData;
 
   OrderInfoModel _totalModel = OrderInfoModel(
     discountPrice: 0,
@@ -39,15 +29,6 @@ class _OrderScreenState extends State<OrderScreen> {
     total: 0,
     discount: 0,
   );
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshData();
-    _deliveryList = _deliveryNetwork.fetchDelivery();
-    _bankList = _bankNetwork.fetchBanks();
-    _setOrderInfo();
-  }
 
   void _setOrderInfo() {
     // Ensure `trolley` is a list and handle null safety
@@ -84,12 +65,6 @@ class _OrderScreenState extends State<OrderScreen> {
     });
   }
 
-  Future<void> _refreshData() async {
-    _userData = await loadUserData();
-    if (_userData != null) {}
-    setState(() {});
-  }
-
   num _calculateTotal(List<TrolleyModel> trolley, num initial) {
     return trolley.fold(
       initial,
@@ -97,8 +72,8 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Future<void> _createCheckout(BuildContext context) async {
-    if (_deliveryData == null || _bankData == null) {
+  Future<void> _createCheckout(BankModel bank) async {
+    if (_deliveryData == null || bank == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select delivery and bank')));
       // } else if (_deliveryData == null || _bankData) {
     } else {
@@ -109,10 +84,10 @@ class _OrderScreenState extends State<OrderScreen> {
         _deliveryData?.price ?? 0,
       );
       CheckoutModel checkout = CheckoutModel(
-        idUser: _userData!.id,
+        // idUser: _userData!.id,
         total: total,
         deliveryMethod: _deliveryData!.name,
-        paymentMethod: _bankData!.name,
+        paymentMethod: bank.name,
         paymentPrice: 100,
         deliveryPrice: _deliveryData!.price,
       );
@@ -143,12 +118,45 @@ class _OrderScreenState extends State<OrderScreen> {
     setState(() {
       widget.productTrolley?.removeWhere((item) => item.idProduct == id);
     });
+    _setOrderInfo();
+
     // print(widget.productTrolley?.toList());
   }
 
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
+
+    void goTrolleyScreen(BuildContext context) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+        return const TrolleyScreen();
+      }));
+    }
+
+    void unSelectBankHandler() {
+      context.read<BankBloc>().add(BankSelectEvent(bank: null));
+      _setOrderInfo();
+      Navigator.pop(context); // Close the dialog after selection
+    }
+
+    void selectBankHandler(BankModel data) {
+      context.read<BankBloc>().add(BankSelectEvent(bank: data));
+      _setOrderInfo();
+      Navigator.pop(context); // Close the dialog after selection
+    }
+
+    void unSelectDeliveryHandler() {
+      context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: null));
+      //   print('the _setOrderInfo(); is required');
+      Navigator.pop(context); // Close the dialog after selection
+    }
+
+    void selectDeliveryHandler(DeliveryModel data) {
+      context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: data));
+      //   print('the _setOrderInfo(); is required');
+      Navigator.pop(context); // Close the dialog after selection
+    }
+
     // print(productModel.toString());
     return Scaffold(
       appBar: AppBar(
@@ -156,12 +164,7 @@ class _OrderScreenState extends State<OrderScreen> {
         toolbarHeight: 70,
         title: const Text('Order Screen'),
         leading: BackButton(onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) {
-              return const TrolleyScreen();
-            }),
-          );
+          goTrolleyScreen(context);
         }),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -174,7 +177,7 @@ class _OrderScreenState extends State<OrderScreen> {
             ),
           ),
           onPressed: () {
-            _createCheckout(context);
+            // _createCheckout(_bankData);
           },
           child: Text('CHECKOUT ${formatPrice(_totalModel.total)}'),
         ),
@@ -213,19 +216,22 @@ class _OrderScreenState extends State<OrderScreen> {
                 )
               ],
             ),
-            BlocSelector<DeliveryBloc, DeliveryState, DeliveryModel?>(
-              selector: (stateDelivery) {
-                return stateDelivery.delivery;
-              },
+
+            // ---------
+
+            BlocSelector<DeliveryBloc, DeliveryState, DeliveryState>(
+              selector: (stateDelivery) => stateDelivery,
               builder: (context, stateDeliveryData) {
+                final delivery = stateDeliveryData.delivery;
                 return listCheckout(
                   colorTheme: colorTheme,
                   text: 'Delivery',
-                  subtitle: stateDeliveryData?.price != null ? formatPrice(stateDeliveryData?.price ?? 0) : null,
-                  title: stateDeliveryData?.name,
+                  subtitle: delivery?.price != null ? formatPrice(delivery?.price ?? 0) : null,
+                  title: delivery?.name,
                   icon: Icons.delivery_dining,
-                  onClick: () {
-                    showDialog(
+                  onClick: () async {
+                    context.read<DeliveryBloc>().add(DeliveryLoadsEvent());
+                    await showDialog(
                       context: context,
                       // barrierDismissible: false,
                       builder: (context) => AlertDialog(
@@ -233,21 +239,17 @@ class _OrderScreenState extends State<OrderScreen> {
                         content: SingleChildScrollView(
                           child: ListBody(
                             children: [
-                              stateDeliveryData != null
+                              delivery != null
                                   ? Card(
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: ListTile(
                                           // tileColor: colorTheme.primaryContainer,
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                          title: Text(stateDeliveryData.name),
-                                          subtitle: Text(formatPrice(stateDeliveryData.price)),
+                                          title: Text(delivery.name),
+                                          subtitle: Text(formatPrice(delivery.price)),
                                           trailing: IconButton(
-                                            onPressed: () {
-                                              context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: null));
-                                              print('the _setOrderInfo(); is required');
-                                              Navigator.pop(context); // Close the dialog after selection
-                                            },
+                                            onPressed: () => unSelectDeliveryHandler(),
                                             icon: const Icon(Icons.check_box),
                                           ),
                                         ),
@@ -269,11 +271,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         title: Text(data.name),
                                         subtitle: Text(formatPrice(data.price)),
                                         trailing: IconButton(
-                                          onPressed: () {
-                                            context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: data));
-                                            print('the _setOrderInfo(); is required');
-                                            Navigator.pop(context); // Close the dialog after selection
-                                          },
+                                          onPressed: () => selectDeliveryHandler(data),
                                           icon: const Icon(Icons.check_box_outline_blank),
                                         ),
                                       );
@@ -287,11 +285,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           ),
                         ),
                         actions: [
-                          TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Back')),
+                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Back')),
                         ],
                       ),
                     );
@@ -299,88 +293,78 @@ class _OrderScreenState extends State<OrderScreen> {
                 );
               },
             ),
-            listCheckout(
-              colorTheme: colorTheme,
-              text: 'Payment Method',
-              title: _bankData?.name,
-              subtitle: _bankData?.accounting,
-              icon: Icons.money,
-              onClick: () {
-                showDialog(
-                  context: context,
-                  // barrierDismissible: false,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Payment Method'),
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: [
-                          _bankData != null
-                              ? Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ListTile(
-                                      // tileColor: colorTheme.primaryContainer,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                      title: Text(_bankData!.name),
-                                      subtitle: Text(_bankData!.accounting),
-                                      trailing: IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _bankData = null;
-                                          });
-                                          _setOrderInfo();
-
-                                          Navigator.pop(context); // Close the dialog after selection
-                                        },
-                                        icon: const Icon(Icons.check_box),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : const Text('Please Select Payment Method'),
-                          FutureBuilder<List<BankModel>>(
-                              future: _bankList,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return const Center(child: CircularProgressIndicator());
-                                } else if (snapshot.hasError) {
-                                  return const Center(child: Text('Error fetching data'));
-                                } else if (snapshot.hasData) {
-                                  return Column(
-                                    children: snapshot.data!.map((data) {
-                                      return ListTile(
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                        title: Text(data.name),
-                                        subtitle: Text(data.accounting),
-                                        trailing: IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _bankData = data;
-                                            });
-                                            _setOrderInfo();
-
-                                            Navigator.pop(context); // Close the dialog after selection
-                                          },
-                                          icon: const Icon(Icons.check_box_outline_blank),
+            // ---------
+            BlocSelector<BankBloc, BankState, BankState>(
+              selector: (stateBank) => stateBank,
+              builder: (context, stateBank) {
+                var bank = stateBank.bank;
+                return listCheckout(
+                  colorTheme: colorTheme,
+                  text: 'Payment Method',
+                  title: bank?.name,
+                  subtitle: bank?.accounting,
+                  icon: Icons.money,
+                  onClick: () async {
+                    context.read<BankBloc>().add(BankLoadsEvent());
+                    await showDialog(
+                      context: context,
+                      // barrierDismissible: false,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Payment Method'),
+                        content: SingleChildScrollView(
+                          child: ListBody(
+                            children: [
+                              stateBank.bank != null
+                                  ? Card(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ListTile(
+                                          // tileColor: colorTheme.primaryContainer,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                          title: Text(stateBank.bank!.name),
+                                          subtitle: Text(bank!.accounting),
+                                          trailing: IconButton(
+                                            onPressed: () => unSelectBankHandler(),
+                                            icon: const Icon(Icons.check_box),
+                                          ),
                                         ),
-                                      );
-                                    }).toList(), // Convert to a list of widgets
-                                  );
-                                } else {
-                                  return const Center(child: Text('No data available'));
-                                }
-                              }),
+                                      ),
+                                    )
+                                  : const Text('Please Select Payment Method'),
+                              BlocBuilder<BankBloc, BankState>(
+                                builder: (context, state) {
+                                  if (state is BankLoadingState) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  } else if (state is BankErrorState) {
+                                    return const Center(child: Text('Error fetching data'));
+                                  } else if (state is BankLoadsState) {
+                                    return Column(
+                                      children: state.banks.map((data) {
+                                        return ListTile(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                          title: Text(data.name),
+                                          subtitle: Text(data.accounting),
+                                          trailing: IconButton(
+                                            onPressed: () => selectBankHandler(data),
+                                            icon: const Icon(Icons.check_box_outline_blank),
+                                          ),
+                                        );
+                                      }).toList(), // Convert to a list of widgets
+                                    );
+                                  } else {
+                                    return const Center(child: Text('No data available'));
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Back')),
                         ],
                       ),
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Back')),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),
@@ -537,10 +521,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     )),
-                onPressed: () {
-                  _removeData(product.idProduct);
-                  _setOrderInfo();
-                },
+                onPressed: () => _removeData(product.idProduct),
                 icon: Icon(
                   Icons.delete,
                   color: colorTheme.error,

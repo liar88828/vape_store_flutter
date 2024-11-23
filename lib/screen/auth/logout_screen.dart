@@ -35,7 +35,7 @@ class _LogoutScreenState extends State<LogoutScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     if (context.mounted) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/bloc/product/product_bloc.dart';
 import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/favorite_list_model.dart';
+import 'package:vape_store/models/favorite_model.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
@@ -31,11 +32,49 @@ class ProductDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<ProductBloc>().add(ProductDetailEvent(id: id));
+
+    void goBackScreen() {
+      if (redirect == 'home') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+      } else if (redirect == 'favorite') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => FavoriteDetailScreen(idFavorite: lastId)));
+      } else if (redirect == 'trolley') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
+      } else if (redirect == 'search') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
+      } else {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+      }
+    }
+
     var colorTheme = Theme.of(context).colorScheme;
 
     void selectType(String label) => context.read<ProductBloc>().add(ProductTypeEvent(type: label));
     void increment() => context.read<CounterBloc>().add(IncrementCounterEvent());
     void decrement() => context.read<CounterBloc>().add(DecrementCounterEvent());
+    void goFavoriteCreateScreen(FavoriteModel data) {
+      context.read<FavoriteBloc>().add(FavoriteAddListEvent(
+              favorite: FavoriteListCreate(
+            idFavorite: data.id,
+            idProduct: id,
+          )));
+    }
+
+    void goTrolleyScreen() {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return const TrolleyScreen();
+      }));
+    }
+
+    void addTrolleyHandler(String stateProductType, int counter) {
+      context.read<TrolleyBloc>().add(TrolleyAddEvent(
+            id: 1,
+            qty: counter,
+            idProduct: id,
+            type: stateProductType,
+          ));
+    }
+
     Future<void> showAddFavorite(int counter, String type) {
       context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
       return showModalBottomSheet(
@@ -77,13 +116,7 @@ class ProductDetailScreen extends StatelessWidget {
                                     subtitle: Text(data.description),
                                     trailing: IconButton(
                                       icon: const Icon(Icons.add),
-                                      onPressed: () {
-                                        context.read<FavoriteBloc>().add(FavoriteAddListEvent(
-                                                favorite: FavoriteListCreate(
-                                              idFavorite: data.id,
-                                              idProduct: id,
-                                            )));
-                                      },
+                                      onPressed: () => goFavoriteCreateScreen(data),
                                     ),
                                   ),
                                 );
@@ -93,9 +126,7 @@ class ProductDetailScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             FilledButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
+                              onPressed: () => Navigator.pop(context),
                               child: const Text('Cancel'),
                             ),
                             const SizedBox(width: 10),
@@ -124,9 +155,7 @@ class ProductDetailScreen extends StatelessWidget {
         context: context,
         builder: (context) {
           return BlocSelector<ProductBloc, ProductState, String>(
-            selector: (stateProduct) {
-              return stateProduct.type;
-            },
+            selector: (stateProduct) => stateProduct.type,
             builder: (context, stateProductType) {
               return SizedBox(
                 child: Padding(
@@ -197,19 +226,7 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         FilledButton(
-                          onPressed: () {
-                            if (stateProductType.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please Add type ')));
-                              Navigator.pop(context);
-                            } else {
-                              context.read<TrolleyBloc>().add(TrolleyAddEvent(
-                                    id: 1,
-                                    qty: counter,
-                                    idProduct: id,
-                                    type: stateProductType,
-                                  ));
-                            }
-                          },
+                          onPressed: () => addTrolleyHandler(stateProductType, counter),
                           child: const Text('Add'),
                         ),
                       ],
@@ -239,7 +256,7 @@ class ProductDetailScreen extends StatelessWidget {
                     description: '',
                     name: product.name,
                     price: product.price,
-                    qty: counterQty,
+                    // qty: counterQty,
                     idUser: user.id,
                     type: type,
                     trolleyIdUser: user.id,
@@ -263,9 +280,7 @@ class ProductDetailScreen extends StatelessWidget {
               selector: (state) => state.user,
               builder: (context, stateAuth) {
                 return BlocSelector<ProductBloc, ProductState, String>(
-                  selector: (stateProduct) {
-                    return stateProduct.type;
-                  },
+                  selector: (stateProduct) => stateProduct.type,
                   builder: (context, stateProductType) {
                     return SizedBox(
                         child: Padding(
@@ -320,16 +335,12 @@ class ProductDetailScreen extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   FilledButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
+                                    onPressed: () => Navigator.pop(context),
                                     child: const Text('Cancel'),
                                   ),
                                   const SizedBox(width: 10),
                                   FilledButton(
-                                    onPressed: () {
-                                      addCheckout(product, counter, stateProductType, stateAuth);
-                                    },
+                                    onPressed: () => addCheckout(product, counter, stateProductType, stateAuth),
                                     child: const Text('Add'),
                                   ),
                                 ],
@@ -381,9 +392,7 @@ class ProductDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () {
-                    toCheckout(productState.product, counter);
-                  },
+                  onPressed: () => toCheckout(productState.product, counter),
                   child: const Text(
                     'CHECKOUT',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -396,38 +405,20 @@ class ProductDetailScreen extends StatelessWidget {
         ),
         appBar: AppBar(
           toolbarHeight: 70,
-          leading: BackButton(onPressed: () {
-            if (redirect == 'home') {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-            } else if (redirect == 'favorite') {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => FavoriteDetailScreen(idFavorite: lastId)));
-            } else if (redirect == 'trolley') {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
-            } else if (redirect == 'search') {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchScreen()));
-            } else {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-            }
-          }),
+          leading: BackButton(onPressed: () => goBackScreen()),
           centerTitle: true,
           title: const Text('Detail Product'),
           actions: [
             Padding(
                 padding: const EdgeInsets.only(right: 10),
                 child: BlocSelector<TrolleyBloc, TrolleyState, int>(
-                  selector: (stateTrolley) {
-                    return stateTrolley.count ?? 0;
-                  },
+                  selector: (stateTrolley) => stateTrolley.count ?? 0,
                   builder: (context, stateTrolleyCount) {
                     return IconButton(
                         color: colorTheme.primary,
                         style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                         // color: Colors.red,
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) {
-                            return const TrolleyScreen();
-                          }));
-                        },
+                        onPressed: () => goTrolleyScreen(),
                         icon: Badge(
                             label: Text(stateTrolleyCount.toString()),
                             child: const Icon(
@@ -442,10 +433,18 @@ class ProductDetailScreen extends StatelessWidget {
             BlocListener<TrolleyBloc, TrolleyState>(
               listener: (context, stateTrolley) {
                 if (stateTrolley is TrolleyCaseState) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success ')));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success')));
                   Navigator.pop(context);
-                } else if (stateTrolley is TrolleyErrorState) {
+                }
+                if (stateTrolley is TrolleyErrorState) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateTrolley.message)));
+                }
+                if (stateTrolley is TrolleyCaseErrorState) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    duration: const Duration(seconds: 5),
+                    content: Text(stateTrolley.message),
+                  ));
+                  Navigator.pop(context);
                 }
               },
             ),

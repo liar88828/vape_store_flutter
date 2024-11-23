@@ -29,7 +29,7 @@ class TrolleyNetwork {
     final code = response.statusCode;
     if (code == 200) {
       final List<dynamic> trolleyData = jsonData['data'];
-      print(trolleyData);
+      // print(trolleyData);
       return trolleyData.map((trolley) => TrolleyModel.fromJson(trolley)).toList();
     } else {
       throw Exception('Failed to load trolley : ${jsonData['message']}');

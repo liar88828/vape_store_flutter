@@ -3,43 +3,37 @@ import 'package:flutter/material.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/models/favorite_model.dart';
 
-class FavoriteFormScreen extends StatefulWidget {
+class FavoriteFormScreen extends StatelessWidget {
   final FavoriteModel? favorite;
-  const FavoriteFormScreen({super.key, this.favorite});
-
-  @override
-  State<FavoriteFormScreen> createState() => _FavoriteFormScreenState();
-}
-
-class _FavoriteFormScreenState extends State<FavoriteFormScreen> {
+  FavoriteFormScreen({super.key, this.favorite});
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    if (widget.favorite != null) {
-      _titleController.text = widget.favorite!.title;
-      _descriptionController.text = widget.favorite!.description;
+    if (favorite != null) {
+      _titleController.text = favorite!.title;
+      _descriptionController.text = favorite!.description;
     }
 
     void saveFavorite() async {
-      final favorite = FavoriteModel(
-        id: widget.favorite?.id,
+      final data = FavoriteModel(
+        id: favorite?.id,
         idUser: 0,
         description: _descriptionController.text,
         title: _titleController.text,
       );
 
-      if (widget.favorite == null) {
-        context.read<FavoriteBloc>().add(FavoriteCreateEvent(favorite: favorite));
+      if (favorite == null) {
+        context.read<FavoriteBloc>().add(FavoriteCreateEvent(favorite: data));
       } else {
-        context.read<FavoriteBloc>().add(FavoriteUpdateEvent(favorite: favorite));
+        context.read<FavoriteBloc>().add(FavoriteUpdateEvent(favorite: data));
       }
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.favorite == null ? "Add Favorite" : "Edit Favorite"),
+        title: Text(favorite == null ? "Add Favorite" : "Edit Favorite"),
       ),
       body: BlocListener<FavoriteBloc, FavoriteState>(
         listener: (context, state) {

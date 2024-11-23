@@ -26,20 +26,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
     });
   }
 
-  void _deleteProduct(BuildContext context, int id) async {
-    bool success = await _apiService.deleteProduct(id);
-    if (context.mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product deleted')));
-        _refreshProducts();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete product')));
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    void deleteProduct(int id) async {
+      bool success = await _apiService.deleteProduct(id);
+      if (context.mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product deleted')));
+          _refreshProducts();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete product')));
+        }
+      }
+    }
+
+    Future<void> goProductFormScreen(ProductModel product) async {
+      final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProductFormScreen(product: product)));
+      if (result == true) _refreshProducts();
+    }
+
+    void deleteProductHandler(ProductModel product) => deleteProduct(product.id!);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Products'),
@@ -51,7 +58,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 context,
                 MaterialPageRoute(builder: (context) => const ProductFormScreen()),
               );
-              if (result == true) _refreshProducts();
+              if (result == true) {
+                _refreshProducts();
+              }
             },
           ),
         ],
@@ -78,14 +87,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () async {
-                          final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProductFormScreen(product: product)));
-                          if (result == true) _refreshProducts();
-                        },
+                        onPressed: () async => await goProductFormScreen(product),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteProduct(context, product.id!),
+                        onPressed: () => deleteProductHandler(product),
                       ),
                     ],
                   ),

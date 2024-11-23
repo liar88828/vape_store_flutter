@@ -10,7 +10,7 @@ class TrolleyModel extends TrolleyData {
     required this.trolleyIdUser,
     required this.idUser,
     required this.type,
-    required this.qty,
+    // required this.qty,
     required this.trolleyQty,
     this.createdAt,
     this.updatedAt,
@@ -24,7 +24,7 @@ class TrolleyModel extends TrolleyData {
   final int id;
   final int idProduct;
   final int idUser;
-  int qty;
+  // int qty;
   int trolleyQty;
   int? idCheckout;
   String? type;
@@ -45,7 +45,7 @@ class TrolleyModel extends TrolleyData {
       idProduct: json["id_product"],
       idUser: json["id_user"],
       trolleyIdUser: json["trolley_id_user"],
-      qty: json["qty"],
+      // qty: json["qty"],
       trolleyQty: json["trolley_qty"],
       createdAt: DateTime.parse(json["created_at"]),
       updatedAt: DateTime.parse(json["updated_at"]),
@@ -63,7 +63,7 @@ class TrolleyModel extends TrolleyData {
         "id_product": idProduct,
         "id_user": idUser,
         "trolley_id_user": trolleyIdUser,
-        "qty": qty,
+        // "qty": qty,
         "trolley_qty": trolleyQty,
         "created_at": createdAt?.toIso8601String(),
         "updated_at": updatedAt?.toIso8601String(),

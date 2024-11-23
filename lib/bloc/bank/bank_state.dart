@@ -1,10 +1,12 @@
+// ignore_for_file: overridden_fields
+
 part of 'bank_bloc.dart';
 
 @immutable
 sealed class BankState {
   final List<BankModel>? bankList;
   final BankModel? bank;
-  BankState({
+  const BankState({
     this.bankList,
     this.bank,
   });
@@ -16,22 +18,22 @@ final class BankLoadingState extends BankState {}
 
 final class BankLoadsState extends BankState {
   final List<BankModel> banks;
-  BankLoadsState({required this.banks}) : super(bankList: banks);
+  const BankLoadsState({required this.banks}) : super(bankList: banks);
 }
 
 final class BankErrorState extends BankState {
   final String message;
-  BankErrorState({required this.message});
+  const BankErrorState({required this.message});
 }
 
 final class BankSelectState extends BankState {
   @override
-  final BankModel bank;
-  BankSelectState({required this.bank}) : super(bank: bank);
+  final BankModel? bank;
+  const BankSelectState({required this.bank}) : super(bank: bank);
 }
 
 final class BankRemoveState extends BankState {
   @override
   final BankModel bank;
-  BankRemoveState({required this.bank}) : super(bank: bank);
+  const BankRemoveState({required this.bank}) : super(bank: bank);
 }

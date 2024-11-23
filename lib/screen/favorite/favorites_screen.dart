@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
+import 'package:vape_store/models/favorite_model.dart';
 import 'package:vape_store/screen/favorite/favorite_form_screen.dart';
 import 'package:vape_store/screen/favorite/favorite_detail_screen.dart';
 import 'package:vape_store/screen/home_screen.dart';
@@ -15,14 +16,48 @@ class FavoritesScreen extends StatelessWidget {
     context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
     final colorTheme = Theme.of(context).colorScheme;
 
+    void goFavoriteFormScreen() {
+      final result = Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return FavoriteFormScreen();
+        },
+      ));
+      if (context.mounted) {
+        if (result == true) {
+          context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
+        }
+      }
+    }
+
+    void goTrolleyScreen() {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return const TrolleyScreen();
+      }));
+    }
+
+    void goHomeScreen() {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(),
+          ));
+    }
+
+    void goFavoriteDetailScreen(FavoriteModel favorite) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FavoriteDetailScreen(
+            idFavorite: favorite.id ?? 0,
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
-          onPressed: () => Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const HomeScreen(),
-              )),
+          onPressed: () => goHomeScreen(),
         ),
         toolbarHeight: 70,
         title: Padding(
@@ -38,7 +73,10 @@ class FavoritesScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.white),
                   ),
-                  suffixIcon: IconButton(onPressed: () {}, icon: const Icon(Icons.search)))),
+                  suffixIcon: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.search),
+                  ))),
         ),
         actions: [
           Padding(
@@ -56,16 +94,10 @@ class FavoritesScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         )),
                     // color: Colors.red,
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const TrolleyScreen();
-                      }));
-                    },
+                    onPressed: () => goTrolleyScreen(),
                     icon: Badge(
                       label: Text(stateTrolleyCount.toString()),
-                      child: const Icon(
-                        Icons.trolley,
-                      ),
+                      child: const Icon(Icons.trolley),
                     ));
               },
             ),
@@ -92,18 +124,7 @@ class FavoritesScreen extends StatelessWidget {
               IconButton(
                 color: colorTheme.primary,
                 style: IconButton.styleFrom(backgroundColor: colorTheme.primaryContainer, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                onPressed: () {
-                  final result = Navigator.push(context, MaterialPageRoute(
-                    builder: (context) {
-                      return const FavoriteFormScreen();
-                    },
-                  ));
-                  if (context.mounted) {
-                    if (result == true) {
-                      context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
-                    }
-                  }
-                },
+                onPressed: () => goFavoriteFormScreen(),
                 icon: const Row(
                   children: [
                     Text('Add'),
@@ -133,16 +154,7 @@ class FavoritesScreen extends StatelessWidget {
                     children: favorites.map((favorite) {
                       print(favorite.id);
                       return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FavoriteDetailScreen(
-                                idFavorite: favorite.id ?? 0,
-                              ),
-                            ),
-                          );
-                        },
+                        onTap: () => goFavoriteDetailScreen(favorite),
                         child: Card(
                           key: Key(favorite.id.toString()),
                           color: colorTheme.onPrimary,

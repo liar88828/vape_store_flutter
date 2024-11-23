@@ -19,9 +19,15 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  void toDetailCheckout(CheckoutModel data, int id) {
+  void toDetailCheckout(BuildContext context, CheckoutModel data, int id) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return DetailCheckoutScreen(checkout: data, idCheckout: id);
+    }));
+  }
+
+  void goTrolleyScreen(BuildContext context) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return const TrolleyScreen();
     }));
   }
 
@@ -54,9 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )),
                   // color: Colors.red,
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return const TrolleyScreen();
-                    }));
+                    goTrolleyScreen(context);
                   },
                   icon: Badge(label: Text(stateTrolleyCount.toString()), child: const Icon(Icons.trolley)),
                 );
@@ -170,7 +174,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  TextButton(onPressed: () {}, child: const Text('View More'))
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text('View More'),
+                  )
                 ]),
                 BlocBuilder<CheckoutBloc, CheckoutState>(builder: (context, stateCheckout) {
                   if (stateCheckout is CheckoutLoadingState) {
@@ -233,11 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-            IconButton(
-                onPressed: () {
-                  toDetailCheckout(data, data.id ?? 0);
-                },
-                icon: const Icon(Icons.arrow_forward))
+            IconButton(onPressed: () => toDetailCheckout(context, data, data.id ?? 0), icon: const Icon(Icons.arrow_forward))
           ],
         ),
       ),

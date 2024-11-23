@@ -113,11 +113,11 @@ class ValidationSession extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
       if (state is AuthLoadingState) return const Center(child: CircularProgressIndicator());
-      if (state is AuthErrorState) return const LoginScreen();
+      if (state is AuthErrorState) return LoginScreen();
       if (state is AuthLoadedState) {
         return const HomeScreen();
       } else {
-        return const LoginScreen();
+        return LoginScreen();
       }
     });
   }

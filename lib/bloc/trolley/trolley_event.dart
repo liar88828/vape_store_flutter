@@ -44,3 +44,19 @@ class TrolleyChangeTypeEvent extends TrolleyEvent {
 class TrolleyGetSessionEvent extends TrolleyEvent {
   TrolleyGetSessionEvent();
 }
+
+class TrolleySelectEvent extends TrolleyEvent {
+  final bool isSelected;
+  final TrolleyModel item;
+  TrolleySelectEvent(this.isSelected, this.item);
+}
+
+class TrolleyIncrementEvent extends TrolleyEvent {
+  final TrolleyModel item;
+  TrolleyIncrementEvent(this.item);
+}
+
+class TrolleyDecrementEvent extends TrolleyEvent {
+  final TrolleyModel item;
+  TrolleyDecrementEvent(this.item);
+}

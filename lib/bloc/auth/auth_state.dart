@@ -1,3 +1,5 @@
+// ignore_for_file: overridden_fields
+
 part of 'auth_bloc.dart';
 
 @immutable

@@ -6,7 +6,7 @@ sealed class BankEvent {}
 final class BankLoadsEvent extends BankEvent {}
 
 final class BankSelectEvent extends BankEvent {
-  final BankModel bank;
+  final BankModel? bank;
   BankSelectEvent({required this.bank});
 }
 

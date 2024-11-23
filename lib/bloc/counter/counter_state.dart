@@ -2,7 +2,7 @@ part of 'counter_bloc.dart';
 
 sealed class CounterState {
   int counter;
-  CounterState({this.counter = 0});
+  CounterState({this.counter = 1});
 }
 
 final class CounterInitial extends CounterState {}
