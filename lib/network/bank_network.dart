@@ -17,7 +17,7 @@ class BankNetwork {
       }
       throw Exception('Failed to load banks');
     } catch (e) {
-      print(e.toString());
+      // print(e.toString());
       throw Exception('fail fetch data banks');
     }
   }

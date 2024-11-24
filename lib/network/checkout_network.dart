@@ -36,7 +36,7 @@ class CheckoutNetwork {
     required int idTrolley,
     required UserModel user,
   }) async {
-    print("single");
+    // print("single");
     return ResponseModel(
       message: '',
       success: false,
@@ -49,35 +49,38 @@ class CheckoutNetwork {
     required List<int> idTrolley,
     required UserModel user,
   }) async {
-    try {
-      final data = {
-        "id_user": user,
-        "id_trolley": idTrolley,
-        "total": checkout.total,
-        "delivery_price": checkout.deliveryPrice,
-        "payment_price": checkout.paymentPrice,
-        "payment_method": checkout.paymentMethod,
-        "delivery_method": checkout.deliveryMethod,
-      };
+    final data = {
+      "id_user": user.id,
+      "id_trolley": idTrolley,
+      "total": checkout.total,
+      "delivery_price": checkout.deliveryPrice,
+      "payment_price": checkout.paymentPrice,
+      "payment_method": checkout.paymentMethod,
+      "delivery_method": checkout.deliveryMethod,
+    };
+    // print("is many");
+    // print(data);
+    // print(data);
+    final response = await http.post(
+      Uri.parse('$baseUrl/checkout'),
+      body: jsonEncode(data),
+      headers: {'Content-Type': 'application/json'},
+    );
+    final dataJson = jsonDecode(response.body);
+    String message = dataJson['message'];
+    if (response.statusCode == 200) {
+      var dataJson2 = dataJson['data'];
+      print(dataJson2);
+      final data = CheckoutModel.fromJson(dataJson2);
+
       print(data);
-      final response = await http.post(
-        Uri.parse('$baseUrl/checkout'),
-        body: jsonEncode(data),
-        headers: {'Content-Type': 'application/json'},
+      return ResponseModel(
+        success: true,
+        message: message,
+        data: data,
       );
-      if (response.statusCode == 200) {
-        final dataJson = jsonDecode(response.body);
-        String message = dataJson['message'];
-        return ResponseModel(
-          success: true,
-          message: message,
-          data: CheckoutModel.fromJson(dataJson['data']),
-        );
-      } else {
-        throw Exception('error bos');
-      }
-    } catch (e) {
-      return ResponseModel(message: 'Error Checkout', success: false);
+    } else {
+      throw Exception(message);
     }
   }
 
@@ -93,7 +96,7 @@ class CheckoutNetwork {
         throw Exception('Failed to load trolley');
       }
     } catch (e) {
-      print(e.toString());
+      // print(e.toString());
       return [];
     }
   }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vape_store/bloc/bank/bank_bloc.dart';
-import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
 import 'package:vape_store/bloc/delivery/delivery_bloc.dart';
+import 'package:vape_store/bloc/order/order_bloc.dart';
 import 'package:vape_store/models/bank_model.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/delivery_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
+import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/money.dart';
 import 'package:vape_store/utils/text.dart';
@@ -20,112 +21,14 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  DeliveryModel? _deliveryData;
-
-  OrderInfoModel _totalModel = OrderInfoModel(
-    discountPrice: 0,
-    shippingCost: 0,
-    subTotal: 0,
-    total: 0,
-    discount: 0,
-  );
-
-  void _setOrderInfo() {
-    // Ensure `trolley` is a list and handle null safety
-    final trolley = widget.productTrolley?.toList() ?? [];
-
-    // Calculate the subtotal from the trolley items
-    final subtotal = _calculateTotal(
-      trolley,
-      0, // Initial value
-    );
-
-    // Calculate the shipping price
-    num shippingPrice = _deliveryData?.price ?? 0;
-
-    // Add shipping cost to subtotal
-    final totalBeforeDiscount = subtotal + shippingPrice;
-
-    // Define discount as a percentage (e.g., 10%)
-    const discountPercentage = 10;
-    num discount = (totalBeforeDiscount * discountPercentage) / 100;
-
-    // Calculate the total after applying the discount
-    final afterDiscount = totalBeforeDiscount - discount;
-
-    final data = OrderInfoModel(
-      subTotal: subtotal,
-      shippingCost: shippingPrice,
-      discount: discountPercentage,
-      discountPrice: discount,
-      total: afterDiscount,
-    );
-    setState(() {
-      _totalModel = data;
-    });
-  }
-
-  num _calculateTotal(List<TrolleyModel> trolley, num initial) {
-    return trolley.fold(
-      initial,
-      (value, element) => value + (element.trolleyQty * element.price),
-    );
-  }
-
-  Future<void> _createCheckout(BankModel bank) async {
-    if (_deliveryData == null || bank == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select delivery and bank')));
-      // } else if (_deliveryData == null || _bankData) {
-    } else {
-      List<TrolleyModel> trolley = widget.productTrolley?.toList() ?? [];
-      List<int> idTrolley = trolley.map((d) => d.idTrolley).toList();
-      num total = _calculateTotal(
-        trolley,
-        _deliveryData?.price ?? 0,
-      );
-      CheckoutModel checkout = CheckoutModel(
-        // idUser: _userData!.id,
-        total: total,
-        deliveryMethod: _deliveryData!.name,
-        paymentMethod: bank.name,
-        paymentPrice: 100,
-        deliveryPrice: _deliveryData!.price,
-      );
-
-      if (idTrolley.length == 1) {
-        context.read<CheckoutBloc>().add(CheckoutCreateManyEvent(checkout: checkout, idTrolley: idTrolley));
-      } else {
-        context.read<CheckoutBloc>().add(CheckoutCreateManyEvent(checkout: checkout, idTrolley: idTrolley));
-      }
-      // print(response);
-      // if (context.mounted) {
-      //   if (response.success) {
-      //     Navigator.push(context, MaterialPageRoute(
-      //       builder: (context) {
-      //         return DetailCheckoutScreen(
-      //           checkout: checkout,
-      //           idCheckout: response.data?.id,
-      //         );
-      //       },
-      //     ));
-      //   }
-      //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.message)));
-      // }
-    }
-  }
-
-  void _removeData(int id) {
-    setState(() {
-      widget.productTrolley?.removeWhere((item) => item.idProduct == id);
-    });
-    _setOrderInfo();
-
-    // print(widget.productTrolley?.toList());
-  }
+  void _removeData(int id) => context.read<OrderBloc>().add(OrderRemoveProductEvent(id));
 
   @override
   Widget build(BuildContext context) {
+    context.read<OrderBloc>().add(OrderAddProductEvent(widget.productTrolley ?? []));
     final colorTheme = Theme.of(context).colorScheme;
+
+    void createCheckout() => context.read<OrderBloc>().add(CheckoutCreateManyEvent());
 
     void goTrolleyScreen(BuildContext context) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
@@ -134,26 +37,22 @@ class _OrderScreenState extends State<OrderScreen> {
     }
 
     void unSelectBankHandler() {
-      context.read<BankBloc>().add(BankSelectEvent(bank: null));
-      _setOrderInfo();
+      context.read<OrderBloc>().add(OrderAddBankEvent(bankData: null));
       Navigator.pop(context); // Close the dialog after selection
     }
 
     void selectBankHandler(BankModel data) {
-      context.read<BankBloc>().add(BankSelectEvent(bank: data));
-      _setOrderInfo();
+      context.read<OrderBloc>().add(OrderAddBankEvent(bankData: data));
       Navigator.pop(context); // Close the dialog after selection
     }
 
     void unSelectDeliveryHandler() {
-      context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: null));
-      //   print('the _setOrderInfo(); is required');
+      context.read<OrderBloc>().add(OrderAddDeliveryEvent(deliveryData: null));
       Navigator.pop(context); // Close the dialog after selection
     }
 
     void selectDeliveryHandler(DeliveryModel data) {
-      context.read<DeliveryBloc>().add(DeliverySelectEvent(delivery: data));
-      //   print('the _setOrderInfo(); is required');
+      context.read<OrderBloc>().add(OrderAddDeliveryEvent(deliveryData: data));
       Navigator.pop(context); // Close the dialog after selection
     }
 
@@ -163,9 +62,7 @@ class _OrderScreenState extends State<OrderScreen> {
         centerTitle: true,
         toolbarHeight: 70,
         title: const Text('Order Screen'),
-        leading: BackButton(onPressed: () {
-          goTrolleyScreen(context);
-        }),
+        leading: BackButton(onPressed: () => goTrolleyScreen(context)),
       ),
       bottomNavigationBar: BottomAppBar(
         child: FilledButton(
@@ -176,300 +73,341 @@ class _OrderScreenState extends State<OrderScreen> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          onPressed: () {
-            // _createCheckout(_bankData);
-          },
-          child: Text('CHECKOUT ${formatPrice(_totalModel.total)}'),
+          onPressed: () => createCheckout(),
+          child: BlocSelector<OrderBloc, OrderState, num>(
+            selector: (state) {
+              return state.totalAll?.total ?? 0;
+            },
+            builder: (context, stateTotalAll) {
+              return Text('CHECKOUT ${formatPrice(stateTotalAll)}');
+            },
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            listCheckout(
-              colorTheme: colorTheme,
-              text: 'My Location',
-              onClick: () {},
-              subtitle: 'Jl Simongan 63 RT 005/008',
-              title: 'Jl Kedungjati 12, Jawa Tengah',
-              icon: Icons.payment,
-            ),
-            const SizedBox(height: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('My Cart',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: colorTheme.primary,
-                    )),
-                Column(
-                  children: widget.productTrolley == null
-                      ? [const Text('Data is null')]
-                      : widget.productTrolley!.map((product) {
-                          return trolleyProductCard(
-                            colorTheme: colorTheme,
-                            product: product,
-                          );
-                        }).toList(),
-                )
-              ],
-            ),
+      body: BlocConsumer<OrderBloc, OrderState>(
+        listener: (context, stateConsumerListener) {
+          if (stateConsumerListener is CheckoutErrorState) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateConsumerListener.message)));
+          }
 
-            // ---------
+          if (stateConsumerListener is CheckoutLoadState) {
+            // print('will go to detail checkout');
 
-            BlocSelector<DeliveryBloc, DeliveryState, DeliveryState>(
-              selector: (stateDelivery) => stateDelivery,
-              builder: (context, stateDeliveryData) {
-                final delivery = stateDeliveryData.delivery;
-                return listCheckout(
-                  colorTheme: colorTheme,
-                  text: 'Delivery',
-                  subtitle: delivery?.price != null ? formatPrice(delivery?.price ?? 0) : null,
-                  title: delivery?.name,
-                  icon: Icons.delivery_dining,
-                  onClick: () async {
-                    context.read<DeliveryBloc>().add(DeliveryLoadsEvent());
-                    await showDialog(
-                      context: context,
-                      // barrierDismissible: false,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Delivery Method'),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: [
-                              delivery != null
-                                  ? Card(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: ListTile(
-                                          // tileColor: colorTheme.primaryContainer,
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                          title: Text(delivery.name),
-                                          subtitle: Text(formatPrice(delivery.price)),
-                                          trailing: IconButton(
-                                            onPressed: () => unSelectDeliveryHandler(),
-                                            icon: const Icon(Icons.check_box),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : const Text('Please Select Delivery Method'),
-                              BlocBuilder<DeliveryBloc, DeliveryState>(builder: (context, stateDelivery) {
-                                if (stateDelivery is DeliveryLoadingState) {
-                                  return const Center(child: CircularProgressIndicator());
-                                } else if (stateDelivery is DeliveryErrorState) {
-                                  return Center(child: Text(stateDelivery.message));
-                                } else if (stateDelivery is DeliveryLoadsState) {
-                                  return Column(
-                                    children: stateDelivery.deliverys.where((data) {
-                                      return data.id != _deliveryData?.id;
-                                    }).map((data) {
-                                      return ListTile(
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                        title: Text(data.name),
-                                        subtitle: Text(formatPrice(data.price)),
-                                        trailing: IconButton(
-                                          onPressed: () => selectDeliveryHandler(data),
-                                          icon: const Icon(Icons.check_box_outline_blank),
-                                        ),
-                                      );
-                                    }).toList(), // Convert to a list of widgets
-                                  );
-                                } else {
-                                  return const Center(child: Text('No data available'));
-                                }
-                              }),
-                            ],
-                          ),
-                        ),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Back')),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-            // ---------
-            BlocSelector<BankBloc, BankState, BankState>(
-              selector: (stateBank) => stateBank,
-              builder: (context, stateBank) {
-                var bank = stateBank.bank;
-                return listCheckout(
-                  colorTheme: colorTheme,
-                  text: 'Payment Method',
-                  title: bank?.name,
-                  subtitle: bank?.accounting,
-                  icon: Icons.money,
-                  onClick: () async {
-                    context.read<BankBloc>().add(BankLoadsEvent());
-                    await showDialog(
-                      context: context,
-                      // barrierDismissible: false,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Payment Method'),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: [
-                              stateBank.bank != null
-                                  ? Card(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: ListTile(
-                                          // tileColor: colorTheme.primaryContainer,
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                          title: Text(stateBank.bank!.name),
-                                          subtitle: Text(bank!.accounting),
-                                          trailing: IconButton(
-                                            onPressed: () => unSelectBankHandler(),
-                                            icon: const Icon(Icons.check_box),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : const Text('Please Select Payment Method'),
-                              BlocBuilder<BankBloc, BankState>(
-                                builder: (context, state) {
-                                  if (state is BankLoadingState) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  } else if (state is BankErrorState) {
-                                    return const Center(child: Text('Error fetching data'));
-                                  } else if (state is BankLoadsState) {
-                                    return Column(
-                                      children: state.banks.map((data) {
-                                        return ListTile(
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                                          title: Text(data.name),
-                                          subtitle: Text(data.accounting),
-                                          trailing: IconButton(
-                                            onPressed: () => selectBankHandler(data),
-                                            icon: const Icon(Icons.check_box_outline_blank),
-                                          ),
-                                        );
-                                      }).toList(), // Convert to a list of widgets
-                                    );
-                                  } else {
-                                    return const Center(child: Text('No data available'));
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Back')),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Text('Order Info',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: colorTheme.primary,
-                    )),
-              ]),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Subtotal : ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[700],
-                      )),
-                  Text(
-                    formatPrice(_totalModel.subTotal),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[500],
-                    ),
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetailCheckoutScreen(
+                    checkout: stateConsumerListener.checkout,
+                    idCheckout: stateConsumerListener.checkout.id,
                   ),
-                ],
-              ),
-              Column(
-                children: widget.productTrolley == null
-                    ? [const Text('Data is null')]
-                    : widget.productTrolley!.map(
-                        (product) {
-                          return trolleyProductTotal(
-                            colorTheme: colorTheme,
-                            product: product,
-                          );
-                        },
-                      ).toList(),
-              ),
-              const SizedBox(height: 10),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('Shipping Cost : ',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    )),
-                Text(formatPrice(_totalModel.shippingCost),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[500],
-                    ))
-              ]),
-              const SizedBox(height: 10),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('Discount : ',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    )),
+                ));
+          }
+        },
+        buildWhen: (previous, current) {
+          if (previous is OrderInitial && current is OrderInitial) return true;
+          return false;
+        },
+        builder: (context, state) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                listCheckout(
+                  colorTheme: colorTheme,
+                  text: 'My Location',
+                  onClick: () {},
+                  subtitle: 'Jl Simongan 63 RT 005/008',
+                  title: 'Jl Kedungjati 12, Jawa Tengah',
+                  icon: Icons.payment,
+                ),
+                const SizedBox(height: 20),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("${_totalModel.discount}%",
+                    Text('My Cart',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey[500],
+                          color: colorTheme.primary,
                         )),
-                    Text("- ${formatPrice(_totalModel.discountPrice)}",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: colorTheme.error,
-                        ))
+                    Column(
+                      children: widget.productTrolley == null
+                          ? [const Text('Data is null')]
+                          : widget.productTrolley!.map((product) {
+                              return trolleyProductCard(
+                                colorTheme: colorTheme,
+                                product: product,
+                              );
+                            }).toList(),
+                    )
                   ],
                 ),
-              ]),
-              const SizedBox(height: 15),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('Total : ',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    )),
-                Text(formatPrice(_totalModel.total),
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ))
-              ])
-            ]),
-            const SizedBox(height: 30),
-          ],
-        ),
+
+                // ---------
+
+                BlocSelector<OrderBloc, OrderState, DeliveryModel?>(
+                  selector: (stateOrder) => stateOrder.deliveryData,
+                  builder: (context, stateDeliveryData) {
+                    final delivery = stateDeliveryData;
+                    return listCheckout(
+                      colorTheme: colorTheme,
+                      text: 'Delivery',
+                      subtitle: delivery?.price != null ? formatPrice(delivery?.price ?? 0) : null,
+                      title: delivery?.name,
+                      icon: Icons.delivery_dining,
+                      onClick: () async {
+                        context.read<DeliveryBloc>().add(DeliveryLoadsEvent());
+                        await showDialog(
+                          context: context,
+                          // barrierDismissible: false,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delivery Method'),
+                            content: SingleChildScrollView(
+                              child: ListBody(
+                                children: [
+                                  delivery != null
+                                      ? Card(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: ListTile(
+                                              // tileColor: colorTheme.primaryContainer,
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                              title: Text(delivery.name),
+                                              subtitle: Text(formatPrice(delivery.price)),
+                                              trailing: IconButton(
+                                                onPressed: () => unSelectDeliveryHandler(),
+                                                icon: const Icon(Icons.check_box),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : const Text('Please Select Delivery Method'),
+                                  BlocBuilder<DeliveryBloc, DeliveryState>(builder: (context, stateDelivery) {
+                                    if (stateDelivery is DeliveryLoadingState) {
+                                      return const Center(child: CircularProgressIndicator());
+                                    } else if (stateDelivery is DeliveryErrorState) {
+                                      return Center(child: Text(stateDelivery.message));
+                                    } else if (stateDelivery is DeliveryLoadsState) {
+                                      return Column(
+                                        children: stateDelivery.deliverys
+                                            // .where(
+                                            //   (data) {
+                                            //     return data.id != deliveryData?.id;
+                                            //   }
+                                            // )
+                                            .map((data) {
+                                          return ListTile(
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                            title: Text(data.name),
+                                            subtitle: Text(formatPrice(data.price)),
+                                            trailing: IconButton(
+                                              onPressed: () => selectDeliveryHandler(data),
+                                              icon: const Icon(Icons.check_box_outline_blank),
+                                            ),
+                                          );
+                                        }).toList(), // Convert to a list of widgets
+                                      );
+                                    } else {
+                                      return const Center(child: Text('No data available'));
+                                    }
+                                  }),
+                                ],
+                              ),
+                            ),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Back')),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                // ---------
+                BlocSelector<OrderBloc, OrderState, BankModel?>(
+                  selector: (stateOrder) => stateOrder.bankData,
+                  builder: (context, stateBank) {
+                    final bank = stateBank;
+                    return listCheckout(
+                      colorTheme: colorTheme,
+                      text: 'Payment Method',
+                      title: bank?.name,
+                      subtitle: bank?.accounting,
+                      icon: Icons.money,
+                      onClick: () async {
+                        context.read<BankBloc>().add(BankLoadsEvent());
+                        await showDialog(
+                          context: context,
+                          // barrierDismissible: false,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Payment Method'),
+                            content: SingleChildScrollView(
+                              child: ListBody(
+                                children: [
+                                  stateBank != null
+                                      ? Card(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: ListTile(
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                              title: Text(bank!.name),
+                                              subtitle: Text(bank.accounting),
+                                              trailing: IconButton(
+                                                onPressed: () => unSelectBankHandler(),
+                                                icon: const Icon(Icons.check_box),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : const Text('Please Select Payment Method'),
+                                  BlocBuilder<BankBloc, BankState>(
+                                    builder: (context, state) {
+                                      if (state is BankLoadingState) {
+                                        return const Center(child: CircularProgressIndicator());
+                                      } else if (state is BankErrorState) {
+                                        return const Center(child: Text('Error fetching data'));
+                                      } else if (state is BankLoadsState) {
+                                        return Column(
+                                          children: state.banks.map((data) {
+                                            return ListTile(
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                              title: Text(data.name),
+                                              subtitle: Text(data.accounting),
+                                              trailing: IconButton(
+                                                onPressed: () => selectBankHandler(data),
+                                                icon: const Icon(Icons.check_box_outline_blank),
+                                              ),
+                                            );
+                                          }).toList(), // Convert to a list of widgets
+                                        );
+                                      } else {
+                                        return const Center(child: Text('No data available'));
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Back')),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                BlocSelector<OrderBloc, OrderState, OrderInfoModel?>(
+                  selector: (stateSelector) {
+                    return stateSelector.totalAll;
+                  },
+                  builder: (context, stateSelectorAll) {
+                    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        Text('Order Info',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: colorTheme.primary,
+                            )),
+                      ]),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Subtotal : ',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[700],
+                              )),
+                          Text(
+                            formatPrice(stateSelectorAll?.subTotal ?? 0),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: widget.productTrolley == null
+                            ? [const Text('Data is null')]
+                            : widget.productTrolley!.map(
+                                (product) {
+                                  return trolleyProductTotal(
+                                    colorTheme: colorTheme,
+                                    product: product,
+                                  );
+                                },
+                              ).toList(),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        Text('Shipping Cost : ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            )),
+                        Text(formatPrice(stateSelectorAll?.shippingCost ?? 0),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[500],
+                            ))
+                      ]),
+                      const SizedBox(height: 10),
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        Text('Discount : ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            )),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text("${stateSelectorAll?.discount ?? 0}%",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[500],
+                                )),
+                            Text("- ${formatPrice(stateSelectorAll?.discountPrice ?? 0)}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: colorTheme.error,
+                                ))
+                          ],
+                        ),
+                      ]),
+                      const SizedBox(height: 15),
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        Text('Total : ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            )),
+                        Text(formatPrice(stateSelectorAll?.total ?? 0),
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            ))
+                      ])
+                    ]);
+                  },
+                ),
+                const SizedBox(height: 30),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

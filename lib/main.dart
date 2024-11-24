@@ -5,6 +5,7 @@ import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
 import 'package:vape_store/bloc/counter/counter_bloc.dart';
 import 'package:vape_store/bloc/delivery/delivery_bloc.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
+import 'package:vape_store/bloc/order/order_bloc.dart';
 import 'package:vape_store/bloc/preferences/preferences_bloc.dart';
 import 'package:vape_store/bloc/product/product_bloc.dart';
 import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
@@ -60,6 +61,11 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => DeliveryBloc(deliveryRepository: deliveryNetwork)),
+        BlocProvider(
+            create: (context) => OrderBloc(
+                  checkoutRepository: checkoutNetwork,
+                  session: preferencesRepository.getUser(),
+                )),
         BlocProvider(
             create: (context) => CheckoutBloc(
                   checkoutRepository: checkoutNetwork,

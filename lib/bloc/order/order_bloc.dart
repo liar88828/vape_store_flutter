@@ -3,50 +3,160 @@ import 'package:meta/meta.dart';
 import 'package:vape_store/models/bank_model.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/delivery_model.dart';
+import 'package:vape_store/models/response_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
+import 'package:vape_store/models/user_model.dart';
+import 'package:vape_store/network/checkout_network.dart';
 
 part 'order_event.dart';
 part 'order_state.dart';
 
 class OrderBloc extends Bloc<OrderEvent, OrderState> {
-  OrderBloc() : super(OrderInitial()) {
-    on<CalculateOrderInfo>(_onCalculateOrderInfo);
-    on<RemoveTrolleyItem>(_onRemoveTrolleyItem);
+  final CheckoutNetwork checkoutRepository;
+  final Future<UserModel> session;
+  OrderBloc({
+    required this.checkoutRepository,
+    required this.session,
+  }) : super(const OrderInitial()) {
+    on<OrderCalculateEvent>((event, emit) {
+      // emit(OrderLoadingState());
+      // emit(OrderInitial());
+    });
+    on<OrderRemoveProductEvent>((event, emit) {
+      final product = state.productTrolleyData;
+      product.removeWhere((item) => item.idProduct == event.id);
+      emit(OrderInitial(
+        productTrolleyData: product,
+        bankData: state.bankData,
+        deliveryData: state.deliveryData,
+        totalAll: setOrderInfo(trolley: product),
+      ));
+    });
+
+    on<OrderAddProductEvent>((event, emit) {
+      // print('is event');
+      // print(event.productTrolley.last.name);
+      // print('is event');
+      emit(OrderInitial(
+        productTrolleyData: event.productTrolley,
+        bankData: state.bankData,
+        deliveryData: state.deliveryData,
+        // totalAll: setOrderInfo(),
+      ));
+    });
+
+    on<OrderAddBankEvent>((event, emit) {
+      print(state.deliveryData?.name);
+      print(state.bankData?.name);
+      emit(OrderInitial(
+        productTrolleyData: state.productTrolleyData,
+        bankData: event.bankData,
+        deliveryData: state.deliveryData,
+        totalAll: setOrderInfo(),
+      ));
+    });
+
+    on<OrderAddDeliveryEvent>((event, emit) {
+      print(event.deliveryData?.name);
+      print(state.bankData?.name);
+      emit(OrderInitial(
+        productTrolleyData: state.productTrolleyData,
+        bankData: state.bankData,
+        deliveryData: event.deliveryData,
+        totalAll: setOrderInfo(),
+      ));
+    });
+
+    on<CheckoutCreateManyEvent>((event, emit) async {
+      if (state.bankData == null) {
+        emit(CheckoutErrorState(message: 'Please select bank'));
+      } else if (state.deliveryData == null) {
+        emit(CheckoutErrorState(message: 'Please select delivery'));
+      } else {
+        try {
+          final user = await session;
+          var idTrolley = setIdTrolley();
+          print('id trolley is $idTrolley');
+          if (idTrolley.length > 1) {
+            final ResponseModel<CheckoutModel> response = await checkoutRepository.createManyCheckout(
+              checkout: setCheckout(user),
+              idTrolley: setIdTrolley(),
+              user: user,
+            );
+            if (response.success) {
+              emit(CheckoutLoadState(checkout: response.data!));
+            } else {
+              throw Exception(response.message);
+            }
+          } else if (idTrolley.length == 1) {
+            final response = await checkoutRepository.createSingleCheckout(
+              checkout: setCheckout(user),
+              idTrolley: idTrolley[0],
+              user: user,
+            );
+
+            if (response.success) {
+              emit(CheckoutLoadState(checkout: response.data!));
+            } else {
+              throw Exception(response.message);
+            }
+          } else {
+            print('Trolley is empty');
+            throw Exception("Trolley is empty");
+          }
+        } catch (e) {
+          emit(CheckoutErrorState(message: e.toString()));
+        }
+      }
+    });
   }
 
-  void _onCalculateOrderInfo(CalculateOrderInfo event, Emitter<OrderState> emit) {
-    // Calculate subtotal
-    final subtotal = event.trolley.fold<num>(
-      0,
-      (value, item) => value + (item.trolleyQty * item.price),
+  List<int> setIdTrolley() => state.productTrolleyData.map((d) => d.idTrolley).toList();
+  CheckoutModel setCheckout(UserModel user) {
+    return CheckoutModel(
+      idUser: user.id,
+      total: calculateTotal(
+        state.productTrolleyData,
+        state.deliveryData!.price,
+      ),
+      deliveryMethod: state.deliveryData!.name,
+      paymentMethod: state.bankData!.name,
+      paymentPrice: 100,
+      deliveryPrice: state.deliveryData!.price,
     );
+  }
 
-    // Calculate shipping cost
-    final shippingPrice = event.deliveryData.price;
+  num calculateTotal(List<TrolleyModel> trolley, num initial) {
+    return trolley.fold(
+      initial,
+      (value, element) => value + (element.trolleyQty * element.price),
+    );
+  }
 
-    // Calculate total before discount
+  OrderInfoModel setOrderInfo({List<TrolleyModel>? trolley}) {
+    final deliveryData = state.deliveryData;
+    // final trolley = state.productTrolleyData;
+    final trolleyData = trolley ?? state.productTrolleyData;
+    final subtotal = calculateTotal(trolleyData, 0);
+
+    num shippingPrice = deliveryData?.price ?? 0;
+
+    // Add shipping cost to subtotal
     final totalBeforeDiscount = subtotal + shippingPrice;
 
-    // Calculate discount
+    // Define discount as a percentage (e.g., 10%)
     const discountPercentage = 10;
-    final discount = (totalBeforeDiscount * discountPercentage) / 100;
+    num discount = (totalBeforeDiscount * discountPercentage) / 100;
 
-    // Calculate final total
+    // Calculate the total after applying the discount
     final afterDiscount = totalBeforeDiscount - discount;
 
-    // Create the updated order info model
-    final orderInfo = OrderInfoModel(
+    return OrderInfoModel(
       subTotal: subtotal,
       shippingCost: shippingPrice,
       discount: discountPercentage,
       discountPrice: discount,
       total: afterDiscount,
     );
-
-    emit(OrderUpdated(orderInfo));
-  }
-
-  void _onRemoveTrolleyItem(RemoveTrolleyItem event, Emitter<OrderState> emit) {
-    // This event can be enhanced to update the trolley list and recalculate.
   }
 }

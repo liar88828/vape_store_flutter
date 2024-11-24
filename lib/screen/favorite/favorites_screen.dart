@@ -16,8 +16,8 @@ class FavoritesScreen extends StatelessWidget {
     context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
     final colorTheme = Theme.of(context).colorScheme;
 
-    void goFavoriteFormScreen() {
-      final result = Navigator.push(context, MaterialPageRoute(
+    void goFavoriteFormScreen() async {
+      final result = await Navigator.push(context, MaterialPageRoute(
         builder: (context) {
           return FavoriteFormScreen();
         },
@@ -152,7 +152,6 @@ class FavoritesScreen extends StatelessWidget {
                     crossAxisCount: 2,
                     childAspectRatio: 3 / 4,
                     children: favorites.map((favorite) {
-                      print(favorite.id);
                       return InkWell(
                         onTap: () => goFavoriteDetailScreen(favorite),
                         child: Card(

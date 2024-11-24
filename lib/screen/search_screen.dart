@@ -168,6 +168,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  // ignore: non_constant_identifier_names
   Container MyCategoryDropdown({
     required List<String> listCategory,
     required String selectedCategory,

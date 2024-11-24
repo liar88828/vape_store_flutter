@@ -70,6 +70,7 @@ final class TrolleyTypeState extends TrolleyState {
 }
 
 final class TrolleySelectState extends TrolleyState {
+  @override
   final List<TrolleyModel> cartItems;
   // final String select;
   const TrolleySelectState({required this.cartItems}) : super(cartItems: cartItems);
