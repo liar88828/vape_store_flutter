@@ -6,7 +6,10 @@ sealed class OrderState {
   final BankModel? bankData;
   final List<TrolleyModel> productTrolleyData;
   final OrderInfoModel? totalAll;
+  final CheckoutModel? checkout;
+
   const OrderState({
+    this.checkout,
     this.bankData,
     this.deliveryData,
     this.productTrolleyData = const [],
@@ -48,3 +51,5 @@ final class CheckoutLoadState extends OrderState {
 }
 
 final class CheckoutLoadingState extends OrderState {}
+
+final class CheckoutInitial extends OrderState {}

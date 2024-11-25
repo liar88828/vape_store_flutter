@@ -1,6 +1,6 @@
 class CheckoutModel {
   CheckoutModel({
-    this.id,
+    this.id = 0,
     this.idUser,
     required this.total,
     required this.paymentMethod,
@@ -11,7 +11,7 @@ class CheckoutModel {
     this.updatedAt,
   });
 
-  final int? id;
+  final int id;
   int? idUser;
   final num total;
   final String paymentMethod;

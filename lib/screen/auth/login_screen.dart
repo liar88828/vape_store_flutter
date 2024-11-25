@@ -34,69 +34,70 @@ class LoginScreen extends StatelessWidget {
           centerTitle: true,
           title: const Text('Login'),
         ),
-        body: BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
+        body: BlocConsumer<AuthBloc, AuthState>(
+          listener: (context, stateListener) {
             // print(PreferencesRepository().getUser());
-            if (state is AuthLoadedState) {
+            if (stateListener is AuthLoadedState) {
               Navigator.push(context, MaterialPageRoute(builder: (context) {
                 return const HomeScreen();
               }));
-            } else if (state is AuthErrorState) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+            } else if (stateListener is AuthErrorState) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateListener.message)));
             }
-
-            // else {
-            //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('something error')));
-            // }
           },
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              // autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Welcome Back!',
-                    style: Theme.of(context).textTheme.displaySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32.0),
-                  TextFormField(
-                    validator: ValidationBuilder().email().maxLength(50).build(),
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
+          builder: (context, state) {
+            if (state is AuthLoadingState) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                // autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Welcome Back!',
+                      style: Theme.of(context).textTheme.displaySmall,
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  TextFormField(
-                    validator: valid.password,
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
+                    const SizedBox(height: 32.0),
+                    TextFormField(
+                      validator: ValidationBuilder().email().maxLength(50).build(),
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 32.0),
-                  ElevatedButton(
-                    onPressed: () => login(),
-                    child: const Text('Login'),
-                  ),
-                  const SizedBox(height: 16.0),
-                  OutlinedButton(
-                    onPressed: () => goRegistrationScreen(),
-                    child: const Text('Register'),
-                  ),
-                ],
+                    const SizedBox(height: 16.0),
+                    TextFormField(
+                      validator: valid.password,
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 32.0),
+                    ElevatedButton(
+                      onPressed: () => login(),
+                      child: const Text('Login'),
+                    ),
+                    const SizedBox(height: 16.0),
+                    OutlinedButton(
+                      onPressed: () => goRegistrationScreen(),
+                      child: const Text('Register'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       );
     });

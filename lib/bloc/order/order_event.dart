@@ -48,3 +48,7 @@ final class CheckoutDetailEvent extends OrderEvent {
   final int idCheckout;
   CheckoutDetailEvent({required this.idCheckout});
 }
+
+final class CheckoutLoadsEvent extends OrderEvent {}
+
+final class CheckoutLoadEvent extends OrderEvent {}

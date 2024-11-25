@@ -1,28 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
+import 'package:vape_store/bloc/order/order_bloc.dart';
 import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/trolley_model.dart';
+import 'package:vape_store/screen/home_screen.dart';
+import 'package:vape_store/screen/profile_screen.dart';
 import 'package:vape_store/utils/money.dart';
 
 class DetailCheckoutScreen extends StatelessWidget {
   final CheckoutModel? checkout;
-  final int? idCheckout;
+  final int idCheckout;
+  final bool isFromProfile;
   const DetailCheckoutScreen({
     super.key,
+    this.isFromProfile = false,
     required this.checkout,
     required this.idCheckout,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (idCheckout != null) {
-      context.read<CheckoutBloc>().add(CheckoutDetailEvent(idCheckout: idCheckout!));
-      context.read<TrolleyBloc>().add(TrolleyCheckoutEvent(idCheckout: idCheckout!));
+    if (isFromProfile == true) {
+      context.read<OrderBloc>().add(CheckoutDetailEvent(idCheckout: idCheckout));
     }
+    context.read<TrolleyBloc>().add(TrolleyCheckoutEvent(idCheckout: idCheckout));
+
+    void completeHandler() {
+      // Add functionality to complete the transaction
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transaction Completed!')),
+      );
+      if (isFromProfile) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+      } else {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+      }
+    }
+
+    void backScreenHandler() {
+      if (isFromProfile == true) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+      } else {
+        Navigator.pop(context);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () => backScreenHandler(),
+        ),
         title: const Text('Transaction Details'),
       ),
       body: Padding(
@@ -47,17 +75,17 @@ class DetailCheckoutScreen extends StatelessWidget {
                     return cardTrolley(data);
                   }).toList());
                 } else {
-                  return const Text('Something Error Bloc or Api');
+                  return const Text('Trolley Something Error Bloc or Api');
                 }
               }),
             ),
             const Divider(thickness: 1, color: Colors.grey),
             const SizedBox(height: 16),
-            BlocBuilder<CheckoutBloc, CheckoutState>(builder: (context, stateCheckout) {
+            BlocBuilder<OrderBloc, OrderState>(builder: (context, stateCheckout) {
               if (stateCheckout is CheckoutLoadingState) {
                 return const Center(child: CircularProgressIndicator());
               } else if (stateCheckout is CheckoutErrorState) {
-                return Center(child: Text('Error: ${stateCheckout.message}'));
+                return Center(child: Text(stateCheckout.message));
               } else if (stateCheckout is CheckoutLoadState) {
                 final data = stateCheckout.checkout;
                 return Column(
@@ -126,19 +154,13 @@ class DetailCheckoutScreen extends StatelessWidget {
                   ],
                 );
               } else {
-                return const Text('Something Error Bloc or Api');
+                return const Text('Order Something Error Bloc or Api');
               }
             }),
             const SizedBox(height: 16),
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  // Add functionality to complete the transaction
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Transaction Completed!')),
-                  );
-                  Navigator.pop(context);
-                },
+                onPressed: () => completeHandler(),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   backgroundColor: Colors.green,

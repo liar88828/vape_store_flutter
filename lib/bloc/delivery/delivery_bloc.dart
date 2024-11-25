@@ -12,8 +12,12 @@ class DeliveryBloc extends Bloc<DeliveryEvent, DeliveryState> {
     on<DeliveryLoadsEvent>((event, emit) async {
       emit(DeliveryLoadingState());
       try {
-        final data = await deliveryRepository.fetchDelivery();
-        emit(DeliveryLoadsState(deliverys: data));
+        if (state.deliverys.isEmpty) {
+          final data = await deliveryRepository.fetchDelivery();
+          emit(DeliveryLoadsState(deliverys: data));
+        } else {
+          emit(DeliveryLoadsState(deliverys: state.deliverys));
+        }
       } catch (e) {
         emit(DeliveryErrorState(message: e.toString()));
       }

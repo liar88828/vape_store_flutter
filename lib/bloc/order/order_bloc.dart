@@ -18,6 +18,27 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     required this.checkoutRepository,
     required this.session,
   }) : super(const OrderInitial()) {
+    on<CheckoutLoadsEvent>((event, emit) async {
+      emit(CheckoutLoadingState());
+      try {
+        final user = await session;
+        final checkouts = await checkoutRepository.fetchAll(user.id);
+        emit(CheckoutLoadsState(checkouts: checkouts));
+      } catch (e) {
+        CheckoutErrorState(message: e.toString());
+      }
+    });
+
+    on<CheckoutDetailEvent>((event, emit) async {
+      emit(CheckoutLoadingState());
+      try {
+        final checkout = await checkoutRepository.fetchId(idCheckout: event.idCheckout);
+        emit(CheckoutLoadState(checkout: checkout));
+      } catch (e) {
+        CheckoutErrorState(message: e.toString());
+      }
+    });
+
     on<OrderCalculateEvent>((event, emit) {
       // emit(OrderLoadingState());
       // emit(OrderInitial());
@@ -46,8 +67,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     });
 
     on<OrderAddBankEvent>((event, emit) {
-      print(state.deliveryData?.name);
-      print(state.bankData?.name);
+      // print(state.deliveryData?.name);
+      // print(state.bankData?.name);
       emit(OrderInitial(
         productTrolleyData: state.productTrolleyData,
         bankData: event.bankData,
@@ -57,8 +78,6 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     });
 
     on<OrderAddDeliveryEvent>((event, emit) {
-      print(event.deliveryData?.name);
-      print(state.bankData?.name);
       emit(OrderInitial(
         productTrolleyData: state.productTrolleyData,
         bankData: state.bankData,
@@ -76,11 +95,13 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         try {
           final user = await session;
           var idTrolley = setIdTrolley();
+          var totalCheckout = setCheckout(user);
           print('id trolley is $idTrolley');
+          print('id trolley is ${totalCheckout.toJson()}');
           if (idTrolley.length > 1) {
             final ResponseModel<CheckoutModel> response = await checkoutRepository.createManyCheckout(
-              checkout: setCheckout(user),
-              idTrolley: setIdTrolley(),
+              checkout: totalCheckout,
+              idTrolley: idTrolley,
               user: user,
             );
             if (response.success) {
@@ -90,11 +111,10 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
             }
           } else if (idTrolley.length == 1) {
             final response = await checkoutRepository.createSingleCheckout(
-              checkout: setCheckout(user),
-              idTrolley: idTrolley[0],
+              checkout: totalCheckout,
+              product: state.productTrolleyData.first,
               user: user,
             );
-
             if (response.success) {
               emit(CheckoutLoadState(checkout: response.data!));
             } else {

@@ -60,3 +60,5 @@ class TrolleyDecrementEvent extends TrolleyEvent {
   final TrolleyModel item;
   TrolleyDecrementEvent(this.item);
 }
+
+class TrolleyGoCheckoutScreenStateEvent extends TrolleyEvent {}

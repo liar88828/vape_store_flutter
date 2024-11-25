@@ -18,6 +18,15 @@ class AuthErrorState extends AuthState {
   const AuthErrorState(this.message);
 }
 
+class AuthErrorLoginState extends AuthState {
+  final String message;
+  // final String email;
+  const AuthErrorLoginState({
+    required this.message,
+    // required this.email
+  });
+}
+
 class AuthLoadingState extends AuthState {}
 
 class AuthLoadedState extends AuthState {

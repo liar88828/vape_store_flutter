@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
-import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
+import 'package:vape_store/bloc/order/order_bloc.dart';
 import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/screen/checkout/detail_checkout_screen.dart';
+import 'package:vape_store/screen/home_screen.dart';
 import 'package:vape_store/screen/trolley_screen.dart';
 import 'package:vape_store/utils/date.dart';
 import 'package:vape_store/utils/money.dart';
@@ -21,11 +22,16 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   void toDetailCheckout(BuildContext context, CheckoutModel data, int id) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return DetailCheckoutScreen(checkout: data, idCheckout: id);
+      return DetailCheckoutScreen(
+        checkout: data,
+        idCheckout: id,
+        isFromProfile: true,
+      );
     }));
   }
 
   void goTrolleyScreen(BuildContext context) {
+    context.watch<OrderBloc>().close;
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return const TrolleyScreen();
     }));
@@ -37,19 +43,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     context.read<AuthBloc>().add(AuthInfoEvent());
     context.read<FavoriteBloc>().add(FavoriteCountByUserId());
-    context.read<CheckoutBloc>().add(CheckoutLoadsEvent());
+    context.read<OrderBloc>().add(CheckoutLoadsEvent());
+
+    void goHome() => Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () => goHome(),
+        ),
         centerTitle: true,
         title: const Text('Profile'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: BlocSelector<TrolleyBloc, TrolleyState, int>(
-              selector: (stateTrolley) {
-                return stateTrolley.count ?? 0;
-              },
+              selector: (stateTrolley) => stateTrolley.count ?? 0,
               builder: (context, stateTrolleyCount) {
                 return IconButton(
                   color: colorTheme.primary,
@@ -59,9 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         borderRadius: BorderRadius.circular(10),
                       )),
                   // color: Colors.red,
-                  onPressed: () {
-                    goTrolleyScreen(context);
-                  },
+                  onPressed: () => goTrolleyScreen(context),
                   icon: Badge(label: Text(stateTrolleyCount.toString()), child: const Icon(Icons.trolley)),
                 );
               },
@@ -179,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: const Text('View More'),
                   )
                 ]),
-                BlocBuilder<CheckoutBloc, CheckoutState>(builder: (context, stateCheckout) {
+                BlocBuilder<OrderBloc, OrderState>(builder: (context, stateCheckout) {
                   if (stateCheckout is CheckoutLoadingState) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (stateCheckout is CheckoutErrorState) {
@@ -240,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-            IconButton(onPressed: () => toDetailCheckout(context, data, data.id ?? 0), icon: const Icon(Icons.arrow_forward))
+            IconButton(onPressed: () => toDetailCheckout(context, data, data.id), icon: const Icon(Icons.arrow_forward))
           ],
         ),
       ),

@@ -5,8 +5,8 @@ part of 'delivery_bloc.dart';
 @immutable
 sealed class DeliveryState {
   final DeliveryModel? delivery;
-  final List<DeliveryModel>? deliveryList;
-  const DeliveryState({this.delivery, this.deliveryList});
+  final List<DeliveryModel> deliverys;
+  const DeliveryState({this.delivery, this.deliverys = const []});
 }
 
 final class DeliveryInitial extends DeliveryState {}
@@ -15,7 +15,7 @@ final class DeliveryLoadingState extends DeliveryState {}
 
 final class DeliveryLoadsState extends DeliveryState {
   final List<DeliveryModel> deliverys;
-  const DeliveryLoadsState({required this.deliverys}) : super(deliveryList: deliverys);
+  const DeliveryLoadsState({required this.deliverys}) : super(deliverys: deliverys);
 }
 
 final class DeliveryErrorState extends DeliveryState {

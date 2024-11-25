@@ -79,7 +79,6 @@ class UserNetwork {
       prefs.setBool('isLoggedIn', true);
       prefs.setString('token', token);
       prefs.setString('user', jsonEncode(dataUser));
-
       return AuthLoadedState(token: token, user: UserModel.fromJson(dataUser));
     } else {
       throw Exception('Fail Login');

@@ -4,10 +4,10 @@ part of 'bank_bloc.dart';
 
 @immutable
 sealed class BankState {
-  final List<BankModel>? bankList;
+  final List<BankModel> banks;
   final BankModel? bank;
   const BankState({
-    this.bankList,
+    this.banks = const [],
     this.bank,
   });
 }
@@ -18,7 +18,7 @@ final class BankLoadingState extends BankState {}
 
 final class BankLoadsState extends BankState {
   final List<BankModel> banks;
-  const BankLoadsState({required this.banks}) : super(bankList: banks);
+  const BankLoadsState({required this.banks}) : super(banks: banks);
 }
 
 final class BankErrorState extends BankState {

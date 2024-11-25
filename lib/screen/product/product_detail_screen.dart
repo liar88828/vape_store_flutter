@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:vape_store/bloc/auth/auth_bloc.dart';
-import 'package:vape_store/bloc/counter/counter_bloc.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/bloc/product/product_bloc.dart';
 import 'package:vape_store/bloc/trolley/trolley_bloc.dart';
@@ -50,8 +48,10 @@ class ProductDetailScreen extends StatelessWidget {
     var colorTheme = Theme.of(context).colorScheme;
 
     void selectType(String label) => context.read<ProductBloc>().add(ProductTypeEvent(type: label));
-    void increment() => context.read<CounterBloc>().add(IncrementCounterEvent());
-    void decrement() => context.read<CounterBloc>().add(DecrementCounterEvent());
+    void increment() => context.read<ProductBloc>().add(ProductCounterIncrementEvent());
+    void decrement() => context.read<ProductBloc>().add(ProductCounterDecrementEvent());
+    void addCheckout() => context.read<ProductBloc>().add(ProductAddCheckoutEvent());
+
     void goFavoriteCreateScreen(FavoriteModel data) {
       context.read<FavoriteBloc>().add(FavoriteAddListEvent(
               favorite: FavoriteListCreate(
@@ -75,7 +75,7 @@ class ProductDetailScreen extends StatelessWidget {
           ));
     }
 
-    Future<void> showAddFavorite(int counter, String type) {
+    Future<void> showAddFavorite() {
       context.read<FavoriteBloc>().add(FavoriteLoadsEvent());
       return showModalBottomSheet(
           context: context,
@@ -150,13 +150,13 @@ class ProductDetailScreen extends StatelessWidget {
           });
     }
 
-    Future<void> showAddTrolley(int counter) {
+    Future<void> showAddTrolley() {
       return showModalBottomSheet(
         context: context,
         builder: (context) {
-          return BlocSelector<ProductBloc, ProductState, String>(
-            selector: (stateProduct) => stateProduct.type,
-            builder: (context, stateProductType) {
+          return BlocSelector<ProductBloc, ProductState, ProductState>(
+            selector: (stateProduct) => stateProduct,
+            builder: (context, stateProduct) {
               return SizedBox(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -172,7 +172,7 @@ class ProductDetailScreen extends StatelessWidget {
                           children: ['30 ML', '60 ML', '90 ML']
                               .map((label) => ChoiceChip(
                                   label: Text(label),
-                                  selected: stateProductType == label,
+                                  selected: stateProduct.type == label,
                                   backgroundColor: colorTheme.surfaceBright,
                                   selectedColor: colorTheme.primaryContainer,
                                   onSelected: (bool selected) {
@@ -192,28 +192,23 @@ class ProductDetailScreen extends StatelessWidget {
                         Card(
                             elevation: 0,
                             color: colorTheme.primaryContainer,
-                            child: BlocSelector<CounterBloc, CounterState, int>(
-                              selector: (stateProduct) => stateProduct.counter,
-                              builder: (context, stateProduct) {
-                                return Row(children: [
-                                  IconButton(
-                                    onPressed: () => decrement(),
-                                    icon: const Icon(Icons.remove),
-                                  ),
-                                  Text(
-                                    stateProduct.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () => increment(),
-                                    icon: const Icon(Icons.add),
-                                  ),
-                                ]);
-                              },
-                            ))
+                            child: Row(children: [
+                              IconButton(
+                                onPressed: () => decrement(),
+                                icon: const Icon(Icons.remove),
+                              ),
+                              Text(
+                                stateProduct.counter.toString(),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => increment(),
+                                icon: const Icon(Icons.add),
+                              ),
+                            ]))
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -226,7 +221,7 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         FilledButton(
-                          onPressed: () => addTrolleyHandler(stateProductType, counter),
+                          onPressed: () => addTrolleyHandler(stateProduct.type, stateProduct.counter),
                           child: const Text('Add'),
                         ),
                       ],
@@ -240,114 +235,121 @@ class ProductDetailScreen extends StatelessWidget {
       );
     }
 
-    Future<void> addCheckout(ProductModel? product, int counterQty, String type, UserModel? user) async {
-      if (type.isEmpty || product == null || user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please Add Type')));
-        Navigator.pop(context);
-      } else {
-        Navigator.push(context, MaterialPageRoute(
-          builder: (context) {
-            return OrderScreen(
-              productTrolley: [
-                TrolleyModel(
-                    trolleyQty: counterQty,
-                    category: type,
-                    id: 0,
-                    description: '',
-                    name: product.name,
-                    price: product.price,
-                    // qty: counterQty,
-                    idUser: user.id,
-                    type: type,
-                    trolleyIdUser: user.id,
-                    idProduct: product.id!,
-                    idTrolley: 0,
-                    idCheckout: 0,
-                    createdAt: null,
-                    updatedAt: null)
-              ],
-            );
-          },
-        ));
-      }
+    void addCheckoutListener({
+      required ProductModel product,
+      required int counterQty,
+      required String type,
+      required UserModel user,
+    }) {
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return OrderScreen(
+            productTrolley: [
+              TrolleyModel(
+                trolleyQty: counterQty,
+                category: type,
+                id: 0,
+                description: '',
+                name: product.name,
+                price: product.price,
+                // qty: counterQty,
+                idUser: user.id,
+                type: type,
+                trolleyIdUser: user.id,
+                idProduct: product.id!,
+                idTrolley: 0,
+                idCheckout: 0,
+              )
+            ],
+          );
+        },
+      ));
     }
 
-    Future<void> toCheckout(ProductModel? product, int counter) async {
+    Future<void> toCheckout() async {
       return showModalBottomSheet(
           context: context,
           builder: (context) {
-            return BlocSelector<AuthBloc, AuthState, UserModel?>(
-              selector: (state) => state.user,
-              builder: (context, stateAuth) {
-                return BlocSelector<ProductBloc, ProductState, String>(
-                  selector: (stateProduct) => stateProduct.type,
-                  builder: (context, stateProductType) {
-                    return SizedBox(
-                        child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                              const Text('Add Checkout', style: TextStyle(fontSize: 20)),
-                              const SizedBox(height: 10),
-                              const Text('Are you sure you want to add this product to your checkout?'),
-                              const SizedBox(height: 10),
-                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                const Text('Type',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    )),
-                                Wrap(
-                                    spacing: 5.0,
-                                    children: ['30 ML', '60 ML', '90 ML']
-                                        .map((label) => ChoiceChip(
-                                            label: Text(label),
-                                            selected: stateProductType == label,
-                                            backgroundColor: colorTheme.surfaceBright,
-                                            selectedColor: colorTheme.primaryContainer,
-                                            onSelected: (bool selected) {
-                                              selectType(label);
-                                            }))
-                                        .toList())
-                              ]),
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('Qty', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  Card(
-                                    elevation: 0,
-                                    color: colorTheme.primaryContainer,
-                                    child: Row(
-                                      children: [
-                                        IconButton(onPressed: () => decrement(), icon: const Icon(Icons.remove)),
-                                        Text(
-                                          counter.toString(),
-                                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                        ),
-                                        IconButton(onPressed: () => increment(), icon: const Icon(Icons.add)),
-                                      ],
+            return BlocSelector<ProductBloc, ProductState, ProductState>(
+              selector: (stateProduct) => stateProduct,
+              builder: (context, stateProduct) {
+                return SizedBox(
+                    child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                          const Text('Add Checkout', style: TextStyle(fontSize: 20)),
+                          const SizedBox(height: 10),
+                          const Text('Are you sure you want to add this product to your checkout?'),
+                          const SizedBox(height: 10),
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            const Text('Type',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                )),
+                            Wrap(
+                                spacing: 5.0,
+                                children: ['30 ML', '60 ML', '90 ML']
+                                    .map((label) => ChoiceChip(
+                                        label: Text(label),
+                                        selected: stateProduct.type == label,
+                                        backgroundColor: colorTheme.surfaceBright,
+                                        selectedColor: colorTheme.primaryContainer,
+                                        onSelected: (bool selected) {
+                                          selectType(label);
+                                        }))
+                                    .toList())
+                          ]),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Qty',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  )),
+                              Card(
+                                elevation: 0,
+                                color: colorTheme.primaryContainer,
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () => decrement(),
+                                      icon: const Icon(Icons.remove),
                                     ),
-                                  ),
-                                ],
+                                    Text(
+                                      stateProduct.counter.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () => increment(),
+                                      icon: const Icon(Icons.add),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  FilledButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  FilledButton(
-                                    onPressed: () => addCheckout(product, counter, stateProductType, stateAuth),
-                                    child: const Text('Add'),
-                                  ),
-                                ],
-                              )
-                            ])));
-                  },
-                );
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              FilledButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                              const SizedBox(width: 10),
+                              FilledButton(
+                                onPressed: () => addCheckout(),
+                                child: const Text('Add'),
+                              ),
+                            ],
+                          )
+                        ])));
               },
             );
           });
@@ -356,8 +358,6 @@ class ProductDetailScreen extends StatelessWidget {
     return Scaffold(
         bottomNavigationBar: BottomAppBar(
           child: Builder(builder: (context) {
-            final counter = context.select((CounterBloc bloc) => bloc.state.counter);
-            final productState = context.select((ProductBloc bloc) => bloc.state);
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -367,7 +367,7 @@ class ProductDetailScreen extends StatelessWidget {
                     backgroundColor: colorTheme.primary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  onPressed: () => showAddFavorite(counter, productState.type),
+                  onPressed: () => showAddFavorite(),
                   icon: const Icon(Icons.favorite),
                 ),
                 FilledButton(
@@ -378,7 +378,7 @@ class ProductDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () => showAddTrolley(counter),
+                  onPressed: () => showAddTrolley(),
                   child: const Text(
                     'ADD TO TROLLEY',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -392,7 +392,7 @@ class ProductDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () => toCheckout(productState.product, counter),
+                  onPressed: () => toCheckout(),
                   child: const Text(
                     'CHECKOUT',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -420,10 +420,11 @@ class ProductDetailScreen extends StatelessWidget {
                         // color: Colors.red,
                         onPressed: () => goTrolleyScreen(),
                         icon: Badge(
-                            label: Text(stateTrolleyCount.toString()),
-                            child: const Icon(
-                              Icons.trolley,
-                            )));
+                          label: Text(stateTrolleyCount.toString()),
+                          child: const Icon(
+                            Icons.trolley,
+                          ),
+                        ));
                   },
                 ))
           ],
@@ -432,18 +433,32 @@ class ProductDetailScreen extends StatelessWidget {
           listeners: [
             BlocListener<TrolleyBloc, TrolleyState>(
               listener: (context, stateTrolley) {
+                // if (stateTrolley is TrolleyGoCheckoutScreenState) {}
                 if (stateTrolley is TrolleyCaseState) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('success')));
                   Navigator.pop(context);
-                }
-                if (stateTrolley is TrolleyErrorState) {
+                } else if (stateTrolley is TrolleyErrorState) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateTrolley.message)));
-                }
-                if (stateTrolley is TrolleyCaseErrorState) {
+                } else if (stateTrolley is TrolleyCaseErrorState) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     duration: const Duration(seconds: 5),
                     content: Text(stateTrolley.message),
                   ));
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            BlocListener<ProductBloc, ProductState>(
+              listener: (context, stateProductListener) {
+                if (stateProductListener is ProductGoCheckoutScreenState) {
+                  addCheckoutListener(
+                    counterQty: stateProductListener.counter,
+                    product: stateProductListener.product,
+                    type: stateProductListener.type,
+                    user: stateProductListener.user,
+                  );
+                } else if (stateProductListener is ProductErrorMessageState) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateProductListener.message)));
                   Navigator.pop(context);
                 }
               },
@@ -461,8 +476,16 @@ class ProductDetailScreen extends StatelessWidget {
           ],
           child: BlocBuilder<ProductBloc, ProductState>(
             buildWhen: (previous, current) {
-              final type = previous.type == current.type;
-              return type || type;
+              // final type = previous.type != current.type;
+              // final counter = previous.counter != current.counter;
+              if (current is ProductLoadingState) return true;
+              if (current is ProductLoadState) return true;
+              if (current is ProductErrorState) return true;
+              // if (previous is ProductTypeState && current is ProductTypeState) return false;
+              // if (previous is ProductCounterState && current is ProductCounterState) return false;
+              if (previous is ProductErrorMessageState && current is ProductErrorMessageState) return true;
+
+              return false;
             },
             builder: (context, stateProduct) {
               if (stateProduct is ProductLoadingState) {
@@ -565,9 +588,7 @@ class ProductDetailScreen extends StatelessWidget {
                                     maxLines: 5,
                                     style: const TextStyle(color: Colors.grey, fontSize: 14),
                                   ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
+                                  const SizedBox(height: 10),
                                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                     const Text('Type : ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                     const SizedBox(height: 10),

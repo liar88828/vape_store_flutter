@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vape_store/bloc/auth/auth_bloc.dart';
 import 'package:vape_store/bloc/bank/bank_bloc.dart';
-import 'package:vape_store/bloc/checkout/checkout_bloc.dart';
-import 'package:vape_store/bloc/counter/counter_bloc.dart';
 import 'package:vape_store/bloc/delivery/delivery_bloc.dart';
 import 'package:vape_store/bloc/favorite/favorite_bloc.dart';
 import 'package:vape_store/bloc/order/order_bloc.dart';
@@ -66,11 +64,6 @@ class MyApp extends StatelessWidget {
                   checkoutRepository: checkoutNetwork,
                   session: preferencesRepository.getUser(),
                 )),
-        BlocProvider(
-            create: (context) => CheckoutBloc(
-                  checkoutRepository: checkoutNetwork,
-                  session: preferencesRepository.getUser(),
-                )),
         BlocProvider(create: (context) => BankBloc(bankRepository: bankNetwork)),
         BlocProvider(
             create: (context) => FavoriteBloc(
@@ -85,8 +78,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(
             create: (context) => ProductBloc(
                   productRepository: productNetwork,
+                  session: preferencesRepository.getUser(),
                 )),
-        BlocProvider(create: (context) => CounterBloc()),
         BlocProvider(
             create: (context) => PreferencesBloc(
                   preferencesRepository: preferencesRepository,
@@ -118,8 +111,8 @@ class ValidationSession extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
-      if (state is AuthLoadingState) return const Center(child: CircularProgressIndicator());
-      if (state is AuthErrorState) return LoginScreen();
+      // if (state is AuthLoadingState) return const Center(child: CircularProgressIndicator());
+      // if (state is AuthErrorState) return LoginScreen();
       if (state is AuthLoadedState) {
         return const HomeScreen();
       } else {

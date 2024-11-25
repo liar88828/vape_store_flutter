@@ -23,7 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await preferencesRepository.setUser(data.user);
         emit(AuthLoadedState(token: data.token, user: data.user));
       } catch (e) {
-        emit(AuthErrorState(e.toString()));
+        emit(AuthErrorLoginState(message: e.toString()));
       }
     });
 

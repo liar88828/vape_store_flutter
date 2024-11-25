@@ -12,8 +12,12 @@ class BankBloc extends Bloc<BankEvent, BankState> {
     on<BankLoadsEvent>((event, emit) async {
       emit(BankLoadingState());
       try {
-        final data = await bankRepository.fetchBanks();
-        emit(BankLoadsState(banks: data));
+        if (state.banks.isEmpty) {
+          final data = await bankRepository.fetchBanks();
+          emit(BankLoadsState(banks: data));
+        } else {
+          emit(BankLoadsState(banks: state.banks));
+        }
       } catch (e) {
         emit(BankErrorState(message: e.toString()));
       }

@@ -29,11 +29,15 @@ class TrolleyScreen extends StatelessWidget {
     }
 
     void goOrderScreen(TrolleyState stateTrolley) {
-      Navigator.push(context, MaterialPageRoute(
-        builder: (context) {
-          return OrderScreen(productTrolley: stateTrolley.cartItems);
-        },
-      ));
+      if (stateTrolley.cartItems.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Your cart is empty')));
+      } else {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) {
+            return OrderScreen(productTrolley: stateTrolley.cartItems);
+          },
+        ));
+      }
     }
 
     // double totalPrice = calculateTotalPrice(); // Assume a function to calculate total price
@@ -43,19 +47,15 @@ class TrolleyScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           child: BlocSelector<TrolleyBloc, TrolleyState, TrolleyState>(
-            selector: (stateTrolley) {
-              return stateTrolley;
-            },
+            selector: (stateTrolley) => stateTrolley,
             builder: (context, stateTrolley) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Display Total Price
                   Text(
                     'Total Price: ${formatPrice(stateTrolley.totalPrice)}',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  // Checkout Button
                   ElevatedButton(
                     onPressed: () => goOrderScreen(stateTrolley),
                     child: const Text(
@@ -77,11 +77,9 @@ class TrolleyScreen extends StatelessWidget {
         listener: (context, stateListener) {
           if (stateListener is TrolleyCaseState) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Success')));
-          }
-          if (stateListener is TrolleyErrorState) {
+          } else if (stateListener is TrolleyErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateListener.message)));
-          }
-          if (stateListener is TrolleyRemoveState) {
+          } else if (stateListener is TrolleyRemoveState) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(stateListener.message)));
             context.read<TrolleyBloc>().add(TrolleyLoadsEvent());
           }
@@ -89,20 +87,15 @@ class TrolleyScreen extends StatelessWidget {
         buildWhen: (previous, current) {
           if (current is TrolleyLoadingState) {
             return true;
-          }
-          if (current is TrolleyErrorState) {
+          } else if (current is TrolleyErrorState) {
             return true;
-          }
-          if (current is TrolleyLoadsState) {
+          } else if (current is TrolleyLoadsState) {
             return true;
-          }
-          if (previous is TrolleyInitial && current is TrolleyInitial) {
+          } else if (previous is TrolleyInitial && current is TrolleyInitial) {
             final cartItems = previous.cartItems != current.cartItems;
             final trolleys = previous.trolleys != current.trolleys;
-
             return cartItems && trolleys;
           }
-
           return false;
         },
         builder: (context, state) {

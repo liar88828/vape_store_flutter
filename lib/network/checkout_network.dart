@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:vape_store/models/checkout_model.dart';
 import 'package:vape_store/models/product_model.dart';
 import 'package:vape_store/models/response_model.dart';
+import 'package:vape_store/models/trolley_model.dart';
 import 'package:vape_store/models/user_model.dart';
 
 class CheckoutNetwork {
@@ -33,16 +34,42 @@ class CheckoutNetwork {
 
   Future<ResponseModel> createSingleCheckout({
     required CheckoutModel checkout,
-    required int idTrolley,
     required UserModel user,
+    required TrolleyModel product,
   }) async {
-    // print("single");
-    return ResponseModel(
-      message: '',
-      success: false,
+    final data = {
+      "id_product": product.idProduct,
+      "type": product.type,
+      "qty": product.trolleyQty,
+      "id_user": user.id,
+      "total": checkout.total,
+      "delivery_price": checkout.deliveryPrice,
+      "payment_price": checkout.paymentPrice,
+      "payment_method": checkout.paymentMethod,
+      "delivery_method": checkout.deliveryMethod,
+    };
+    final response = await http.post(
+      Uri.parse('$baseUrl/checkout/one'),
+      body: jsonEncode(data),
+      headers: {'Content-Type': 'application/json'},
     );
+    final dataJson = jsonDecode(response.body);
+    String message = dataJson['message'];
+    if (response.statusCode == 200) {
+      var dataJson2 = dataJson['data'];
+      print(dataJson2);
+      final data = CheckoutModel.fromJson(dataJson2);
+
+      print(data);
+      return ResponseModel(
+        success: true,
+        message: message,
+        data: data,
+      );
+    } else {
+      throw Exception(message);
+    }
   }
-  // Future manyTrolley() {}
 
   Future<ResponseModel<CheckoutModel>> createManyCheckout({
     required CheckoutModel checkout,
@@ -62,7 +89,7 @@ class CheckoutNetwork {
     // print(data);
     // print(data);
     final response = await http.post(
-      Uri.parse('$baseUrl/checkout'),
+      Uri.parse('$baseUrl/checkout/many'),
       body: jsonEncode(data),
       headers: {'Content-Type': 'application/json'},
     );
